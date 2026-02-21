@@ -19,7 +19,7 @@ export const MessagesPage = () => {
     return (
         <div style={{
             display: 'flex',
-            height: isMobile ? 'calc(100dvh - var(--mobile-header-height) - var(--mobile-nav-height))' : 'calc(100vh - 2px)',
+            height: isMobile ? 'calc(100dvh - var(--mobile-nav-height))' : 'calc(100vh - 2px)',
             width: '100%',
             overflow: 'hidden',
             position: 'relative'

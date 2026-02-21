@@ -28,7 +28,7 @@ DECLARE
   need_title TEXT;
 BEGIN
   -- Get need details
-  SELECT author_id, title INTO need_author_id, need_title FROM public.needs WHERE id = NEW.need_id;
+  SELECT user_id, title INTO need_author_id, need_title FROM public.needs WHERE id = NEW.need_id;
   
   -- Get liker name
   SELECT display_name INTO liker_name FROM public.profiles WHERE id = NEW.user_id;
