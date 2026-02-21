@@ -64,12 +64,39 @@ export const MessagesProvider = ({ children }) => {
 
     const sendMessage = async (otherUserId, text) => {
         if (!user) return;
+
+        // 1. Create a temporary optimistic message
+        const optimisticMsg = {
+            id: 'temp-' + Date.now(),
+            senderId: user.id,
+            sender: 'Me',
+            text: text,
+            timestamp: new Date().toISOString()
+        };
+
+        // 2. Update state immediately
+        setThreads(prev => prev.map(t => {
+            if (t.withUserId === otherUserId) {
+                return {
+                    ...t,
+                    lastMessage: text,
+                    timestamp: new Date().toISOString(),
+                    messages: [...t.messages, optimisticMsg]
+                };
+            }
+            return t;
+        }));
+
         try {
             const threadId = await startChat(otherUserId);
             await createMessage(threadId, user.id, text);
-            await loadThreads();
+            // Real-time listener will eventually sync, but we reload to be sure.
+            // We don't await this to keep the UI snappy.
+            loadThreads();
         } catch (err) {
             console.error("Failed to send message", err);
+            // On error, the next loadThreads will naturally revert the UI
+            loadThreads();
         }
     };
 
@@ -104,8 +131,10 @@ export const MessagesProvider = ({ children }) => {
     );
 };
 
-export const useMessages = () => {
+// Export as function for better Fast Refresh / HMR support
+export function useMessages() {
     const context = useContext(MessagesContext);
     if (!context) throw new Error('useMessages must be used within a MessagesProvider');
     return context;
-};
+}
+
