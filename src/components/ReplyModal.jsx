@@ -1,0 +1,169 @@
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Send, X } from 'lucide-react';
+import { useMessages } from '../context/MessagesContext';
+import { useNavigate } from 'react-router-dom';
+
+export const ReplyModal = ({ isOpen, onClose, need }) => {
+    const navigate = useNavigate();
+    const { sendMessage } = useMessages();
+    const [replyText, setReplyText] = useState('');
+    const [visibility, setVisibility] = useState('private'); // 'private' by default per user request
+
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+            setReplyText(''); // reset on open
+        } else {
+            document.body.style.overflow = 'auto';
+        }
+        return () => {
+            document.body.style.overflow = 'auto';
+        };
+    }, [isOpen]);
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!replyText.trim()) return;
+
+        if (visibility === 'private') {
+            sendMessage(need.author, replyText);
+            alert(`Private message sent to ${need.author}!`);
+            onClose();
+            navigate('/messages');
+        } else {
+            alert(`Reply (${visibility}) posted to ${need.author}: ${replyText}`);
+            onClose();
+        }
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <AnimatePresence>
+            <div style={{
+                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                zIndex: 1000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+                padding: '4rem 1rem', background: 'rgba(0, 0, 0, 0.5)', backdropFilter: 'blur(4px)'
+            }} onClick={onClose}>
+                <motion.div
+                    onClick={(e) => e.stopPropagation()} // prevent closing when clicking inside
+                    initial={{ opacity: 0, scale: 0.95, y: -20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -20 }}
+                    className="glass-panel"
+                    style={{
+                        width: '100%', maxWidth: '600px',
+                        background: 'var(--bg-surface)', position: 'relative',
+                        display: 'flex', flexDirection: 'column', borderRadius: '16px', overflow: 'hidden'
+                    }}
+                >
+                    {/* Header */}
+                    <div style={{
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                        padding: '1rem 1.5rem', borderBottom: '1px solid var(--border-glass)'
+                    }}>
+                        <button onClick={onClose} style={{ padding: '0.25rem', borderRadius: '50%', color: 'var(--text-primary)' }} className="glass-panel-hover">
+                            <X size={20} />
+                        </button>
+                    </div>
+
+                    {/* Original Need Context */}
+                    <div style={{ padding: '1.5rem', display: 'flex', gap: '1rem', position: 'relative' }}>
+                        {/* Vertical connection line */}
+                        <div style={{ position: 'absolute', left: '2.45rem', top: '3.5rem', bottom: 0, width: '2px', background: 'var(--border-glass)' }} />
+
+                        <div style={{
+                            width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
+                            background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1,
+                            fontWeight: 'bold', color: 'white'
+                        }}>
+                            {need.author.charAt(0)}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>{need.author}</span>
+                                <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>• {need.postedAt}</span>
+                            </div>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginTop: '0.25rem', lineHeight: 1.5 }}>
+                                Replying to <span style={{ color: 'var(--primary)' }}>@{need.author.toLowerCase().replace(' ', '')}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Form Body */}
+                    <form onSubmit={handleSubmit} style={{ padding: '0 1.5rem 1.5rem 1.5rem', display: 'flex', gap: '1rem' }}>
+                        <div style={{
+                            width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
+                            background: 'var(--bg-surface)', border: '1px solid var(--border-glass)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1,
+                            fontWeight: 'bold', color: 'var(--text-primary)'
+                        }}>
+                            A
+                        </div>
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                            <textarea
+                                required
+                                autoFocus
+                                value={replyText}
+                                onChange={(e) => setReplyText(e.target.value)}
+                                placeholder="Post your reply or proposal..."
+                                rows={4}
+                                style={{
+                                    width: '100%', background: 'transparent', border: 'none', color: 'var(--text-primary)',
+                                    fontSize: '1.25rem', outline: 'none', resize: 'vertical', paddingTop: '0.5rem',
+                                    fontFamily: 'inherit'
+                                }}
+                            />
+
+                            {/* Footer Actions */}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '1rem', borderTop: '1px solid var(--border-glass)', marginTop: '0.5rem' }}>
+                                {/* Visibility Toggle */}
+                                <div style={{
+                                    display: 'flex',
+                                    background: 'var(--bg-base)',
+                                    padding: '0.2rem',
+                                    borderRadius: '9999px',
+                                    border: '1px solid var(--border-glass)'
+                                }}>
+                                    <button
+                                        type="button"
+                                        onClick={() => setVisibility('public')}
+                                        style={{
+                                            padding: '0.3rem 0.8rem', borderRadius: '9999px', fontSize: '0.8rem',
+                                            background: visibility === 'public' ? 'var(--bg-surface)' : 'transparent',
+                                            color: visibility === 'public' ? 'var(--primary)' : 'var(--text-muted)',
+                                            fontWeight: visibility === 'public' ? 600 : 400,
+                                            transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        Public
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setVisibility('private')}
+                                        style={{
+                                            padding: '0.3rem 0.8rem', borderRadius: '9999px', fontSize: '0.8rem',
+                                            background: visibility === 'private' ? 'var(--bg-surface)' : 'transparent',
+                                            color: visibility === 'private' ? 'var(--primary)' : 'var(--text-muted)',
+                                            fontWeight: visibility === 'private' ? 600 : 400,
+                                            transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        Private
+                                    </button>
+                                </div>
+
+                                <button type="submit" disabled={!replyText.trim()} className="btn btn-primary" style={{ padding: '0.5rem 1.5rem', borderRadius: '9999px', opacity: replyText.trim() ? 1 : 0.5 }}>
+                                    {visibility === 'private' ? 'Send Private' : 'Reply'}
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                </motion.div>
+            </div>
+        </AnimatePresence>
+    );
+};
