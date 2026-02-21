@@ -387,6 +387,31 @@ button {
   max-width: 100%;
 }
 
+/* Profile Page */
+.profile-banner {
+  height: 200px;
+}
+
+.profile-avatar {
+  width: 130px;
+  height: 130px;
+  margin-top: -65px;
+  font-size: 3rem;
+}
+
+@media (max-width: 768px) {
+  .profile-banner {
+    height: 130px;
+  }
+
+  .profile-avatar {
+    width: 90px;
+    height: 90px;
+    margin-top: -45px;
+    font-size: 2rem;
+  }
+}
+
 /* Floating Action Button (FAB) */
 .mobile-fab {
   position: fixed;

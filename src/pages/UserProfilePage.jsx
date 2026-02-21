@@ -205,8 +205,7 @@ export const UserProfilePage = () => {
             </header>
 
             {/* Banner */}
-            <div style={{
-                height: '200px',
+            <div className="profile-banner" style={{
                 background: profile.banner_url ? `url(${profile.banner_url}) center/cover` : 'linear-gradient(135deg, var(--primary), var(--secondary))',
                 position: 'relative'
             }}>
@@ -236,22 +235,27 @@ export const UserProfilePage = () => {
             {/* Profile Info */}
             <div style={{ padding: '0 1.5rem 1.5rem 1.5rem', position: 'relative' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div style={{
-                        width: '130px', height: '130px', borderRadius: '50%',
+                    <div className="profile-avatar" style={{
+                        borderRadius: '50%',
                         background: profile.avatar_url ? `url(${profile.avatar_url}) center/cover` : 'var(--bg-surface)',
                         border: '4px solid var(--bg-base)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontWeight: 'bold', color: 'var(--text-primary)', fontSize: '3rem',
-                        marginTop: '-65px', overflow: 'hidden'
+                        fontWeight: 'bold', color: 'var(--text-primary)',
+                        overflow: 'hidden'
                     }}>
                         {!profile.avatar_url && profile.display_name.charAt(0).toUpperCase()}
                     </div>
 
                     <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
                         {isOwnProfile ? (
-                            <button onClick={() => setIsEditModalOpen(true)} className="btn btn-secondary" style={{ padding: '0.5rem 1.5rem', borderRadius: '9999px', fontWeight: 600 }}>
-                                Edit Profile
-                            </button>
+                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                <button onClick={() => setIsEditModalOpen(true)} className="btn btn-secondary" style={{ padding: '0.5rem 1.5rem', borderRadius: '9999px', fontWeight: 600 }}>
+                                    Edit Profile
+                                </button>
+                                <button onClick={() => navigate('/settings')} style={{ padding: '0.5rem', borderRadius: '50%', border: '1px solid var(--border-glass)', color: 'var(--text-primary)', background: 'var(--bg-surface)', cursor: 'pointer' }} className="glass-panel-hover" title="Settings">
+                                    <Settings size={20} />
+                                </button>
+                            </div>
                         ) : (
                             <>
                                 <button
