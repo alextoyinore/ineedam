@@ -1,10 +1,12 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Bell, Check, Trash2, UserPlus, MessageCircle, Info } from 'lucide-react';
+import { Bell, Check, Trash2, UserPlus, MessageCircle, Info, Heart } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '../context/NotificationsContext';
 
 export const NotificationsPage = () => {
     const { notifications, markAsRead, markAllAsRead, clearNotifications } = useNotifications();
+    const navigate = useNavigate();
 
     useEffect(() => {
         // Option: mark all as read when page is opened
@@ -15,6 +17,7 @@ export const NotificationsPage = () => {
         switch (type) {
             case 'follow': return <UserPlus size={18} color="#3b82f6" />;
             case 'reply': return <MessageCircle size={18} color="#10b981" />;
+            case 'like': return <Heart size={18} color="#ef4444" />;
             default: return <Info size={18} color="var(--text-muted)" />;
         }
     };
@@ -57,7 +60,14 @@ export const NotificationsPage = () => {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: index * 0.05 }}
-                            onClick={() => markAsRead(notif.id)}
+                            onClick={() => {
+                                markAsRead(notif.id);
+                                if (notif.type === 'follow' && notif.actorProfile?.username) {
+                                    navigate(`/${notif.actorProfile.username}`);
+                                } else if ((notif.type === 'reply' || notif.type === 'like') && notif.reference_id) {
+                                    navigate(`/need/${notif.reference_id}`);
+                                }
+                            }}
                             style={{
                                 padding: '1.25rem 1rem',
                                 borderBottom: '1px solid var(--border-glass)',
@@ -83,10 +93,11 @@ export const NotificationsPage = () => {
                             </div>
                             <div style={{ flex: 1 }}>
                                 <div style={{ fontSize: '0.95rem', color: 'var(--text-primary)', lineHeight: 1.4 }}>
-                                    <strong style={{ fontWeight: 700 }}>{notif.from}</strong> {notif.message}
+                                    {/* Fallback to actor_id UUID */}
+                                    <strong style={{ fontWeight: 700 }}>{notif.actorProfile?.display_name || notif.actor_id?.substring(0, 6) || 'System'}</strong> {notif.message}
                                 </div>
                                 <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                                    {new Date(notif.timestamp).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                    {new Date(notif.created_at || notif.timestamp || Date.now()).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                 </div>
                             </div>
                         </motion.div>

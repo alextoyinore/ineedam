@@ -1,9 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search as SearchIcon, ArrowLeft, SlidersHorizontal } from 'lucide-react';
 import { NeedCard } from '../components/NeedCard';
-import needsData from '../data/needs.json';
+import { searchNeeds, shapeNeed } from '../lib/needsService';
 
 export const SearchPage = () => {
     const [searchParams] = useSearchParams();
@@ -11,10 +11,40 @@ export const SearchPage = () => {
     const category = searchParams.get('cat') || '';
     const trending = searchParams.get('trend') || '';
 
+    const [results, setResults] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [showFilters, setShowFilters] = useState(false);
     const [minBudget, setMinBudget] = useState('');
     const [maxBudget, setMaxBudget] = useState('');
     const [timeframe, setTimeframe] = useState('all'); // all, today, week, month
+
+    useEffect(() => {
+        const performSearch = async () => {
+            setLoading(true);
+            try {
+                const data = await searchNeeds({
+                    query: query || trending,
+                    category,
+                    minBudget,
+                    maxBudget
+                });
+                setResults(data ? data.map(shapeNeed) : []);
+            } catch (err) {
+                console.error("Search failed:", err);
+                setResults([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        // For "What's happening" items, we might use query/trending interchangeably
+        if (query || category || trending || minBudget || maxBudget) {
+            performSearch();
+        } else {
+            setResults([]);
+            setLoading(false);
+        }
+    }, [query, category, trending, minBudget, maxBudget]);
 
     const viewTitle = useMemo(() => {
         if (category) return 'Category';
@@ -25,45 +55,6 @@ export const SearchPage = () => {
     const viewSub = useMemo(() => {
         return category || trending || query;
     }, [category, trending, query]);
-
-    const results = useMemo(() => {
-        let filtered = needsData;
-
-        if (category) {
-            filtered = filtered.filter(need => need.category.toLowerCase() === category.toLowerCase());
-        } else if (trending) {
-            const lowerTrend = trending.toLowerCase();
-            filtered = filtered.filter(need =>
-                need.title.toLowerCase().includes(lowerTrend) ||
-                need.description.toLowerCase().includes(lowerTrend)
-            );
-        } else if (query.trim()) {
-            const lowerQuery = query.toLowerCase();
-            filtered = filtered.filter(need =>
-                need.title.toLowerCase().includes(lowerQuery) ||
-                need.description.toLowerCase().includes(lowerQuery) ||
-                need.category.toLowerCase().includes(lowerQuery) ||
-                need.author.toLowerCase().includes(lowerQuery)
-            );
-        } else {
-            return []; // No filter applied
-        }
-
-        // Apply Advanced Filters
-        if (minBudget) {
-            filtered = filtered.filter(n => parseFloat(n.budget.replace(/[^0-9.]/g, '')) >= parseFloat(minBudget));
-        }
-        if (maxBudget) {
-            filtered = filtered.filter(n => parseFloat(n.budget.replace(/[^0-9.]/g, '')) <= parseFloat(maxBudget));
-        }
-        // Timeframe filter logic would normally use Date objects, here we mock it
-        if (timeframe !== 'all') {
-            // Mocking date filtering
-            if (timeframe === 'today') filtered = filtered.filter(n => n.postedAt.includes('h') || n.postedAt.includes('m'));
-        }
-
-        return filtered;
-    }, [query, category, trending, minBudget, maxBudget, timeframe]);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -148,7 +139,16 @@ export const SearchPage = () => {
 
             {/* Results List */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-                {results.length > 0 ? (
+                {loading ? (
+                    <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
+                        <div style={{
+                            width: '32px', height: '32px', borderRadius: '50%',
+                            border: '3px solid var(--border-glass)',
+                            borderTop: '3px solid var(--primary)',
+                            animation: 'spin 0.8s linear infinite'
+                        }} />
+                    </div>
+                ) : results.length > 0 ? (
                     results.map((need) => (
                         <motion.div
                             key={need.id}

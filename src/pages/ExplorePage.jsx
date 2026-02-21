@@ -1,23 +1,56 @@
-import React, { useState } from 'react';
-import { Search } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { NeedCard } from '../components/NeedCard';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useSocial } from '../context/SocialContext';
+import { fetchNeeds, shapeNeed } from '../lib/needsService';
+import { supabase } from '../lib/supabase';
 import needsData from '../data/needs.json';
 
 export const ExplorePage = () => {
     const [searchQuery, setSearchQuery] = useState('');
-    const [feedTab, setFeedTab] = useState('foryou'); // 'foryou' or 'following'
+    const [feedTab, setFeedTab] = useState('foryou');
+    const [needs, setNeeds] = useState([]);
+    const [loading, setLoading] = useState(true);
     const { following } = useSocial();
 
-    const filteredNeeds = needsData.filter(n => {
-        const matchesSearch = n.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    useEffect(() => {
+        const load = async () => {
+            setLoading(true);
+            try {
+                const rows = await fetchNeeds();
+                setNeeds(rows ? rows.map(shapeNeed) : []);
+            } catch (err) {
+                console.error("Error fetching needs:", err);
+                // Optionally show an error toaster here
+                setNeeds([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+        load();
+    }, []);
+
+    // Subscribe to real-time inserts so new posts appear instantly
+    useEffect(() => {
+        const channel = supabase
+            .channel('needs-feed')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'needs' }, (payload) => {
+                const shaped = shapeNeed({ ...payload.new, profiles: null });
+                setNeeds(prev => [shaped, ...prev]);
+            })
+            .subscribe();
+
+        return () => supabase.removeChannel(channel);
+    }, []);
+
+    const filteredNeeds = needs.filter(n => {
+        const matchesSearch =
+            n.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             n.description.toLowerCase().includes(searchQuery.toLowerCase());
 
         if (feedTab === 'following') {
             return matchesSearch && following.includes(n.author);
         }
-
         return matchesSearch;
     });
 
@@ -26,7 +59,6 @@ export const ExplorePage = () => {
 
             {/* Timeline Header */}
             <header className="sticky-header">
-                {/* Tabs */}
                 <div style={{ display: 'flex' }}>
                     {['foryou', 'following'].map(tab => (
                         <button
@@ -57,8 +89,17 @@ export const ExplorePage = () => {
 
             {/* Feed List */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-                {filteredNeeds.length > 0 ? (
-                    filteredNeeds.map((need, index) => (
+                {loading ? (
+                    <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
+                        <div style={{
+                            width: '32px', height: '32px', borderRadius: '50%',
+                            border: '3px solid var(--border-glass)',
+                            borderTop: '3px solid var(--primary)',
+                            animation: 'spin 0.8s linear infinite'
+                        }} />
+                    </div>
+                ) : filteredNeeds.length > 0 ? (
+                    filteredNeeds.map((need) => (
                         <motion.div
                             key={need.id}
                             initial={{ opacity: 0 }}
@@ -81,7 +122,6 @@ export const ExplorePage = () => {
                     </div>
                 )}
             </div>
-
         </div>
     );
 };

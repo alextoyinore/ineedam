@@ -1,16 +1,42 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Bookmark } from 'lucide-react';
+import { Bookmark, Loader } from 'lucide-react';
 import { NeedCard } from '../components/NeedCard';
 import { useBookmarks } from '../context/BookmarksContext';
-import needsData from '../data/needs.json';
+import { useAuth } from '../context/AuthContext';
+import { fetchFullBookmarkedNeeds } from '../lib/bookmarkService';
+import { shapeNeed } from '../lib/needsService';
 import { Link } from 'react-router-dom';
 
 export const BookmarksPage = () => {
+    const { user, profile } = useAuth();
     const { bookmarkedIds } = useBookmarks();
+    const [needs, setNeeds] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    // Filter the mock data list down to only IDs that exist in the bookmarkedIds array
-    const bookmarkedNeeds = needsData.filter(need => bookmarkedIds.includes(need.id));
+    useEffect(() => {
+        if (!user) {
+            setNeeds([]);
+            setLoading(false);
+            return;
+        }
+
+        const loadBookmarkedNeeds = async () => {
+            setLoading(true);
+            try {
+                const data = await fetchFullBookmarkedNeeds(user.id);
+                // Shape data for NeedCard
+                const shaped = data.map(shapeNeed);
+                setNeeds(shaped);
+            } catch (err) {
+                console.error("Failed to load bookmarked needs", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadBookmarkedNeeds();
+    }, [user, bookmarkedIds]); // Re-fetch if user or bookmarks change state
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -23,14 +49,18 @@ export const BookmarksPage = () => {
                     Bookmarks
                 </h2>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: 0, marginTop: '0.25rem' }}>
-                    @{/* This would ideally use the logged in user context */}alext
+                    @{profile?.username || user?.email?.split('@')[0] || 'user'}
                 </p>
             </header>
 
             {/* Feed List */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-                {bookmarkedNeeds.length > 0 ? (
-                    bookmarkedNeeds.map((need, index) => (
+                {loading ? (
+                    <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
+                        <Loader className="animate-spin" size={32} color="var(--primary)" />
+                    </div>
+                ) : needs.length > 0 ? (
+                    needs.map((need, index) => (
                         <motion.div
                             key={need.id}
                             initial={{ opacity: 0 }}

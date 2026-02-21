@@ -1,14 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, X } from 'lucide-react';
+import { Send, X, Loader } from 'lucide-react';
 import { useMessages } from '../context/MessagesContext';
+import { useAuth } from '../context/AuthContext';
+import { createReply } from '../lib/replyService';
 import { useNavigate } from 'react-router-dom';
 
-export const ReplyModal = ({ isOpen, onClose, need }) => {
+export const ReplyModal = ({ isOpen, onClose, need, parentId = null, replyingTo = null }) => {
     const navigate = useNavigate();
-    const { sendMessage } = useMessages();
+    const { user } = useAuth();
     const [replyText, setReplyText] = useState('');
-    const [visibility, setVisibility] = useState('private'); // 'private' by default per user request
+    const [visibility, setVisibility] = useState('private');
+    const [submitting, setSubmitting] = useState(false);
+
+    const targetUser = replyingTo || {
+        author: need.author,
+        authorUsername: need.authorUsername,
+        authorAvatar: need.authorAvatar,
+        postedAt: need.postedAt
+    };
 
     useEffect(() => {
         if (isOpen) {
@@ -22,18 +32,22 @@ export const ReplyModal = ({ isOpen, onClose, need }) => {
         };
     }, [isOpen]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!replyText.trim()) return;
+        if (!replyText.trim() || !user) return;
 
-        if (visibility === 'private') {
-            sendMessage(need.author, replyText);
-            alert(`Private message sent to ${need.author}!`);
+        setSubmitting(true);
+        try {
+            const isPrivate = visibility === 'private';
+            await createReply(need.id, user.id, replyText, isPrivate, parentId);
+
+            // alert(`Reply (${visibility}) posted!`);
             onClose();
-            navigate('/messages');
-        } else {
-            alert(`Reply (${visibility}) posted to ${need.author}: ${replyText}`);
-            onClose();
+        } catch (err) {
+            console.error("Failed to post reply via modal", err);
+            alert("Failed to post reply.");
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -75,19 +89,19 @@ export const ReplyModal = ({ isOpen, onClose, need }) => {
 
                         <div style={{
                             width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
-                            background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
+                            background: targetUser.authorAvatar ? `url(${targetUser.authorAvatar}) center/cover` : 'linear-gradient(135deg, var(--primary), var(--secondary))',
                             display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1,
-                            fontWeight: 'bold', color: 'white'
+                            fontWeight: 'bold', color: 'white', overflow: 'hidden'
                         }}>
-                            {need.author.charAt(0)}
+                            {!targetUser.authorAvatar && targetUser.author.charAt(0)}
                         </div>
                         <div style={{ flex: 1 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>{need.author}</span>
-                                <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>• {need.postedAt}</span>
+                                <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>{targetUser.author}</span>
+                                <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>• {targetUser.postedAt || 'just now'}</span>
                             </div>
                             <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginTop: '0.25rem', lineHeight: 1.5 }}>
-                                Replying to <span style={{ color: 'var(--primary)' }}>@{need.author.toLowerCase().replace(' ', '')}</span>
+                                Replying to <span style={{ color: 'var(--primary)' }}>@{targetUser.authorUsername || targetUser.author.toLowerCase().replace(/\s/g, '')}</span>
                             </p>
                         </div>
                     </div>
@@ -98,9 +112,13 @@ export const ReplyModal = ({ isOpen, onClose, need }) => {
                             width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
                             background: 'var(--bg-surface)', border: '1px solid var(--border-glass)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1,
-                            fontWeight: 'bold', color: 'var(--text-primary)'
+                            fontWeight: 'bold', color: 'var(--text-primary)', overflow: 'hidden'
                         }}>
-                            A
+                            {user?.user_metadata?.avatar_url ? (
+                                <img src={user.user_metadata.avatar_url} alt="You" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                                (user?.user_metadata?.display_name || user?.email || 'A').charAt(0).toUpperCase()
+                            )}
                         </div>
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                             <textarea
@@ -155,7 +173,8 @@ export const ReplyModal = ({ isOpen, onClose, need }) => {
                                     </button>
                                 </div>
 
-                                <button type="submit" disabled={!replyText.trim()} className="btn btn-primary" style={{ padding: '0.5rem 1.5rem', borderRadius: '9999px', opacity: replyText.trim() ? 1 : 0.5 }}>
+                                <button type="submit" disabled={!replyText.trim() || submitting || !user} className="btn btn-primary" style={{ padding: '0.5rem 1.5rem', borderRadius: '9999px', opacity: (replyText.trim() && user) ? 1 : 0.5, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    {submitting ? <Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> : null}
                                     {visibility === 'private' ? 'Send Private' : 'Reply'}
                                 </button>
                             </div>

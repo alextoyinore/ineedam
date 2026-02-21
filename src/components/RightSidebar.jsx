@@ -1,18 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ThemeToggle } from './ThemeToggle';
-import { Search } from 'lucide-react';
+import { Search, UserPlus, TrendingUp } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { useSocial } from '../context/SocialContext';
+import { getSuggestedProfiles } from '../lib/profileService';
+import { getCategoryStats } from '../lib/needsService';
 
 export const RightSidebar = () => {
+    const { user } = useAuth();
+    const { toggleFollow } = useSocial();
     const [query, setQuery] = useState('');
+    const [suggestedUsers, setSuggestedUsers] = useState([]);
+    const [categoryStats, setCategoryStats] = useState({});
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const loadSidebarData = async () => {
+            if (!user) return;
+            try {
+                const [users, stats] = await Promise.all([
+                    getSuggestedProfiles(user.id, 3),
+                    getCategoryStats()
+                ]);
+                setSuggestedUsers(users);
+                setCategoryStats(stats);
+            } catch (err) {
+                console.error("Failed to load sidebar data", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadSidebarData();
+    }, [user]);
 
     const handleKeyDown = (e) => {
         if (e.key === 'Enter' && query.trim()) {
             navigate(`/search?q=${encodeURIComponent(query.trim())}`);
-            setQuery(''); // Optional: Clear input after search
+            setQuery('');
         }
     };
+
+    const handleFollow = async (userId) => {
+        await toggleFollow(userId);
+        setSuggestedUsers(prev => prev.filter(u => u.id !== userId));
+    };
+
+    const trendingCategories = Object.entries(categoryStats)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3);
     return (
         <aside className="social-sidebar-right">
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', height: '100%', padding: '1.5rem 0' }}>
@@ -40,61 +77,107 @@ export const RightSidebar = () => {
                     <ThemeToggle />
                 </div>
 
-                {/* Trending Widget Dummy */}
+                {/* Trending Widget */}
                 <div style={{
                     padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem',
                     background: 'var(--bg-surface)', border: '1px solid var(--border-glass)', borderRadius: '16px'
                 }}>
-                    <h3 className="h3" style={{ fontSize: '1.1rem' }}>What's happening</h3>
+                    <h3 className="h3" style={{ fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <TrendingUp size={18} color="var(--primary)" />
+                        What's happening
+                    </h3>
 
-                    <div
-                        onClick={() => navigate('/search?trend=React%20Native')}
-                        style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', cursor: 'pointer' }}
-                        className="nav-link-hover"
-                    >
-                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Trending in Development</span>
-                        <p style={{ fontWeight: 600, margin: 0 }}>React Native Experts</p>
-                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>1,204 needs posted</span>
-                    </div>
-
-                    <div
-                        onClick={() => navigate('/search?trend=Plumbers')}
-                        style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', cursor: 'pointer' }}
-                        className="nav-link-hover"
-                    >
-                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Trending in Services</span>
-                        <p style={{ fontWeight: 600, margin: 0 }}>Local Plumbers</p>
-                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>849 needs posted</span>
-                    </div>
+                    {trendingCategories.length > 0 ? (
+                        trendingCategories.map(([cat, count]) => (
+                            <div
+                                key={cat}
+                                onClick={() => navigate(`/search?cat=${encodeURIComponent(cat)}`)}
+                                style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem', cursor: 'pointer' }}
+                                className="nav-link-hover"
+                            >
+                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Trending in {cat}</span>
+                                <p style={{ fontWeight: 600, margin: 0, fontSize: '0.95rem' }}>{cat} Needs</p>
+                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{count} {count === 1 ? 'need' : 'needs'} posted</span>
+                            </div>
+                        ))
+                    ) : (
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>No trends yet</p>
+                    )}
                 </div>
 
-                {/* Categories Widget Dummy */}
+                {/* Who to follow */}
+                {suggestedUsers.length > 0 && (
+                    <div style={{
+                        padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1.25rem',
+                        background: 'var(--bg-surface)', border: '1px solid var(--border-glass)', borderRadius: '16px'
+                    }}>
+                        <h3 className="h3" style={{ fontSize: '1.1rem' }}>Who to follow</h3>
+                        {suggestedUsers.map(profile => (
+                            <div key={profile.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'space-between' }}>
+                                <div
+                                    onClick={() => navigate(`/${profile.username}`)}
+                                    style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', padding: '0.25rem', borderRadius: '8px', transition: 'all 0.2s' }}
+                                    className="nav-link-hover"
+                                >
+                                    <div style={{
+                                        width: '40px', height: '40px', borderRadius: '50%',
+                                        background: profile.avatar_url ? `url(${profile.avatar_url}) center/cover` : 'var(--primary)',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'white', flexShrink: 0
+                                    }}>
+                                        {!profile.avatar_url && profile.display_name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div style={{ minWidth: 0 }}>
+                                        <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{profile.display_name}</p>
+                                        <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>@{profile.username}</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => handleFollow(profile.id)}
+                                    className="btn-primary"
+                                    style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem', borderRadius: '9999px', flexShrink: 0 }}
+                                >
+                                    Follow
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {/* Categories Widget */}
                 <div style={{
                     padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem',
                     background: 'var(--bg-surface)', border: '1px solid var(--border-glass)', borderRadius: '16px'
                 }}>
                     <h3 className="h3" style={{ fontSize: '1.1rem' }}>Categories</h3>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                        {['Product', 'Service', 'Housing', 'Software & Tech'].map(cat => (
-                            <span
-                                key={cat}
-                                onClick={() => navigate(`/search?cat=${encodeURIComponent(cat)}`)}
-                                style={{
-                                    padding: '0.3rem 0.8rem', borderRadius: '9999px', fontSize: '0.85rem',
-                                    background: 'var(--bg-surface)', border: '1px solid var(--border-glass)',
-                                    cursor: 'pointer'
-                                }} className="glass-panel-hover">
-                                {cat}
-                            </span>
-                        ))}
+                        {Object.keys(categoryStats).length > 0 ? (
+                            Object.keys(categoryStats).map(cat => (
+                                <span
+                                    key={cat}
+                                    onClick={() => navigate(`/search?cat=${encodeURIComponent(cat)}`)}
+                                    style={{
+                                        padding: '0.35rem 0.85rem', borderRadius: '9999px', fontSize: '0.8rem',
+                                        background: 'var(--bg-base)', border: '1px solid var(--border-glass)',
+                                        cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem'
+                                    }} className="glass-panel-hover"
+                                >
+                                    {cat}
+                                    <span style={{ opacity: 0.6, fontSize: '0.75rem', fontWeight: 600 }}>{categoryStats[cat]}</span>
+                                </span>
+                            ))
+                        ) : (
+                            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>No categories found</p>
+                        )}
                     </div>
                 </div>
 
                 {/* Footer Links */}
                 <div style={{ padding: '0 1rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem 1rem' }}>
-                    <a href="/about" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textDecoration: 'none' }} className="nav-link-hover">About</a>
-                    <a href="/privacy" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textDecoration: 'none' }} className="nav-link-hover">Privacy Policy</a>
-                    <a href="/terms" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textDecoration: 'none' }} className="nav-link-hover">Terms of Service</a>
+                    <span onClick={() => navigate('/about')} style={{ fontSize: '0.8rem', color: 'var(--text-muted)', cursor: 'pointer' }} className="nav-link-hover">About</span>
+                    <span onClick={() => navigate('/faq')} style={{ fontSize: '0.8rem', color: 'var(--text-muted)', cursor: 'pointer' }} className="nav-link-hover">FAQ</span>
+                    <span onClick={() => navigate('/how-to-use')} style={{ fontSize: '0.8rem', color: 'var(--text-muted)', cursor: 'pointer' }} className="nav-link-hover">How to Use</span>
+                    <span onClick={() => navigate('/privacy')} style={{ fontSize: '0.8rem', color: 'var(--text-muted)', cursor: 'pointer' }} className="nav-link-hover">Privacy</span>
+                    <span onClick={() => navigate('/terms')} style={{ fontSize: '0.8rem', color: 'var(--text-muted)', cursor: 'pointer' }} className="nav-link-hover">Terms</span>
                     <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>© 2026 Ineedam</span>
                 </div>
 

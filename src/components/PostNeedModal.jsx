@@ -1,13 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, DollarSign, MapPin, Clock, X, Archive, Image } from 'lucide-react';
+import { Send, MapPin, Clock, X, Archive, Image, Loader, UploadCloud } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useDrafts } from '../context/DraftsContext';
+import { useAuth } from '../context/AuthContext';
+import { createNeed, uploadImageToCloudinary } from '../lib/needsService';
 
 export const PostNeedModal = ({ isOpen, onClose }) => {
     const navigate = useNavigate();
     const { drafts, saveDraft, deleteDraft } = useDrafts();
+    const { user } = useAuth();
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    const [submitting, setSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState('');
+    const [imageFile, setImageFile] = useState(null);
+    const [imagePreview, setImagePreview] = useState('');
+    const [uploadingImage, setUploadingImage] = useState(false);
+    const fileInputRef = useRef(null);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -41,12 +50,40 @@ export const PostNeedModal = ({ isOpen, onClose }) => {
         };
     }, [isOpen]);
 
-    const handleSubmit = (e) => {
+    const handleImageChange = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setImageFile(file);
+        setImagePreview(URL.createObjectURL(file));
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Submitting Need:', formData);
-        alert('Need Posted successfully! Providers will now be able to reach out to you.');
-        onClose();
-        navigate('/'); // Redirect to feed if not already there
+        setSubmitError('');
+        setSubmitting(true);
+
+        try {
+            let imageUrl = '';
+            if (imageFile) {
+                setUploadingImage(true);
+                imageUrl = await uploadImageToCloudinary(imageFile);
+                setUploadingImage(false);
+            }
+
+            await createNeed({ ...formData, imageUrl }, user.id);
+
+            // Reset
+            setFormData({ title: '', category: 'Product', description: '', currency: '$', budgetMode: 'fixed', budgetMin: '', budgetMax: '', location: '', flexibility: 'Flexible start', imageUrl: '' });
+            setImageFile(null);
+            setImagePreview('');
+            onClose();
+            navigate('/');
+        } catch (err) {
+            setSubmitError(err.message || 'Failed to post need. Please try again.');
+        } finally {
+            setSubmitting(false);
+            setUploadingImage(false);
+        }
     };
 
     const handleSaveDraft = () => {
@@ -213,6 +250,11 @@ export const PostNeedModal = ({ isOpen, onClose }) => {
                                         <option value="$">$ (USD)</option>
                                         <option value="€">€ (EUR)</option>
                                         <option value="£">£ (GBP)</option>
+                                        <option value="₦">₦ (NGN)</option>
+                                        <option value="R">R (ZAR)</option>
+                                        <option value="KSh">KSh (KES)</option>
+                                        <option value="GH₵">GH₵ (GHS)</option>
+                                        <option value="E£">E£ (EGP)</option>
                                         <option value="¥">¥ (JPY)</option>
                                         <option value="₹">₹ (INR)</option>
                                     </select>
@@ -265,21 +307,37 @@ export const PostNeedModal = ({ isOpen, onClose }) => {
                             </div>
                         </div>
 
-                        {/* Photo URL */}
+                        {/* Photo Upload */}
                         <div>
-                            <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Photo URL (Optional)</label>
-                            <div style={{ position: 'relative' }}>
-                                <Image size={16} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                                <input
-                                    type="text"
-                                    name="imageUrl"
-                                    value={formData.imageUrl}
-                                    onChange={handleChange}
-                                    placeholder="https://images.unsplash.com/..."
-                                    style={{ ...inputStyles, paddingLeft: '2.25rem' }}
-                                />
-                            </div>
+                            <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Photo (Optional)</label>
+                            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} />
+                            {imagePreview ? (
+                                <div style={{ position: 'relative', borderRadius: '10px', overflow: 'hidden', border: '1px solid var(--border-glass)' }}>
+                                    <img src={imagePreview} alt="preview" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', display: 'block' }} />
+                                    <button type="button" onClick={() => { setImageFile(null); setImagePreview(''); }} style={{
+                                        position: 'absolute', top: '0.5rem', right: '0.5rem',
+                                        background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%',
+                                        color: 'white', width: '28px', height: '28px',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer'
+                                    }}><X size={14} /></button>
+                                </div>
+                            ) : (
+                                <button type="button" onClick={() => fileInputRef.current?.click()} style={{
+                                    ...inputStyles, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    gap: '0.5rem', cursor: 'pointer', padding: '1.25rem',
+                                    color: 'var(--text-muted)', width: '100%', border: '1px dashed var(--border-glass)'
+                                }}>
+                                    <UploadCloud size={18} /> Upload Image
+                                </button>
+                            )}
                         </div>
+
+                        {/* Error */}
+                        {submitError && (
+                            <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '10px', padding: '0.75rem 1rem', color: '#ef4444', fontSize: '0.875rem' }}>
+                                {submitError}
+                            </div>
+                        )}
 
                         {/* Footer Actions */}
                         <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-glass)', marginTop: '0.5rem' }}>
@@ -293,9 +351,10 @@ export const PostNeedModal = ({ isOpen, onClose }) => {
                                 <Archive size={16} />
                                 Save Draft
                             </button>
-                            <button type="submit" className="btn btn-primary" style={{ padding: '0.75rem 1.5rem', borderRadius: '9999px' }}>
-                                <Send size={16} style={{ marginRight: '0.5rem' }} />
-                                Post Need
+                            <button type="submit" className="btn btn-primary" disabled={submitting} style={{ padding: '0.75rem 1.5rem', borderRadius: '9999px', display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: submitting ? 0.7 : 1 }}>
+                                {submitting
+                                    ? <><Loader size={16} style={{ animation: 'spin 1s linear infinite' }} />{uploadingImage ? 'Uploading...' : 'Posting...'}</>
+                                    : <><Send size={16} />Post Need</>}
                             </button>
                         </div>
                     </form>

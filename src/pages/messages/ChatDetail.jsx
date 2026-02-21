@@ -36,7 +36,7 @@ export const ChatDetail = () => {
     const handleSendMessage = (e) => {
         e.preventDefault();
         if (messageText.trim()) {
-            sendMessage(activeThread.id, messageText);
+            sendMessage(activeThread.withUserId, messageText);
             setMessageText('');
         }
     };
@@ -76,14 +76,16 @@ export const ChatDetail = () => {
                     </button>
                     <div style={{
                         width: '40px', height: '40px', borderRadius: '50%',
-                        background: 'var(--bg-base)', border: '1px solid var(--border-glass)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '600'
+                        background: activeThread.withUserAvatar ? `url(${activeThread.withUserAvatar}) center/cover` : 'var(--bg-base)',
+                        border: '1px solid var(--border-glass)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '600',
+                        overflow: 'hidden'
                     }}>
-                        {activeThread.withUser.charAt(0)}
+                        {!activeThread.withUserAvatar && activeThread.withUser.charAt(0)}
                     </div>
                     <div>
                         <h3 style={{ margin: 0, fontSize: '1rem' }}>{activeThread.withUser}</h3>
-                        <span style={{ fontSize: '0.75rem', color: '#10b981' }}>● Online</span>
+                        {activeThread.withUserUsername && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>@{activeThread.withUserUsername}</span>}
                     </div>
                 </div>
                 <div style={{ display: 'flex', gap: '1rem', color: 'var(--text-muted)' }}>

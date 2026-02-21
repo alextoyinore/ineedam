@@ -1,29 +1,64 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useAuth } from './AuthContext';
+import { fetchBookmarks, toggleBookmarkInDb } from '../lib/bookmarkService';
 
 const BookmarksContext = createContext(undefined);
 
 export const BookmarksProvider = ({ children }) => {
-    // Initialize from localStorage if available, otherwise empty array
-    const [bookmarkedIds, setBookmarkedIds] = useState(() => {
-        try {
-            const saved = localStorage.getItem('app-bookmarks');
-            return saved ? JSON.parse(saved) : [];
-        } catch {
-            return [];
-        }
-    });
+    const { user } = useAuth();
+    const [bookmarkedIds, setBookmarkedIds] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    // Save to localStorage whenever bookmarks change
+    // Fetch bookmarks from Supabase when user changes
     useEffect(() => {
-        localStorage.setItem('app-bookmarks', JSON.stringify(bookmarkedIds));
-    }, [bookmarkedIds]);
+        if (!user) {
+            setBookmarkedIds([]);
+            setLoading(false);
+            return;
+        }
 
-    const toggleBookmark = (id) => {
+        const loadBookmarks = async () => {
+            setLoading(true);
+            try {
+                const ids = await fetchBookmarks(user.id);
+                setBookmarkedIds(ids);
+            } catch (err) {
+                console.error("Failed to load bookmarks context", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadBookmarks();
+    }, [user]);
+
+    const toggleBookmark = async (id) => {
+        if (!user) {
+            alert("Please sign in to bookmark needs.");
+            return;
+        }
+
+        const isCurrentlyBookmarked = bookmarkedIds.includes(id);
+
+        // Optimistic UI update
         setBookmarkedIds(prev =>
-            prev.includes(id)
+            isCurrentlyBookmarked
                 ? prev.filter(bookmarkId => bookmarkId !== id)
                 : [...prev, id]
         );
+
+        // Background DB sync
+        try {
+            await toggleBookmarkInDb(user.id, id, isCurrentlyBookmarked);
+        } catch (err) {
+            console.error("Failed to sync bookmark to DB, reverting state", err);
+            // Revert on failure
+            setBookmarkedIds(prev =>
+                isCurrentlyBookmarked
+                    ? [...prev, id]
+                    : prev.filter(bookmarkId => bookmarkId !== id)
+            );
+        }
     };
 
     const isBookmarked = (id) => bookmarkedIds.includes(id);

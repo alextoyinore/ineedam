@@ -1,14 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, User, PenSquare, Bookmark, Bell, Mail } from 'lucide-react';
+import { Home, User, PenSquare, Bookmark, Bell, Mail, LogOut, MoreHorizontal } from 'lucide-react';
 import { useNotifications } from '../context/NotificationsContext';
 import { useMessages } from '../context/MessagesContext';
+import { useAuth } from '../context/AuthContext';
 
 
 export const Sidebar = ({ onPostClick }) => {
     const location = useLocation();
+    const { profile, signOut } = useAuth();
     const { unreadCount } = useNotifications();
     const { unreadThreadsCount } = useMessages();
+    const [showLogout, setShowLogout] = useState(false);
 
     return (
         <aside className="social-sidebar-left">
@@ -65,7 +68,7 @@ export const Sidebar = ({ onPostClick }) => {
                             </span>
                         )}
                     </Link>
-                    <Link to="/dashboard" className={`nav-link ${location.pathname === '/dashboard' ? 'active' : ''}`}>
+                    <Link to={profile?.username ? `/${profile.username}` : '#'} className={`nav-link ${profile?.username && location.pathname === `/${profile.username}` ? 'active' : ''}`}>
                         <User size={24} />
                         <span className="nav-text">Profile</span>
                     </Link>
@@ -84,21 +87,54 @@ export const Sidebar = ({ onPostClick }) => {
                 </div>
 
                 {/* User Mini Profile at bottom */}
-                <div style={{ marginTop: 'auto', padding: '1rem', display: 'flex', alignItems: 'center', gap: '1rem', borderRadius: '9999px', cursor: 'pointer', transition: 'background 0.2s' }} className="nav-link-hover">
-                    <div style={{
-                        width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
-                        background: 'var(--bg-surface)', border: '1px solid var(--border-glass)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontWeight: '600', color: 'var(--text-primary)'
-                    }}>
-                        A
-                    </div>
-                    <div className="nav-text" style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontWeight: 600, fontSize: '0.95rem', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Alex T.</p>
-                        <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: 0 }}>@alext</p>
+                <div style={{ position: 'relative', marginTop: 'auto' }}>
+                    {showLogout && (
+                        <div style={{
+                            position: 'absolute', bottom: '110%', left: '1rem', right: '1rem',
+                            background: 'var(--bg-surface)', border: '1px solid var(--border-glass)',
+                            borderRadius: '12px', padding: '0.5rem',
+                            zIndex: 10
+                        }}>
+                            <button
+                                onClick={() => signOut()}
+                                style={{
+                                    width: '100%', padding: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem',
+                                    background: 'transparent', border: 'none', color: '#ef4444',
+                                    cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, borderRadius: '8px'
+                                }}
+                                className="glass-panel-hover"
+                            >
+                                <LogOut size={18} />
+                                Sign out
+                            </button>
+                        </div>
+                    )}
+                    <div
+                        onClick={() => setShowLogout(!showLogout)}
+                        style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', borderRadius: '9999px', cursor: 'pointer', transition: 'background 0.2s' }}
+                        className="nav-link-hover"
+                    >
+                        <div style={{
+                            width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
+                            background: profile?.avatar_url ? `url(${profile.avatar_url}) center/cover` : 'var(--bg-surface)',
+                            border: '1px solid var(--border-glass)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontWeight: '600', color: 'var(--text-primary)',
+                            overflow: 'hidden'
+                        }}>
+                            {!profile?.avatar_url && (profile?.display_name?.charAt(0) || '?')}
+                        </div>
+                        <div className="nav-text" style={{ flex: 1, minWidth: 0 }}>
+                            <p style={{ fontWeight: 600, fontSize: '0.95rem', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {profile?.display_name || 'User'}
+                            </p>
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                @{profile?.username || 'user'}
+                            </p>
+                        </div>
+                        <MoreHorizontal size={18} className="nav-text" style={{ color: 'var(--text-muted)' }} />
                     </div>
                 </div>
-
             </div>
         </aside>
     );

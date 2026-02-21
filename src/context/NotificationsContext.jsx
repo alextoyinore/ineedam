@@ -1,54 +1,101 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useAuth } from './AuthContext';
+import { supabase } from '../lib/supabase';
+import {
+    fetchNotifications,
+    markNotificationAsRead,
+    markAllNotificationsAsRead,
+    clearAllNotifications,
+    createNotification
+} from '../lib/notificationService';
 
 const NotificationsContext = createContext();
 
 export const NotificationsProvider = ({ children }) => {
-    const [notifications, setNotifications] = useState(() => {
-        const saved = localStorage.getItem('user_notifications');
-        return saved ? JSON.parse(saved) : [
-            {
-                id: '1',
-                type: 'follow',
-                from: 'Sarah J.',
-                message: 'started following you',
-                timestamp: new Date(Date.now() - 3600000).toISOString(),
-                read: false
-            },
-            {
-                id: '2',
-                type: 'reply',
-                from: 'Miguel R.',
-                message: 'replied to your post "Language Tutor"',
-                timestamp: new Date(Date.now() - 86400000).toISOString(),
-                read: true
-            }
-        ];
-    });
+    const { user } = useAuth();
+    const [notifications, setNotifications] = useState([]);
+    const [loading, setLoading] = useState(true);
 
+    // Initial fetch and real-time subscription setup
     useEffect(() => {
-        localStorage.setItem('user_notifications', JSON.stringify(notifications));
-    }, [notifications]);
+        if (!user) {
+            setNotifications([]);
+            setLoading(false);
+            return;
+        }
 
-    const addNotification = (notif) => {
-        const newNotif = {
-            id: Date.now().toString(),
-            timestamp: new Date().toISOString(),
-            read: false,
-            ...notif
+        const loadContent = async () => {
+            setLoading(true);
+            try {
+                const data = await fetchNotifications(user.id);
+                setNotifications(data || []);
+            } catch (err) {
+                console.error("Failed to load notifications context", err);
+            } finally {
+                setLoading(false);
+            }
         };
-        setNotifications(prev => [newNotif, ...prev]);
+
+        loadContent();
+
+        // Subscribe to real-time insertions for our user
+        const channel = supabase
+            .channel(`public:notifications:user_id=eq.${user.id}`)
+            .on('postgres_changes',
+                { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
+                () => {
+                    loadContent(); // Re-fetch to get profile joins
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [user]);
+
+    // Optionally still exposed if client needs to proactively post a notification, 
+    // though usually handled by backend triggers or service components directly
+    const addNotification = async (notif) => {
+        if (!user) return;
+        try {
+            // Note: from_user_id and specific types usually need to map to the DB correctly.
+            // Simplified fallback for now:
+            await createNotification(user.id, notif.type || 'system', notif.from || 'System', notif.message, null);
+            // It will come back instantly via the realtime channel
+        } catch (err) {
+            console.error("Error artificially adding notification:", err);
+        }
     };
 
-    const markAsRead = (id) => {
+    const markAsRead = async (id) => {
         setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+        try {
+            await markNotificationAsRead(id);
+        } catch (err) {
+            // Revert on failure
+            setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: false } : n));
+        }
     };
 
-    const markAllAsRead = () => {
+    const markAllAsRead = async () => {
+        if (!user) return;
         setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+        try {
+            await markAllNotificationsAsRead(user.id);
+        } catch (err) {
+            console.error("Failed to mark all as read in DB", err);
+        }
     };
 
-    const clearNotifications = () => {
+    const clearNotifications = async () => {
+        if (!user) return;
         setNotifications([]);
+        try {
+            await clearAllNotifications(user.id);
+        } catch (err) {
+            console.error("Failed to clear notifications in DB", err);
+        }
     };
 
     const unreadCount = notifications.filter(n => !n.read).length;
