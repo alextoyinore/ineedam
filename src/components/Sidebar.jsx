@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, User, PenSquare, Bookmark, Bell, Mail, LogOut, MoreHorizontal } from 'lucide-react';
+import { Home, User, PenSquare, Bookmark, Bell, Mail, LogOut, MoreHorizontal, Settings } from 'lucide-react';
 import { useNotifications } from '../context/NotificationsContext';
 import { useMessages } from '../context/MessagesContext';
 import { useAuth } from '../context/AuthContext';
@@ -90,11 +90,27 @@ export const Sidebar = ({ onPostClick }) => {
                 <div style={{ position: 'relative', marginTop: 'auto' }}>
                     {showLogout && (
                         <div style={{
-                            position: 'absolute', bottom: '110%', left: '1rem', right: '1rem',
+                            position: 'absolute', bottom: '110%', left: '0.5rem', right: '0.5rem',
                             background: 'var(--bg-surface)', border: '1px solid var(--border-glass)',
-                            borderRadius: '12px', padding: '0.5rem',
-                            zIndex: 10
+                            borderRadius: '16px', padding: '0.5rem',
+                            zIndex: 10,
+                            backdropFilter: 'blur(10px)'
                         }}>
+                            <Link
+                                to="/settings"
+                                onClick={() => setShowLogout(false)}
+                                style={{
+                                    width: '100%', padding: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem',
+                                    background: 'transparent', border: 'none', color: 'var(--text-primary)',
+                                    cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, borderRadius: '8px',
+                                    textDecoration: 'none'
+                                }}
+                                className="glass-panel-hover"
+                            >
+                                <Settings size={18} />
+                                Settings
+                            </Link>
+                            <div style={{ height: '1px', background: 'var(--border-glass)', margin: '0.4rem 0' }} />
                             <button
                                 onClick={() => signOut()}
                                 style={{

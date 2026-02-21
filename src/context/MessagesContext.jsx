@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { supabase } from '../lib/supabase';
 import { fetchUserThreads, getOrCreateThread, createMessage, markThreadAsReadInDb } from '../lib/messageService';
+import { soundService } from '../lib/soundService';
+
 
 const MessagesContext = createContext();
 
@@ -36,7 +38,13 @@ export const MessagesProvider = ({ children }) => {
                 .channel(`messages-refresh`)
                 .on('postgres_changes',
                     { event: '*', schema: 'public', table: 'messages' },
-                    () => loadThreads()
+                    (payload) => {
+                        loadThreads();
+                        // Play received sound if we are not the sender
+                        if (payload.new && payload.new.sender_id !== user.id) {
+                            soundService.playMessageReceived();
+                        }
+                    }
                 )
                 .on('postgres_changes',
                     { event: '*', schema: 'public', table: 'thread_participants', filter: `user_id=eq.${user.id}` },
@@ -90,6 +98,7 @@ export const MessagesProvider = ({ children }) => {
         try {
             const threadId = await startChat(otherUserId);
             await createMessage(threadId, user.id, text);
+            soundService.playMessageSent();
             // Real-time listener will eventually sync, but we reload to be sure.
             // We don't await this to keep the UI snappy.
             loadThreads();

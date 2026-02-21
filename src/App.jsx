@@ -20,6 +20,8 @@ import { NotificationsPage } from './pages/NotificationsPage';
 import { MessagesPage } from './pages/MessagesPage';
 import { MessageThreads } from './pages/messages/MessageThreads';
 import { ChatDetail } from './pages/messages/ChatDetail';
+import { SettingsPage } from './pages/SettingsPage';
+
 
 // Full-screen spinner while the session is being determined
 const AuthLoader = () => (
@@ -71,6 +73,7 @@ function App() {
                 <Route path=":threadId" element={<ChatDetail />} />
               </Route>
               <Route path="/search" element={<SearchPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
               <Route path="/need/:id" element={<NeedDetailPage />} />
               <Route path="/dashboard" element={<Navigate to={`/${useAuth().profile?.username || ''}`} replace />} />
               <Route path="/:username" element={<UserProfilePage />} />

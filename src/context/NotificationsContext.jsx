@@ -8,6 +8,8 @@ import {
     clearAllNotifications,
     createNotification
 } from '../lib/notificationService';
+import { soundService } from '../lib/soundService';
+
 
 const NotificationsContext = createContext();
 
@@ -43,8 +45,9 @@ export const NotificationsProvider = ({ children }) => {
             .channel(`public:notifications:user_id=eq.${user.id}`)
             .on('postgres_changes',
                 { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
-                () => {
+                (payload) => {
                     loadContent(); // Re-fetch to get profile joins
+                    soundService.playNotification();
                 }
             )
             .subscribe();

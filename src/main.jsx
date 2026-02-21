@@ -11,25 +11,28 @@ import { DraftsProvider } from './context/DraftsContext.jsx'
 import { NotificationsProvider } from './context/NotificationsContext.jsx'
 import { MessagesProvider } from './context/MessagesContext.jsx'
 import { LikesProvider } from './context/LikesContext.jsx'
+import { SettingsProvider } from './context/SettingsContext.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ThemeProvider>
       <BrowserRouter>
         <AuthProvider>
-          <BookmarksProvider>
-            <SocialProvider>
-              <DraftsProvider>
-                <NotificationsProvider>
-                  <MessagesProvider>
-                    <LikesProvider>
-                      <App />
-                    </LikesProvider>
-                  </MessagesProvider>
-                </NotificationsProvider>
-              </DraftsProvider>
-            </SocialProvider>
-          </BookmarksProvider>
+          <SettingsProvider>
+            <BookmarksProvider>
+              <SocialProvider>
+                <DraftsProvider>
+                  <NotificationsProvider>
+                    <MessagesProvider>
+                      <LikesProvider>
+                        <App />
+                      </LikesProvider>
+                    </MessagesProvider>
+                  </NotificationsProvider>
+                </DraftsProvider>
+              </SocialProvider>
+            </BookmarksProvider>
+          </SettingsProvider>
         </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>
