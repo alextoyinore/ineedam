@@ -24,7 +24,7 @@ export const fetchUserThreads = async (userId) => {
             id,
             updated_at,
             thread_participants(user_id, last_read_at, profiles!inner(display_name, avatar_url, username)),
-            messages!inner(id, text, created_at, sender_id)
+            messages(id, text, created_at, sender_id)
         `)
         .in('id', threadIds)
         .order('updated_at', { ascending: false });

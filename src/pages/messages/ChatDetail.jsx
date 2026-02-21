@@ -7,7 +7,7 @@ import { useMessages } from '../../context/MessagesContext';
 export const ChatDetail = () => {
     const { threadId } = useParams();
     const navigate = useNavigate();
-    const { threads, sendMessage, markThreadAsRead } = useMessages();
+    const { threads, sendMessage, markThreadAsRead, loadingThreads } = useMessages();
     const [messageText, setMessageText] = useState('');
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
@@ -24,6 +24,14 @@ export const ChatDetail = () => {
             markThreadAsRead(activeThread.id);
         }
     }, [activeThread, markThreadAsRead]);
+
+    if (loadingThreads && !activeThread) {
+        return (
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '30px', height: '30px', borderRadius: '50%', border: '2px solid var(--border-glass)', borderTopColor: 'var(--primary)', animation: 'spin 0.8s linear infinite' }} />
+            </div>
+        );
+    }
 
     if (!activeThread) {
         return (

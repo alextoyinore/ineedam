@@ -31,17 +31,16 @@ export const MessagesProvider = ({ children }) => {
         loadThreads();
 
         if (user) {
-            // Subscribe to new messages that might affect our threads
+            // Subscribe to new messages OR new thread participations
             const channel = supabase
-                .channel(`public:messages`)
+                .channel(`messages-refresh`)
                 .on('postgres_changes',
-                    { event: 'INSERT', schema: 'public', table: 'messages' },
-                    () => {
-                        // When a new message comes in, simply reload threads to get the latest preview and unread status.
-                        // For a larger app, you'd want to inject the message directly into the state to save DB calls,
-                        // but reloading is perfectly reliable for this scale.
-                        loadThreads();
-                    }
+                    { event: '*', schema: 'public', table: 'messages' },
+                    () => loadThreads()
+                )
+                .on('postgres_changes',
+                    { event: '*', schema: 'public', table: 'thread_participants', filter: `user_id=eq.${user.id}` },
+                    () => loadThreads()
                 )
                 .subscribe();
 
@@ -51,17 +50,23 @@ export const MessagesProvider = ({ children }) => {
         }
     }, [user]);
 
+    const startChat = async (otherUserId) => {
+        if (!user) return null;
+        try {
+            const threadId = await getOrCreateThread(user.id, otherUserId);
+            await loadThreads();
+            return threadId;
+        } catch (err) {
+            console.error("Failed to start chat", err);
+            throw err;
+        }
+    };
+
     const sendMessage = async (otherUserId, text) => {
         if (!user) return;
         try {
-            // 1. Ensure thread exists
-            const threadId = await getOrCreateThread(user.id, otherUserId);
-
-            // 2. Insert message
+            const threadId = await startChat(otherUserId);
             await createMessage(threadId, user.id, text);
-
-            // 3. Instead of manually updating state, the realtime listener will pick it up
-            // or we can manually reload to ensure immediate UI update
             await loadThreads();
         } catch (err) {
             console.error("Failed to send message", err);
@@ -85,7 +90,15 @@ export const MessagesProvider = ({ children }) => {
     const unreadThreadsCount = threads.filter(t => t.unread).length;
 
     return (
-        <MessagesContext.Provider value={{ threads, sendMessage, markThreadAsRead, unreadThreadsCount, loadingThreads: loading }}>
+        <MessagesContext.Provider value={{
+            threads,
+            sendMessage,
+            startChat,
+            markThreadAsRead,
+            unreadThreadsCount,
+            refreshThreads: loadThreads,
+            loadingThreads: loading
+        }}>
             {children}
         </MessagesContext.Provider>
     );

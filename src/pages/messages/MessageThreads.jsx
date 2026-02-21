@@ -7,7 +7,7 @@ import { searchProfiles } from '../../lib/profileService';
 import { getOrCreateThread } from '../../lib/messageService';
 
 export const MessageThreads = () => {
-    const { threads } = useMessages();
+    const { threads, startChat } = useMessages();
     const { user } = useAuth();
     const navigate = useNavigate();
     const [isSearching, setIsSearching] = useState(false);
@@ -51,7 +51,7 @@ export const MessageThreads = () => {
     const handleStartChat = async (targetUserId) => {
         if (!user) return;
         try {
-            const threadId = await getOrCreateThread(user.id, targetUserId);
+            const threadId = await startChat(targetUserId);
             setIsSearching(false);
             setSearchQuery('');
             navigate(`/messages/${threadId}`);
