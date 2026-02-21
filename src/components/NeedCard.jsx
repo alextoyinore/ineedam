@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Tag, MapPin, Banknote, Clock, MessageSquare, Bookmark, Heart } from 'lucide-react';
+import { Tag, MapPin, Banknote, Clock, MessageSquare, Bookmark, Heart, MessageCircle } from 'lucide-react';
 import { ReplyModal } from './ReplyModal';
 import { useBookmarks } from '../context/BookmarksContext';
 import { useLikes } from '../context/LikesContext';
@@ -60,9 +60,8 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
             gap: '0.5rem',
             position: 'relative',
         }}>
-            {/* Top Header: Author info & meta */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', minWidth: 0 }}>
                     <ProfileHoverCard userData={{
                         id: need.authorId,
                         author: need.author,
@@ -72,8 +71,9 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
                     }}>
                         <div
                             onClick={(e) => { e.stopPropagation(); navigate(`/${need.authorUsername}`); }}
+                            className="avatar-md"
                             style={{
-                                width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
+                                borderRadius: '50%', flexShrink: 0,
                                 background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 fontWeight: 'bold', color: 'white', overflow: 'hidden',
@@ -86,8 +86,8 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
                             )}
                         </div>
                     </ProfileHoverCard>
-                    <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <div style={{ minWidth: 0 }}>
+                        <div className="need-meta-container" style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem', flexWrap: 'wrap' }}>
                             <ProfileHoverCard userData={{
                                 id: need.authorId,
                                 author: need.author,
@@ -97,54 +97,61 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
                             }}>
                                 <span
                                     onClick={(e) => { e.stopPropagation(); navigate(`/${need.authorUsername}`); }}
-                                    style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', cursor: 'pointer' }}>{need.author}</span>
+                                    style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', cursor: 'pointer' }}>
+                                    {need.author}
+                                </span>
                             </ProfileHoverCard>
-                            {need.authorUsername && (
-                                <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>@{need.authorUsername}</span>
-                            )}
-                            <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>• {need.postedAt}</span>
-
-                            {/* Follow Button - Hide if it's the current user's own post */}
-                            {user && need.authorId !== user.id && (
-                                <button
-                                    onClick={handleFollow}
-                                    style={{
-                                        fontSize: '0.8rem', fontWeight: 600, padding: '0.2rem 0.6rem',
-                                        borderRadius: '9999px', border: following ? '1px solid var(--border-glass)' : '1px solid var(--primary)',
-                                        background: following ? 'transparent' : 'var(--primary)',
-                                        color: following ? 'var(--text-primary)' : 'white',
-                                        marginLeft: '0.5rem', cursor: 'pointer', transition: 'all 0.2s'
-                                    }}
-                                >
-                                    {following ? 'Following' : 'Follow'}
-                                </button>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                                {need.authorUsername && (
+                                    <span>@{need.authorUsername}</span>
+                                )}
+                                <span>• {need.postedAt}</span>
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <span style={{
+                                fontSize: '0.75rem', fontWeight: 600, color: `var(--${need.categoryColor || 'primary'})`,
+                            }}>
+                                {need.category} Need
+                            </span>
+                            {need.status && need.status !== 'open' && (
+                                <span style={{
+                                    padding: '0.1rem 0.5rem', borderRadius: '4px',
+                                    fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase',
+                                    background: need.status === 'met' ? 'var(--primary)' : 'var(--bg-surface)',
+                                    color: need.status === 'met' ? 'white' : 'var(--text-muted)',
+                                    border: '1px solid var(--border-glass)'
+                                }}>
+                                    {need.status === 'met' ? 'MET' : need.status}
+                                </span>
                             )}
                         </div>
-                        <span style={{
-                            fontSize: '0.75rem', fontWeight: 600, color: `var(--${need.categoryColor || 'primary'})`,
-                        }}>
-                            {need.category} Need
-                        </span>
-                        {need.status && need.status !== 'open' && (
-                            <span style={{
-                                marginLeft: '0.75rem', padding: '0.1rem 0.5rem', borderRadius: '4px',
-                                fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase',
-                                background: need.status === 'met' ? 'var(--primary)' : 'var(--bg-surface)',
-                                color: need.status === 'met' ? 'white' : 'var(--text-muted)',
-                                border: '1px solid var(--border-glass)'
-                            }}>
-                                {need.status === 'met' ? 'MET' : need.status}
-                            </span>
-                        )}
                     </div>
                 </div>
+
+                {/* Follow Button - Anchored to the right */}
+                {user && need.authorId !== user.id && (
+                    <button
+                        onClick={handleFollow}
+                        style={{
+                            fontSize: '0.8rem', fontWeight: 600, padding: '0.2rem 0.6rem',
+                            borderRadius: '9999px', border: following ? '1px solid var(--border-glass)' : '1px solid var(--primary)',
+                            background: following ? 'transparent' : 'var(--primary)',
+                            color: following ? 'var(--text-primary)' : 'white',
+                            cursor: 'pointer', transition: 'all 0.2s', flexShrink: 0
+                        }}
+                    >
+                        {following ? 'Following' : 'Follow'}
+                    </button>
+                )}
             </div>
 
+
             {/* Post Content */}
-            <div style={{ paddingLeft: '3.25rem' }}>
+            <div className="need-content-wrapper" style={{}}>
                 <h3 className="h3" style={{ marginBottom: '0.25rem', fontSize: '1.1rem' }}>{need.title}</h3>
-                <p style={{
-                    fontSize: '1rem', color: 'var(--text-primary)', lineHeight: 1.5, margin: '0 0 1rem 0',
+                <p className="need-description" style={{
+                    color: 'var(--text-primary)', lineHeight: 1.5, margin: '0 0 1rem 0',
                     display: isFullDetail ? 'block' : '-webkit-box', WebkitLineClamp: isFullDetail ? 'none' : 3, WebkitBoxOrient: 'vertical',
                     overflow: 'hidden', whiteSpace: 'pre-wrap'
                 }}>
@@ -188,7 +195,7 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
                             cursor: 'pointer'
                         }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'} onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}>
                             <MessageSquare size={16} />
-                            Reply
+                            <span className="btn-label-text">Reply</span>
                         </button>
 
                         <button onClick={() => navigate(`/need/${need.id}`)} className="nav-link-hover" style={{
@@ -197,7 +204,8 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
                             transition: 'color 0.2s', padding: '0.25rem 0.5rem', borderRadius: '4px',
                             cursor: 'pointer'
                         }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'} onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}>
-                            View Thread
+                            <MessageCircle size={16} />
+                            <span className="btn-label-text">View Thread</span>
                         </button>
 
                         <button onClick={handleLike} className="nav-link-hover" style={{
@@ -207,7 +215,13 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
                             cursor: 'pointer'
                         }} onMouseEnter={(e) => e.currentTarget.style.color = liked ? '#f87171' : '#ef4444'} onMouseLeave={(e) => e.currentTarget.style.color = liked ? '#ef4444' : 'var(--text-muted)'}>
                             <Heart size={16} fill={liked ? 'currentColor' : 'none'} />
-                            <span>{likeCount > 0 ? likeCount : 'Like'}</span>
+                            <span>
+                                {likeCount > 0 ? (
+                                    likeCount
+                                ) : (
+                                    <span className="btn-label-text">Like</span>
+                                )}
+                            </span>
                         </button>
                     </div>
 

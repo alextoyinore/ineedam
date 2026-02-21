@@ -16,18 +16,7 @@ export const Layout = ({ children }) => {
   return (
     <div className="layout-container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
 
-      {/* Mobile Top Header */}
-      <div className="mobile-only" style={{
-        position: 'sticky', top: 0, zIndex: 50, padding: '0 1rem',
-        height: 'var(--mobile-header-height)',
-        background: 'var(--bg-surface-glass)', backdropFilter: 'blur(16px)',
-        borderBottom: '1px solid var(--border-glass)', justifyContent: 'space-between', alignItems: 'center'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 'bold' }}>
-          <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'linear-gradient(135deg, var(--primary), var(--secondary))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>I</div>
-          <span className="text-gradient">Ineedam</span>
-        </div>
-      </div>
+
 
       <div className="social-layout-grid">
         {/* Left Navigation */}
@@ -37,7 +26,7 @@ export const Layout = ({ children }) => {
 
         {/* Main Feed Activity */}
         <div className="social-main-wrapper">
-          <main className="social-main-content">
+          <main className={`social-main-content ${isChatDetail ? 'is-chat-detail' : ''}`}>
             {children}
           </main>
         </div>
@@ -60,7 +49,7 @@ export const Layout = ({ children }) => {
       )}
 
       {/* Mobile Bottom Navigation */}
-      <BottomNav />
+      {!isChatDetail && <BottomNav />}
 
       {/* Modals */}
       {isPostModalOpen && <PostNeedModal isOpen={isPostModalOpen} onClose={() => setIsPostModalOpen(false)} />}

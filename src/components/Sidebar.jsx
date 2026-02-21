@@ -15,7 +15,7 @@ export const Sidebar = ({ onPostClick }) => {
 
     return (
         <aside className="social-sidebar-left">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', height: '100%', padding: '1.5rem 0' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', height: '100%', padding: '1.25rem 0' }}>
 
                 {/* Logo */}
                 <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', padding: '0 1rem' }}>
@@ -31,7 +31,7 @@ export const Sidebar = ({ onPostClick }) => {
                 </Link>
 
                 {/* Navigation Links */}
-                <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                     <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>
                         <Home size={24} />
                         <span className="nav-text">Home</span>

@@ -355,15 +355,6 @@ export const UserProfilePage = () => {
                                     </div>
                                     {isOwnProfile && (
                                         <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', marginBottom: '1.5rem', paddingLeft: '6rem' }}>
-                                            <span style={{
-                                                padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 600,
-                                                background: need.status === 'open' ? 'rgba(16, 185, 129, 0.1)' : need.status === 'met' ? 'rgba(56, 189, 248, 0.1)' : 'rgba(100, 116, 139, 0.1)',
-                                                color: need.status === 'open' ? '#10b981' : need.status === 'met' ? '#38bdf8' : 'var(--text-secondary)',
-                                                border: '1px solid var(--border-glass)', textTransform: 'capitalize'
-                                            }}>
-                                                {need.status === 'met' ? 'Met' : need.status || 'open'}
-                                            </span>
-
                                             {need.status !== 'met' && (
                                                 <button onClick={() => { setSelectedNeed(need); setIsNeedEditModalOpen(true); }} className="btn btn-secondary" style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem', borderRadius: '9999px' }}>Edit</button>
                                             )}

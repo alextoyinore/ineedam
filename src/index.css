@@ -25,6 +25,16 @@
   --mobile-nav-height: 4.5rem;
 }
 
+html {
+  font-size: 15px;
+}
+
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+}
+
 [data-theme='dark'] {
   /* Color Palette - Vibrant Dark Mode (Original) */
   --bg-base: #0f1115;
@@ -48,6 +58,8 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }
 
 body {
@@ -189,12 +201,12 @@ button {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1rem;
+  padding: 0.85rem 1rem;
   border-radius: 9999px;
   color: var(--text-primary);
   text-decoration: none;
   transition: background-color 0.2s;
-  font-size: 1.25rem;
+  font-size: 1.15rem;
 }
 
 .nav-link:hover {
@@ -237,7 +249,7 @@ button {
 
 @media (max-width: 768px) {
   .sticky-header {
-    top: var(--mobile-header-height);
+    top: 0;
   }
 }
 
@@ -323,6 +335,56 @@ button {
   .desktop-only {
     display: none !important;
   }
+
+  .btn-label-text {
+    display: none !important;
+  }
+
+  .need-meta-container {
+    row-gap: 0 !important;
+  }
+
+  .need-description {
+    font-size: 0.9rem !important;
+  }
+}
+
+.need-description {
+  font-size: 1rem;
+}
+
+.avatar-md {
+  width: 40px;
+  height: 40px;
+}
+
+.avatar-lg {
+  width: 48px;
+  height: 48px;
+}
+
+@media (max-width: 768px) {
+  .avatar-md {
+    width: 32px;
+    height: 32px;
+  }
+
+  .avatar-lg {
+    width: 40px;
+    height: 40px;
+  }
+
+  .need-content-wrapper {
+    padding-left: 2.75rem !important;
+  }
+}
+
+.need-content-wrapper {
+  padding-left: 3.25rem;
+}
+
+.need-meta-container {
+  max-width: 100%;
 }
 
 /* Floating Action Button (FAB) */
@@ -362,9 +424,9 @@ button {
   -webkit-backdrop-filter: blur(16px);
   border-top: 1px solid var(--border-glass);
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
   align-items: center;
-  padding: 0 1rem;
+  padding: 0 1.5rem;
   z-index: 70;
 }
 
@@ -447,11 +509,27 @@ button {
 
   .social-main-content {
     border: none;
-    padding-top: var(--mobile-header-height);
+    padding-top: 0;
     padding-bottom: 5rem;
     /* Space for BottomNav */
     width: 100%;
     max-width: 100vw;
+  }
+
+  .social-main-content.is-chat-detail {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    height: 100dvh;
+    background: var(--bg-surface);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    margin: 0;
+    border: none;
   }
 
   .form-grid-2 {

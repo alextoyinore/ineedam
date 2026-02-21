@@ -65,10 +65,10 @@ export const ChatDetail = () => {
             }}
         >
             <header style={{
-                padding: isMobile ? '0.5rem 1rem' : '1rem 1.5rem', borderBottom: '1px solid var(--border-glass)',
+                padding: isMobile ? '0.75rem 1rem' : '1rem 1.5rem', borderBottom: '1px solid var(--border-glass)',
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                 background: 'var(--bg-surface-glass)', backdropFilter: 'blur(16px)',
-                position: isMobile ? 'sticky' : 'static', top: isMobile ? 'var(--mobile-header-height)' : 0, zIndex: 30
+                zIndex: 30, flexShrink: 0
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <button
@@ -82,8 +82,8 @@ export const ChatDetail = () => {
                     >
                         <ArrowLeft size={20} />
                     </button>
-                    <div style={{
-                        width: '40px', height: '40px', borderRadius: '50%',
+                    <div className="avatar-md" style={{
+                        borderRadius: '50%',
                         background: activeThread.withUserAvatar ? `url(${activeThread.withUserAvatar}) center/cover` : 'var(--bg-base)',
                         border: '1px solid var(--border-glass)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '600',
@@ -139,7 +139,11 @@ export const ChatDetail = () => {
                 ))}
             </div>
 
-            <footer style={{ padding: '1rem', borderTop: '1px solid var(--border-glass)', background: 'var(--bg-surface)' }}>
+            <footer style={{
+                padding: '1rem', borderTop: '1px solid var(--border-glass)',
+                background: 'var(--bg-surface)',
+                zIndex: 30, flexShrink: 0
+            }}>
                 <form onSubmit={handleSendMessage} style={{ position: 'relative', display: 'flex', gap: '1rem' }}>
                     <input
                         type="text"

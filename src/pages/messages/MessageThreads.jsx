@@ -139,8 +139,8 @@ export const MessageThreads = () => {
                                     style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', borderRadius: '12px' }}
                                     className="nav-link-hover"
                                 >
-                                    <div style={{
-                                        width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
+                                    <div className="avatar-md" style={{
+                                        borderRadius: '50%', flexShrink: 0,
                                         background: profile.avatar_url ? `url(${profile.avatar_url}) center/cover` : 'var(--bg-surface)',
                                         border: '1px solid var(--border-glass)',
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -175,8 +175,8 @@ export const MessageThreads = () => {
                             {thread.unread && (
                                 <div style={{ position: 'absolute', left: '0.4rem', top: '50%', transform: 'translateY(-50%)', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary)' }} />
                             )}
-                            <div style={{
-                                width: '48px', height: '48px', borderRadius: '50%', flexShrink: 0,
+                            <div className="avatar-lg" style={{
+                                borderRadius: '50%', flexShrink: 0,
                                 background: thread.withUserAvatar ? `url(${thread.withUserAvatar}) center/cover` : 'linear-gradient(135deg, var(--primary), var(--secondary))',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'white',
                                 overflow: 'hidden'
