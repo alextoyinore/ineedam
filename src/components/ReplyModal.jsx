@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { createReply } from '../lib/replyService';
 import { useNavigate } from 'react-router-dom';
 
-export const ReplyModal = ({ isOpen, onClose, need, parentId = null, replyingTo = null }) => {
+export const ReplyModal = ({ isOpen, onClose, need, parentId = null, replyingTo = null, onReply }) => {
     const navigate = useNavigate();
     const { user } = useAuth();
     const [replyText, setReplyText] = useState('');
@@ -39,9 +39,11 @@ export const ReplyModal = ({ isOpen, onClose, need, parentId = null, replyingTo 
         setSubmitting(true);
         try {
             const isPrivate = visibility === 'private';
-            await createReply(need.id, user.id, replyText, isPrivate, parentId);
+            const newReply = await createReply(need.id, user.id, replyText, isPrivate, parentId);
 
-            // alert(`Reply (${visibility}) posted!`);
+            if (onReply) {
+                onReply(newReply);
+            }
             onClose();
         } catch (err) {
             console.error("Failed to post reply via modal", err);

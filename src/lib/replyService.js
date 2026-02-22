@@ -105,3 +105,19 @@ export const formatTimeAgo = (dateStr) => {
     const days = Math.floor(hrs / 24);
     return `${days}d ago`;
 };
+/**
+ * Fetch total reply count for a specific need
+ */
+export const getReplyCount = async (needId) => {
+    if (!needId) return 0;
+    const { count, error } = await supabase
+        .from('replies')
+        .select('*', { count: 'exact', head: true })
+        .eq('need_id', needId);
+
+    if (error) {
+        console.error('Error fetching reply count:', error);
+        return 0;
+    }
+    return count || 0;
+};

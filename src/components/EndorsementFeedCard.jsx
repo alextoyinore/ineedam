@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Award, ArrowRight, Heart, Repeat2, Bookmark, MessageSquare, MessageCircle } from 'lucide-react';
 import { formatTimeAgo } from './../lib/replyService';
@@ -7,6 +7,9 @@ import { useLikes } from '../context/LikesContext';
 import { useBookmarks } from '../context/BookmarksContext';
 import { useBroadcasts } from '../context/BroadcastsContext';
 import { ReplyModal } from './ReplyModal';
+import { getLikeCount } from '../lib/likesService';
+import { getReplyCount } from '../lib/replyService';
+import { getBroadcastCount } from '../lib/broadcastService';
 
 export const EndorsementFeedCard = ({ endorsement }) => {
     const navigate = useNavigate();
@@ -29,9 +32,40 @@ export const EndorsementFeedCard = ({ endorsement }) => {
     const bookmarked = hasNeed ? isBookmarked(need.id) : false;
     const broadcasted = hasNeed ? isBroadcasted(need.id) : false;
 
-    const handleActionClick = (e, actionFn) => {
+    const [likeCount, setLikeCount] = useState(0);
+    const [replyCount, setReplyCount] = useState(0);
+    const [broadcastCount, setBroadcastCount] = useState(0);
+
+    useEffect(() => {
+        if (!hasNeed) return;
+        const loadCounts = async () => {
+            try {
+                const [likes, replies, broadcasts] = await Promise.all([
+                    getLikeCount(need.id),
+                    getReplyCount(need.id),
+                    getBroadcastCount(need.id)
+                ]);
+                setLikeCount(likes);
+                setReplyCount(replies);
+                setBroadcastCount(broadcasts);
+            } catch (err) {
+                console.error("Error loading counts for endorsement card:", err);
+            }
+        };
+        loadCounts();
+    }, [need?.id, hasNeed]);
+
+    const handleActionClick = async (e, actionFn) => {
         e.stopPropagation();
-        if (hasNeed) actionFn(need.id);
+        if (hasNeed) {
+            await actionFn(need.id);
+            // Optimistic count updates
+            if (actionFn === toggleLike) {
+                setLikeCount(prev => liked ? prev - 1 : prev + 1);
+            } else if (actionFn === toggleBroadcast) {
+                setBroadcastCount(prev => broadcasted ? prev - 1 : prev + 1);
+            }
+        }
     };
 
     const handleReplyClick = (e) => {
@@ -66,6 +100,7 @@ export const EndorsementFeedCard = ({ endorsement }) => {
                     isOpen={isReplyModalOpen}
                     onClose={() => setIsReplyModalOpen(false)}
                     need={dummyNeed}
+                    onReply={() => setReplyCount(prev => prev + 1)}
                 />
             )}
 
@@ -172,17 +207,23 @@ export const EndorsementFeedCard = ({ endorsement }) => {
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginTop: '0.75rem' }}>
                         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                             <button onClick={handleReplyClick} className="nav-link-hover" style={{
-                                display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                display: 'flex', alignItems: 'center', gap: '0.4rem',
                                 color: 'var(--text-muted)', fontSize: '0.9rem', background: 'transparent',
                                 transition: 'color 0.2s', padding: '0.25rem 0.5rem', borderRadius: '4px', marginLeft: '-0.5rem',
                                 cursor: 'pointer', border: 'none'
                             }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'} onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}>
                                 <MessageSquare size={16} />
-                                <span className="btn-label-text">Reply</span>
+                                <span>
+                                    {replyCount > 0 ? (
+                                        replyCount
+                                    ) : (
+                                        <span className="btn-label-text">Reply</span>
+                                    )}
+                                </span>
                             </button>
 
                             <button onClick={handleThreadClick} className="nav-link-hover" style={{
-                                display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                display: 'flex', alignItems: 'center', gap: '0.4rem',
                                 color: 'var(--text-muted)', fontSize: '0.9rem', background: 'transparent',
                                 transition: 'color 0.2s', padding: '0.25rem 0.5rem', borderRadius: '4px',
                                 cursor: 'pointer', border: 'none'
@@ -199,7 +240,13 @@ export const EndorsementFeedCard = ({ endorsement }) => {
                                 cursor: 'pointer', border: 'none'
                             }} onMouseEnter={(e) => e.currentTarget.style.color = broadcasted ? 'var(--accent)' : '#0d9488'} onMouseLeave={(e) => e.currentTarget.style.color = broadcasted ? 'var(--accent)' : 'var(--text-muted)'}>
                                 <Repeat2 size={16} />
-                                <span className="btn-label-text">{broadcasted ? 'Broadcasted' : 'Broadcast'}</span>
+                                <span>
+                                    {broadcastCount > 0 ? (
+                                        broadcastCount
+                                    ) : (
+                                        <span className="btn-label-text">Broadcast</span>
+                                    )}
+                                </span>
                             </button>
 
                             <button onClick={(e) => handleActionClick(e, toggleLike)} className="nav-link-hover" style={{
@@ -210,7 +257,11 @@ export const EndorsementFeedCard = ({ endorsement }) => {
                             }} onMouseEnter={(e) => e.currentTarget.style.color = liked ? '#f87171' : '#ef4444'} onMouseLeave={(e) => e.currentTarget.style.color = liked ? '#ef4444' : 'var(--text-muted)'}>
                                 <Heart size={16} fill={liked ? 'currentColor' : 'none'} />
                                 <span>
-                                    <span className="btn-label-text">Like</span>
+                                    {likeCount > 0 ? (
+                                        likeCount
+                                    ) : (
+                                        <span className="btn-label-text">Like</span>
+                                    )}
                                 </span>
                             </button>
                         </div>

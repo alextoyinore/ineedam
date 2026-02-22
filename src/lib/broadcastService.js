@@ -100,3 +100,19 @@ export const fetchBroadcastCounts = async (needIds) => {
 
     return counts;
 };
+/**
+ * Fetch broadcast count for a single need
+ */
+export const getBroadcastCount = async (needId) => {
+    if (!needId) return 0;
+    const { count, error } = await supabase
+        .from('broadcasts')
+        .select('*', { count: 'exact', head: true })
+        .eq('need_id', needId);
+
+    if (error) {
+        console.error('Error fetching single broadcast count:', error);
+        return 0;
+    }
+    return count || 0;
+};

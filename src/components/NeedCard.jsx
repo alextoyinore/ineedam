@@ -6,6 +6,8 @@ import { useBookmarks } from '../context/BookmarksContext';
 import { useLikes } from '../context/LikesContext';
 import { useBroadcasts } from '../context/BroadcastsContext';
 import { getLikeCount } from '../lib/likesService';
+import { getReplyCount } from '../lib/replyService';
+import { getBroadcastCount } from '../lib/broadcastService';
 import { useAuth } from '../context/AuthContext';
 import { useSocial } from '../context/SocialContext';
 import { useNotifications } from '../context/NotificationsContext';
@@ -22,6 +24,8 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
     const { addNotification } = useNotifications();
 
     const [likeCount, setLikeCount] = useState(0);
+    const [replyCount, setReplyCount] = useState(0);
+    const [broadcastCount, setBroadcastCount] = useState(0);
     const [hasLoadedCount, setHasLoadedCount] = useState(false);
     const [endorsementCount, setEndorsementCount] = useState(0);
 
@@ -33,8 +37,10 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
     React.useEffect(() => {
         const loadCounts = async () => {
             try {
-                const [likes, { count, error }] = await Promise.all([
+                const [likes, replies, broadcasts, { count, error }] = await Promise.all([
                     getLikeCount(need.id),
+                    getReplyCount(need.id),
+                    getBroadcastCount(need.id),
                     import('../lib/supabase').then(({ supabase }) =>
                         supabase
                             .from('endorsements')
@@ -43,6 +49,8 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
                     )
                 ]);
                 setLikeCount(likes);
+                setReplyCount(replies);
+                setBroadcastCount(broadcasts);
                 setEndorsementCount(error ? 0 : (count || 0));
                 setHasLoadedCount(true);
             } catch (err) {
@@ -64,7 +72,11 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
 
     const handleBroadcast = async (e) => {
         e.stopPropagation();
+        const prevBroadcasted = broadcasted;
         await toggleBroadcastInContext(need.id);
+
+        // Optimistically update the count locally
+        setBroadcastCount(prev => prevBroadcasted ? prev - 1 : prev + 1);
     };
 
     const handleFollow = (e) => {
@@ -216,17 +228,23 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                         <button onClick={(e) => { e.stopPropagation(); setIsReplyOpen(true); }} className="nav-link-hover" style={{
-                            display: 'flex', alignItems: 'center', gap: '0.5rem',
+                            display: 'flex', alignItems: 'center', gap: '0.4rem',
                             color: 'var(--text-muted)', fontSize: '0.9rem', background: 'transparent',
                             transition: 'color 0.2s', padding: '0.25rem 0.5rem', borderRadius: '4px', marginLeft: '-0.5rem',
                             cursor: 'pointer'
                         }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'} onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}>
                             <MessageSquare size={16} />
-                            <span className="btn-label-text">Reply</span>
+                            <span>
+                                {replyCount > 0 ? (
+                                    replyCount
+                                ) : (
+                                    <span className="btn-label-text">Reply</span>
+                                )}
+                            </span>
                         </button>
 
                         <button onClick={() => navigate(`/need/${need.id}`)} className="nav-link-hover" style={{
-                            display: 'flex', alignItems: 'center', gap: '0.5rem',
+                            display: 'flex', alignItems: 'center', gap: '0.4rem',
                             color: 'var(--text-muted)', fontSize: '0.9rem', background: 'transparent',
                             transition: 'color 0.2s', padding: '0.25rem 0.5rem', borderRadius: '4px',
                             cursor: 'pointer'
@@ -243,7 +261,13 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
                             cursor: 'pointer'
                         }} onMouseEnter={(e) => e.currentTarget.style.color = broadcasted ? 'var(--accent)' : '#0d9488'} onMouseLeave={(e) => e.currentTarget.style.color = broadcasted ? 'var(--accent)' : 'var(--text-muted)'}>
                             <Repeat2 size={16} />
-                            <span className="btn-label-text">{broadcasted ? 'Broadcasted' : 'Broadcast'}</span>
+                            <span>
+                                {broadcastCount > 0 ? (
+                                    broadcastCount
+                                ) : (
+                                    <span className="btn-label-text">Broadcast</span>
+                                )}
+                            </span>
                         </button>
 
                         <button onClick={handleLike} className="nav-link-hover" style={{
@@ -275,7 +299,12 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
                 </div>
             </div>
 
-            <ReplyModal isOpen={isReplyOpen} onClose={() => setIsReplyOpen(false)} need={need} />
+            <ReplyModal
+                isOpen={isReplyOpen}
+                onClose={() => setIsReplyOpen(false)}
+                need={need}
+                onReply={() => setReplyCount(prev => prev + 1)}
+            />
         </div>
     );
 };
