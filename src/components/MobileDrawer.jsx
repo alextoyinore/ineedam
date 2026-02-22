@@ -1,12 +1,44 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { X, Settings, HelpCircle, FileText, Shield, Users, TrendingUp } from 'lucide-react';
+import { X, Settings, HelpCircle, FileText, Shield, Users, TrendingUp, Award } from 'lucide-react';
+import { fetchMetCounts } from '../lib/needsService';
+import { getFollowStats } from '../lib/socialService';
+import { fetchEndorsementsForUser } from '../lib/endorsementService';
 
 export const MobileDrawer = ({ isOpen, onClose }) => {
     const { profile, signOut } = useAuth();
     const navigate = useNavigate();
+    const [stats, setStats] = useState({
+        needsMet: 0,
+        fulfilledRequests: 0,
+        followersCount: 0,
+        followingCount: 0,
+        endorsementsCount: 0
+    });
+
+    useEffect(() => {
+        if (isOpen && profile) {
+            const loadStats = async () => {
+                try {
+                    const [metStats, followStats, endorsements] = await Promise.all([
+                        fetchMetCounts(profile.id),
+                        getFollowStats(profile.id),
+                        fetchEndorsementsForUser(profile.id)
+                    ]);
+                    setStats({
+                        ...metStats,
+                        ...followStats,
+                        endorsementsCount: endorsements?.length || 0
+                    });
+                } catch (err) {
+                    console.error("Error loading drawer stats:", err);
+                }
+            };
+            loadStats();
+        }
+    }, [isOpen, profile]);
 
     const handleNavigation = (path) => {
         navigate(path);
@@ -75,7 +107,7 @@ export const MobileDrawer = ({ isOpen, onClose }) => {
                             {profile && (
                                 <div
                                     onClick={() => handleNavigation(`/${profile.username}`)}
-                                    style={{ padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', marginBottom: '1rem' }}
+                                    style={{ padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'flex-start', gap: '1rem', cursor: 'pointer', marginBottom: '1rem' }}
                                     className="nav-link-hover"
                                 >
                                     <div style={{
@@ -86,8 +118,32 @@ export const MobileDrawer = ({ isOpen, onClose }) => {
                                         {!profile.avatar_url && profile.display_name?.charAt(0).toUpperCase()}
                                     </div>
                                     <div>
-                                        <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>{profile.display_name}</div>
-                                        <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>@{profile.username}</div>
+                                        <div style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--text-primary)' }}>{profile.display_name}</div>
+                                        <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>@{profile.username}</div>
+
+                                        {/* Compact Stats Row */}
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', fontSize: '0.85rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }} title="Needs Met (Given)">
+                                                <Award size={14} color="var(--accent)" />
+                                                <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{stats.needsMet}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }} title="Fulfilled (Received)">
+                                                <TrendingUp size={14} color="var(--primary)" />
+                                                <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{stats.fulfilledRequests}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }} title="Endorsements">
+                                                <Award size={14} color="var(--secondary)" />
+                                                <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{stats.endorsementsCount}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }} title="Following">
+                                                <Users size={14} color="var(--text-muted)" />
+                                                <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{stats.followingCount}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }} title="Followers">
+                                                <Users size={14} fill="currentColor" style={{ opacity: 0.3 }} color="var(--text-muted)" />
+                                                <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{stats.followersCount}</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -148,20 +204,20 @@ export const MobileDrawer = ({ isOpen, onClose }) => {
                                 </div>
                             </div>
 
-                            {/* Logout */}
-                            <div style={{ padding: '1.5rem' }}>
-                                <button
-                                    onClick={handleSignOut}
-                                    style={{
-                                        width: '100%', padding: '0.875rem', borderRadius: '9999px',
-                                        background: 'transparent', border: '1px solid #ef4444', color: '#ef4444',
-                                        fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s'
-                                    }}
-                                >
-                                    Sign Out
-                                </button>
-                            </div>
+                        </div>
 
+                        {/* Logout - Outside scrollable area, stuck to bottom */}
+                        <div style={{ padding: '1.25rem 1.5rem', borderTop: '1px solid var(--border-glass)', display: 'flex', justifyContent: 'center' }}>
+                            <button
+                                onClick={handleSignOut}
+                                style={{
+                                    background: 'transparent', border: 'none', color: '#ef4444',
+                                    fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
+                                    fontSize: '1rem'
+                                }}
+                            >
+                                Sign Out
+                            </button>
                         </div>
                     </motion.div>
                 </>
