@@ -109,35 +109,41 @@ export const ChatDetail = () => {
                 padding: isMobile ? '1rem' : '1.5rem',
                 display: 'flex',
                 flexDirection: 'column-reverse',
-                gap: '1rem',
+                gap: '0.4rem',
                 WebkitOverflowScrolling: 'touch',
-                backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Cg stroke='%236366f1' stroke-opacity='0.04' fill='none' stroke-width='1.5'%3E%3Cpath d='M40 40h60c8 0 15 7 15 15v40c0 8-7 15-15 15h-20l-15 15v-15h-25c-8 0-15-7-15-15v-40c0-8 7-15 15-15z'/%3E%3Cpath d='M160 160l30-30 15 15-30 30z M195 125l15-15 15 15-15 15z M155 165l5 25-25-5z'/%3E%3Cpath d='M160 40h30c4 0 8 4 8 8v15c0 4-4 8-8 8h-5l-10 10v-10h-15c-4 0-8-4-8-8v-15c0-4 4-8 8-8z'/%3E%3C/g%3E%3C/svg%3E\")"
+                backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Cg stroke='%236366f1' stroke-opacity='0.02' fill='none' stroke-width='1.5'%3E%3Cpath d='M40 40h60c8 0 15 7 15 15v40c0 8-7 15-15 15h-20l-15 15v-15h-25c-8 0-15-7-15-15v-40c0-8 7-15 15-15z'/%3E%3Cpath d='M160 160l30-30 15 15-30 30z M195 125l15-15 15 15-15 15z M155 165l5 25-25-5z'/%3E%3Cpath d='M160 40h30c4 0 8 4 8 8v15c0 4-4 8-8 8h-5l-10 10v-10h-15c-4 0-8-4-8-8v-15c0-4 4-8 8-8z'/%3E%3C/g%3E%3C/svg%3E\")"
             }}>
-                {[...activeThread.messages].reverse().map(msg => (
-                    <div
-                        key={msg.id}
-                        style={{
-                            alignSelf: msg.sender === 'Me' ? 'flex-end' : 'flex-start',
-                            maxWidth: '70%',
-                            display: 'flex', flexDirection: 'column',
-                            alignItems: msg.sender === 'Me' ? 'flex-end' : 'flex-start'
-                        }}
-                    >
-                        <div style={{
-                            padding: '0.75rem 1rem', borderRadius: '18px',
-                            borderBottomRightRadius: msg.sender === 'Me' ? '4px' : '18px',
-                            borderBottomLeftRadius: msg.sender === 'Me' ? '18px' : '4px',
-                            background: msg.sender === 'Me' ? 'var(--primary)' : 'var(--bg-base)',
-                            color: msg.sender === 'Me' ? 'white' : 'var(--text-primary)',
-                            fontSize: '0.95rem'
-                        }}>
-                            {msg.text}
+                {[...activeThread.messages].reverse().map(msg => {
+                    const isMe = msg.sender === 'Me';
+                    return (
+                        <div
+                            key={msg.id}
+                            style={{
+                                alignSelf: isMe ? 'flex-end' : 'flex-start',
+                                maxWidth: '85%',
+                                display: 'flex',
+                                flexDirection: isMe ? 'row' : 'row-reverse',
+                                alignItems: 'flex-end',
+                                gap: '0.5rem'
+                            }}
+                        >
+                            <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginBottom: '0.4rem', opacity: 0.7, whiteSpace: 'nowrap' }}>
+                                {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                            <div style={{
+                                padding: '0.6rem 1rem', borderRadius: '18px',
+                                borderBottomRightRadius: isMe ? '4px' : '18px',
+                                borderBottomLeftRadius: isMe ? '18px' : '4px',
+                                background: isMe ? 'var(--primary)' : 'var(--bg-base)',
+                                color: isMe ? 'white' : 'var(--text-primary)',
+                                fontSize: '0.92rem',
+                                boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                            }}>
+                                {msg.text}
+                            </div>
                         </div>
-                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.25rem', padding: '0 0.5rem' }}>
-                            {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
             <footer style={{
