@@ -17,16 +17,8 @@ export const LandingPage = () => {
     return (
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem', textAlign: 'center' }}>
             {/* Full Brand Logo */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2.5rem' }}>
-                <div style={{
-                    width: 'clamp(48px, 12vw, 64px)', height: 'clamp(48px, 12vw, 64px)', borderRadius: 'clamp(14px, 3vw, 18px)',
-                    background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontWeight: 'bold', color: 'white', fontSize: 'clamp(2rem, 5vw, 2.5rem)'
-                }}>
-                    I
-                </div>
-                <span className="h1 text-gradient" style={{ margin: 0, fontSize: 'clamp(2.5rem, 8vw, 3.5rem)' }}>Ineedam</span>
+            <div style={{ marginBottom: '2.5rem' }}>
+                <img src="/logo.svg" alt="Ineedam" style={{ height: 'clamp(44px, 11vw, 64px)' }} />
             </div>
 
             <h1 className="h1" style={{ fontSize: 'clamp(2.2rem, 8vw, 4rem)', marginBottom: '1rem', maxWidth: '800px', lineHeight: 1.1 }}>

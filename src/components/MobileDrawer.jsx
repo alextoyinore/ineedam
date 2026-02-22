@@ -100,15 +100,7 @@ export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false }) => {
                                 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}
                                 className="nav-link-hover"
                             >
-                                <div style={{
-                                    width: '32px', height: '32px', borderRadius: '10px',
-                                    background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    fontWeight: 'bold', color: 'white', fontSize: '1.25rem', flexShrink: 0
-                                }}>
-                                    I
-                                </div>
-                                <span className="h2 text-gradient" style={{ margin: 0, fontSize: '1.25rem' }}>Ineedam</span>
+                                <img src="/logo.svg" alt="Ineedam Logo" style={{ height: '36px' }} />
                             </div>
                             <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', padding: '0.5rem' }}>
                                 <X size={20} />

@@ -19,15 +19,7 @@ export const Sidebar = ({ onPostClick }) => {
 
                 {/* Logo */}
                 <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', padding: '0 1rem' }}>
-                    <div style={{
-                        width: '40px', height: '40px', borderRadius: '12px',
-                        background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontWeight: 'bold', color: 'white', fontSize: '1.5rem', flexShrink: 0
-                    }}>
-                        I
-                    </div>
-                    <span className="h2 text-gradient nav-text" style={{ margin: 0, fontSize: '1.5rem' }}>Ineedam</span>
+                    <img src="/logo.svg" alt="Ineedam Logo" style={{ height: '40px' }} />
                 </Link>
 
                 {/* Navigation Links */}

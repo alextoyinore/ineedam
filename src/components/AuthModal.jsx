@@ -147,14 +147,8 @@ export const AuthModal = ({ isOpen, onClose, defaultTab = 'signin' }) => {
                 </button>
 
                 {/* Logo */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.5rem' }}>
-                    <div style={{
-                        width: '36px', height: '36px', borderRadius: '10px',
-                        background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontWeight: 'bold', color: 'white', fontSize: '1.2rem',
-                    }}>I</div>
-                    <span style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--text-primary)' }}>Ineedam</span>
+                <div style={{ marginBottom: '1.5rem' }}>
+                    <img src="/logo.svg" alt="Ineedam" style={{ height: '36px' }} />
                 </div>
 
                 {/* Tabs */}
