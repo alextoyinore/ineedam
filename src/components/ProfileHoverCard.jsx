@@ -80,7 +80,7 @@ export const ProfileHoverCard = ({ userData, children }) => {
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
                                 <div style={{
                                     width: '60px', height: '60px', borderRadius: '50%',
-                                    background: userData.authorAvatar ? `url(${userData.authorAvatar}) center/cover` : 'var(--bg-primary)',
+                                    background: userData.authorAvatar ? `url(${userData.authorAvatar}) center/cover` : 'var(--primary)',
                                     border: '1px solid var(--border-glass)', overflow: 'hidden'
                                 }}>
                                     {!userData.authorAvatar && (userData.author?.charAt(0) || '?')}

@@ -160,7 +160,7 @@ export const AuthModal = ({ isOpen, onClose, defaultTab = 'signin' }) => {
                 {/* Tabs */}
                 {tab !== 'forgot' && (
                     <div style={{
-                        display: 'flex', background: 'var(--bg-primary)',
+                        display: 'flex', background: 'var(--bg-surface)',
                         borderRadius: '12px', padding: '4px', marginBottom: '1.5rem',
                     }}>
                         {['signin', 'signup'].map((t) => (

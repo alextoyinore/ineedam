@@ -87,8 +87,8 @@ export const ReplyModal = ({ isOpen, onClose, need, parentId = null, replyingTo 
                         {/* Vertical connection line */}
                         <div style={{ position: 'absolute', left: '2.45rem', top: '3.5rem', bottom: 0, width: '2px', background: 'var(--border-glass)' }} />
 
-                        <div style={{
-                            width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
+                        <div className="avatar-md" style={{
+                            borderRadius: '50%', flexShrink: 0,
                             background: targetUser.authorAvatar ? `url(${targetUser.authorAvatar}) center/cover` : 'linear-gradient(135deg, var(--primary), var(--secondary))',
                             display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1,
                             fontWeight: 'bold', color: 'white', overflow: 'hidden'
@@ -108,8 +108,8 @@ export const ReplyModal = ({ isOpen, onClose, need, parentId = null, replyingTo 
 
                     {/* Form Body */}
                     <form onSubmit={handleSubmit} style={{ padding: '0 1.5rem 1.5rem 1.5rem', display: 'flex', gap: '1rem' }}>
-                        <div style={{
-                            width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
+                        <div className="avatar-md" style={{
+                            borderRadius: '50%', flexShrink: 0,
                             background: 'var(--bg-surface)', border: '1px solid var(--border-glass)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1,
                             fontWeight: 'bold', color: 'var(--text-primary)', overflow: 'hidden'
@@ -128,9 +128,10 @@ export const ReplyModal = ({ isOpen, onClose, need, parentId = null, replyingTo 
                                 onChange={(e) => setReplyText(e.target.value)}
                                 placeholder="Post your reply or proposal..."
                                 rows={4}
+                                className="need-description"
                                 style={{
                                     width: '100%', background: 'transparent', border: 'none', color: 'var(--text-primary)',
-                                    fontSize: '1.25rem', outline: 'none', resize: 'vertical', paddingTop: '0.5rem',
+                                    outline: 'none', resize: 'vertical', paddingTop: '0.5rem',
                                     fontFamily: 'inherit'
                                 }}
                             />

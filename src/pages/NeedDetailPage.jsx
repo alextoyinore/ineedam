@@ -32,8 +32,8 @@ const ReplyItem = ({ reply, need, depth = 0, onReply }) => {
                     authorAvatar: authorAvatar,
                     authorBio: reply.profiles?.bio
                 }}>
-                    <div style={{
-                        width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
+                    <div className="avatar-md" style={{
+                        borderRadius: '50%', flexShrink: 0,
                         background: authorAvatar ? `url(${authorAvatar}) center / cover` : (isMe ? 'linear-gradient(135deg, var(--primary), var(--secondary))' : 'var(--bg-surface)'),
                         border: (isMe || authorAvatar) ? 'none' : '1px solid var(--border-glass)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: isMe ? 'white' : 'var(--text-primary)',
@@ -67,7 +67,7 @@ const ReplyItem = ({ reply, need, depth = 0, onReply }) => {
                             </span>
                         )}
                     </div>
-                    <p style={{ fontSize: '1rem', color: 'var(--text-primary)', lineHeight: 1.5, margin: 0, whiteSpace: 'pre-wrap' }}>
+                    <p className="need-description" style={{ color: 'var(--text-primary)', lineHeight: 1.5, margin: 0, whiteSpace: 'pre-wrap' }}>
                         {reply.content}
                     </p>
 
@@ -217,8 +217,8 @@ export const NeedDetailPage = () => {
             {/* Main Reply Box */}
             <div style={{ display: 'flex', gap: '1rem', padding: '1.5rem', borderBottom: '1px solid var(--border-glass)', background: 'var(--bg-base)' }}>
                 <div style={{ flexShrink: 0 }}>
-                    <div style={{
-                        width: '48px', height: '48px', borderRadius: '50%',
+                    <div className="avatar-md" style={{
+                        borderRadius: '50%',
                         background: profile?.avatar_url ? `url(${profile.avatar_url}) center/cover` : 'linear-gradient(135deg, var(--primary), var(--secondary))',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontWeight: 'bold', color: 'white', overflow: 'hidden'
@@ -232,9 +232,10 @@ export const NeedDetailPage = () => {
                         onChange={(e) => setReplyText(e.target.value)}
                         placeholder={`Replying to @${need.authorUsername || 'author'}...`}
                         disabled={!user || submittingReply}
+                        className="need-description"
                         style={{
                             width: '100%', background: 'transparent', border: 'none', color: 'var(--text-primary)',
-                            fontSize: '1.1rem', outline: 'none', resize: 'vertical', minHeight: '60px'
+                            outline: 'none', resize: 'vertical', minHeight: '60px'
                         }}
                     />
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-glass)', paddingTop: '0.75rem' }}>

@@ -95,10 +95,10 @@ export const SettingsPage = () => {
             <div style={{ maxWidth: '700px', width: '100%', margin: '0 auto', padding: '1.5rem 1rem 6rem 1rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                 {sections.map(section => (
                     <div key={section.title}>
-                        <h3 style={{
-                            marginBottom: '0.75rem', color: 'var(--primary)',
+                        <h3 className="text-gradient" style={{
+                            marginBottom: '0.75rem',
                             fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase',
-                            letterSpacing: '0.08em'
+                            letterSpacing: '0.08em', display: 'inline-block'
                         }}>
                             {section.title}
                         </h3>
@@ -121,8 +121,9 @@ export const SettingsPage = () => {
                                 >
                                     <div style={{
                                         width: '38px', height: '38px', borderRadius: '10px',
-                                        background: 'var(--bg-base)', display: 'flex', alignItems: 'center',
-                                        justifyContent: 'center', color: 'var(--primary)', flexShrink: 0
+                                        background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(236, 72, 153, 0.1))',
+                                        display: 'flex', alignItems: 'center',
+                                        justifyContent: 'center', color: 'var(--secondary)', flexShrink: 0
                                     }}>
                                         {item.icon}
                                     </div>
@@ -136,7 +137,7 @@ export const SettingsPage = () => {
                                             onClick={() => toggleSetting(item.id)}
                                             style={{
                                                 width: '48px', height: '26px', borderRadius: '13px',
-                                                background: item.value ? 'var(--primary)' : 'var(--bg-base)',
+                                                background: item.value ? 'linear-gradient(135deg, var(--primary), var(--secondary))' : 'var(--bg-base)',
                                                 border: '1px solid var(--border-glass)', position: 'relative',
                                                 cursor: 'pointer', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                                                 flexShrink: 0
@@ -174,10 +175,10 @@ export const SettingsPage = () => {
 
                 {/* Logout + Danger Zone */}
                 <div>
-                    <h3 style={{
-                        marginBottom: '0.75rem', color: 'var(--primary)',
+                    <h3 className="text-gradient" style={{
+                        marginBottom: '0.75rem',
                         fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase',
-                        letterSpacing: '0.08em'
+                        letterSpacing: '0.08em', display: 'inline-block'
                     }}>
                         Session
                     </h3>

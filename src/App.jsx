@@ -22,13 +22,15 @@ import { MessagesPage } from './pages/MessagesPage';
 import { MessageThreads } from './pages/messages/MessageThreads';
 import { ChatDetail } from './pages/messages/ChatDetail';
 import { SettingsPage } from './pages/SettingsPage';
+import { MobileWhoToFollowPage } from './pages/MobileWhoToFollowPage';
+import { MobileWhatsHappeningPage } from './pages/MobileWhatsHappeningPage';
 
 
 // Full-screen spinner while the session is being determined
 const AuthLoader = () => (
   <div style={{
     minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-    background: 'var(--bg-primary)', color: 'var(--primary)'
+    background: 'var(--bg-base)', color: 'var(--primary)'
   }}>
     <Loader size={48} className="animate-spin" />
   </div>
@@ -70,6 +72,8 @@ function App() {
               </Route>
               <Route path="/search" element={<SearchPage />} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/who-to-follow" element={<MobileWhoToFollowPage />} />
+              <Route path="/whats-happening" element={<MobileWhatsHappeningPage />} />
               <Route path="/need/:id" element={<NeedDetailPage />} />
               <Route path="/dashboard" element={<Navigate to={`/${useAuth().profile?.username || ''}`} replace />} />
               <Route path="/:username" element={<UserProfilePage />} />
