@@ -19,7 +19,7 @@ import {
     fetchNeedsByUser, shapeNeed, fetchMetCounts,
     updateNeedStatus, updateNeed
 } from '../lib/needsService';
-import { getFollowStats } from '../lib/socialService';
+import { getFollowStats, getFollowers, getFollowing } from '../lib/socialService';
 import { fetchRepliesByUser, formatTimeAgo } from '../lib/replyService';
 import { getOrCreateThread } from '../lib/messageService';
 import { fetchBroadcastedNeeds } from '../lib/broadcastService';
@@ -41,6 +41,8 @@ export const UserProfilePage = () => {
     const [userReplies, setUserReplies] = useState([]);
     const [userBroadcasts, setUserBroadcasts] = useState([]);
     const [userEndorsements, setUserEndorsements] = useState([]);
+    const [followersList, setFollowersList] = useState([]);
+    const [followingList, setFollowingList] = useState([]);
     const [loadingData, setLoadingData] = useState(true);
     const [stats, setStats] = useState({
         needsMet: 0,
@@ -74,19 +76,23 @@ export const UserProfilePage = () => {
                 setProfile(profileData);
 
                 // Load needs, replies and stats
-                const [needsData, repliesData, broadcastsData, metStats, followStats, endorsementsData] = await Promise.all([
+                const [needsData, repliesData, broadcastsData, metStats, followStats, endorsementsData, followersData, followingData] = await Promise.all([
                     fetchNeedsByUser(profileData.id),
                     fetchRepliesByUser(profileData.id),
                     fetchBroadcastedNeeds(profileData.id),
                     fetchMetCounts(profileData.id),
                     getFollowStats(profileData.id),
-                    fetchEndorsementsForUser(profileData.id)
+                    fetchEndorsementsForUser(profileData.id),
+                    getFollowers(profileData.id),
+                    getFollowing(profileData.id)
                 ]);
 
                 setUserNeeds(needsData ? needsData.map(shapeNeed) : []);
                 setUserReplies(repliesData || []);
                 setUserBroadcasts(broadcastsData ? broadcastsData.map(shapeNeed) : []);
                 setUserEndorsements(endorsementsData || []);
+                setFollowersList(followersData || []);
+                setFollowingList(followingData || []);
                 setStats({ ...metStats, ...followStats });
             } catch (err) {
                 console.error("Error loading profile page:", err);
@@ -438,12 +444,94 @@ export const UserProfilePage = () => {
                     ))
                 )}
 
-                {(activeTab === 'following' || activeTab === 'followers') && (
-                    <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                        <Users size={48} style={{ marginBottom: '1rem', opacity: 0.5 }} />
-                        <h3 className="h3">Coming Soon</h3>
-                        <p>User lists for following and followers are being improved.</p>
-                    </div>
+                {activeTab === 'following' && (
+                    loadingData ? (
+                        <div style={{ padding: '3rem', display: 'flex', justifyContent: 'center', color: 'var(--primary)' }}><Loader size={24} className="animate-spin" /></div>
+                    ) : followingList.length === 0 ? (
+                        <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                            <Users size={48} style={{ marginBottom: '1rem', opacity: 0.5 }} />
+                            <h3 className="h3">Not following anyone</h3>
+                            <p>When {isOwnProfile ? 'you follow' : `${profile.display_name} follows`} someone, they will appear here.</p>
+                        </div>
+                    ) : (
+                        <div style={{ padding: '1rem 0' }}>
+                            {followingList.map((user, idx) => (
+                                <motion.div
+                                    key={user.id}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: idx * 0.05 }}
+                                    onClick={() => navigate(`/${user.username}`)}
+                                    style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border-glass)', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }}
+                                    className="nav-link-hover"
+                                >
+                                    <div style={{
+                                        width: '48px', height: '48px', borderRadius: '50%', flexShrink: 0,
+                                        background: user.avatar_url ? `url(${user.avatar_url}) center/cover` : 'var(--bg-surface)',
+                                        border: '1px solid var(--border-glass)',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        color: 'var(--text-primary)', fontWeight: 'bold'
+                                    }}>
+                                        {!user.avatar_url && user.display_name?.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                            <div>
+                                                <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '1rem' }}>{user.display_name}</div>
+                                                <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>@{user.username}</div>
+                                            </div>
+                                        </div>
+                                        {user.bio && <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem', color: 'var(--text-primary)' }}>{user.bio}</p>}
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    )
+                )}
+
+                {activeTab === 'followers' && (
+                    loadingData ? (
+                        <div style={{ padding: '3rem', display: 'flex', justifyContent: 'center', color: 'var(--primary)' }}><Loader size={24} className="animate-spin" /></div>
+                    ) : followersList.length === 0 ? (
+                        <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                            <Users size={48} style={{ marginBottom: '1rem', opacity: 0.5 }} />
+                            <h3 className="h3">No followers yet</h3>
+                            <p>When people follow {isOwnProfile ? 'you' : profile.display_name}, they will appear here.</p>
+                        </div>
+                    ) : (
+                        <div style={{ padding: '1rem 0' }}>
+                            {followersList.map((user, idx) => (
+                                <motion.div
+                                    key={user.id}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: idx * 0.05 }}
+                                    onClick={() => navigate(`/${user.username}`)}
+                                    style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border-glass)', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }}
+                                    className="nav-link-hover"
+                                >
+                                    <div style={{
+                                        width: '48px', height: '48px', borderRadius: '50%', flexShrink: 0,
+                                        background: user.avatar_url ? `url(${user.avatar_url}) center/cover` : 'var(--bg-surface)',
+                                        border: '1px solid var(--border-glass)',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        color: 'var(--text-primary)', fontWeight: 'bold'
+                                    }}>
+                                        {!user.avatar_url && user.display_name?.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                            <div>
+                                                <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '1rem' }}>{user.display_name}</div>
+                                                <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>@{user.username}</div>
+                                            </div>
+                                        </div>
+                                        {user.bio && <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem', color: 'var(--text-primary)' }}>{user.bio}</p>}
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    )
                 )}
 
                 {activeTab === 'broadcasts' && (

@@ -70,3 +70,47 @@ export const getFollowStats = async (userId) => {
         followingCount: following.count || 0
     };
 };
+
+/**
+ * Get the list of profiles following a specific user.
+ */
+export const getFollowers = async (userId) => {
+    const { data, error } = await supabase
+        .from('follows')
+        .select(`
+            follower_id,
+            profiles!follows_follower_id_fkey (
+                id, display_name, username, avatar_url, bio
+            )
+        `)
+        .eq('following_id', userId)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error("Error fetching followers:", error);
+        return [];
+    }
+    return data.map(row => row.profiles).filter(Boolean);
+};
+
+/**
+ * Get the list of profiles a specific user is following.
+ */
+export const getFollowing = async (userId) => {
+    const { data, error } = await supabase
+        .from('follows')
+        .select(`
+            following_id,
+            profiles!follows_following_id_fkey (
+                id, display_name, username, avatar_url, bio
+            )
+        `)
+        .eq('follower_id', userId)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error("Error fetching following:", error);
+        return [];
+    }
+    return data.map(row => row.profiles).filter(Boolean);
+};

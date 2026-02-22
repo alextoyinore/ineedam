@@ -50,7 +50,7 @@ export const ExplorePage = () => {
             n.description.toLowerCase().includes(searchQuery.toLowerCase());
 
         if (feedTab === 'following') {
-            return matchesSearch && following.includes(n.author);
+            return matchesSearch && following.includes(n.authorId);
         }
         return matchesSearch;
     });
