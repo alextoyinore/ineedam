@@ -3,13 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
     ArrowLeft, Calendar, MapPin, Users, Mail, UserPlus, UserMinus,
-    ShieldCheck, Edit3, CheckCircle, Trash2, Settings
+    ShieldCheck, Edit3, CheckCircle, Trash2, Settings, Repeat2, Loader
 } from 'lucide-react';
 
 import { NeedCard } from '../components/NeedCard';
 import { EditProfileModal } from '../components/EditProfileModal';
 import { EditNeedModal } from '../components/EditNeedModal';
 import { MarkMetModal } from '../components/MarkMetModal';
+import { EndorseModal } from '../components/EndorseModal';
 
 import { useSocial } from '../context/SocialContext';
 import { useAuth } from '../context/AuthContext';
@@ -21,6 +22,8 @@ import {
 import { getFollowStats } from '../lib/socialService';
 import { fetchRepliesByUser, formatTimeAgo } from '../lib/replyService';
 import { getOrCreateThread } from '../lib/messageService';
+import { fetchBroadcastedNeeds } from '../lib/broadcastService';
+import { fetchEndorsementsForUser } from '../lib/endorsementService';
 
 export const UserProfilePage = () => {
     const { username } = useParams();
@@ -36,6 +39,8 @@ export const UserProfilePage = () => {
     // Data State
     const [userNeeds, setUserNeeds] = useState([]);
     const [userReplies, setUserReplies] = useState([]);
+    const [userBroadcasts, setUserBroadcasts] = useState([]);
+    const [userEndorsements, setUserEndorsements] = useState([]);
     const [loadingData, setLoadingData] = useState(true);
     const [stats, setStats] = useState({
         needsMet: 0,
@@ -48,7 +53,9 @@ export const UserProfilePage = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isNeedEditModalOpen, setIsNeedEditModalOpen] = useState(false);
     const [isMarkMetModalOpen, setIsMarkMetModalOpen] = useState(false);
+    const [isEndorseModalOpen, setIsEndorseModalOpen] = useState(false);
     const [selectedNeed, setSelectedNeed] = useState(null);
+    const [needToEndorse, setNeedToEndorse] = useState(null);
 
     const isOwnProfile = currentUser?.id === profile?.id;
     const isFollowing = profile && following.includes(profile.id);
@@ -67,15 +74,19 @@ export const UserProfilePage = () => {
                 setProfile(profileData);
 
                 // Load needs, replies and stats
-                const [needsData, repliesData, metStats, followStats] = await Promise.all([
+                const [needsData, repliesData, broadcastsData, metStats, followStats, endorsementsData] = await Promise.all([
                     fetchNeedsByUser(profileData.id),
                     fetchRepliesByUser(profileData.id),
+                    fetchBroadcastedNeeds(profileData.id),
                     fetchMetCounts(profileData.id),
-                    getFollowStats(profileData.id)
+                    getFollowStats(profileData.id),
+                    fetchEndorsementsForUser(profileData.id)
                 ]);
 
                 setUserNeeds(needsData ? needsData.map(shapeNeed) : []);
                 setUserReplies(repliesData || []);
+                setUserBroadcasts(broadcastsData ? broadcastsData.map(shapeNeed) : []);
+                setUserEndorsements(endorsementsData || []);
                 setStats({ ...metStats, ...followStats });
             } catch (err) {
                 console.error("Error loading profile page:", err);
@@ -113,9 +124,9 @@ export const UserProfilePage = () => {
         setIsMarkMetModalOpen(true);
     };
 
-    const handleConfirmMet = async (needId, helperId) => {
+    const handleConfirmMet = async (needId, helperProfile) => {
         try {
-            await updateNeedStatus(needId, 'met', helperId);
+            await updateNeedStatus(needId, 'met', helperProfile.id);
             // Refresh data
             const [needsData, metStats] = await Promise.all([
                 fetchNeedsByUser(profile.id),
@@ -123,6 +134,13 @@ export const UserProfilePage = () => {
             ]);
             setUserNeeds(needsData ? needsData.map(shapeNeed) : []);
             setStats(prev => ({ ...prev, ...metStats }));
+
+            setTimeout(() => {
+                const needForEndorse = needsData?.find(n => n.id === needId) || selectedNeed;
+                setNeedToEndorse({ ...needForEndorse, metByProfile: helperProfile });
+                setIsEndorseModalOpen(true);
+            }, 2100);
+
         } catch (err) {
             console.error("Failed to mark met:", err);
             throw err;
@@ -153,7 +171,11 @@ export const UserProfilePage = () => {
     };
 
     if (loading) {
-        return <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)' }}>Loading profile...</div>;
+        return (
+            <div style={{ padding: '4rem', display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'var(--primary)' }}>
+                <Loader size={32} className="animate-spin" />
+            </div>
+        );
     }
 
     if (!profile) {
@@ -187,6 +209,17 @@ export const UserProfilePage = () => {
                 onClose={() => setIsMarkMetModalOpen(false)}
                 need={selectedNeed}
                 onConfirm={handleConfirmMet}
+            />
+
+            <EndorseModal
+                isOpen={isEndorseModalOpen}
+                onClose={() => setIsEndorseModalOpen(false)}
+                need={needToEndorse}
+                onSuccess={async () => {
+                    if (!profile) return;
+                    const endorsementsData = await fetchEndorsementsForUser(profile.id);
+                    setUserEndorsements(endorsementsData || []);
+                }}
             />
 
             {/* Header */}
@@ -316,8 +349,8 @@ export const UserProfilePage = () => {
             </div>
 
             {/* Tabs */}
-            <div style={{ display: 'flex', borderBottom: '1px solid var(--border-glass)' }}>
-                {['needs', 'replies', 'following', 'followers'].map(tab => (
+            <div style={{ display: 'flex', borderBottom: '1px solid var(--border-glass)', overflowX: 'auto' }}>
+                {['needs', 'broadcasts', 'endorsements', 'replies', 'following', 'followers'].map(tab => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
@@ -325,7 +358,7 @@ export const UserProfilePage = () => {
                             flex: 1, padding: '1rem', fontWeight: 600, fontSize: '0.9rem',
                             color: activeTab === tab ? 'var(--text-primary)' : 'var(--text-muted)',
                             position: 'relative', transition: 'background-color 0.2s',
-                            textTransform: 'capitalize'
+                            textTransform: 'capitalize', whiteSpace: 'nowrap'
                         }}
                         className="nav-link-hover"
                     >
@@ -341,7 +374,7 @@ export const UserProfilePage = () => {
             <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {activeTab === 'needs' && (
                     loadingData ? (
-                        <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>Loading posts...</div>
+                        <div style={{ padding: '3rem', display: 'flex', justifyContent: 'center', color: 'var(--primary)' }}><Loader size={24} className="animate-spin" /></div>
                     ) : userNeeds.length === 0 ? (
                         <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>No posts yet.</div>
                     ) : (
@@ -378,7 +411,7 @@ export const UserProfilePage = () => {
 
                 {activeTab === 'replies' && (
                     loadingData ? (
-                        <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>Loading replies...</div>
+                        <div style={{ padding: '3rem', display: 'flex', justifyContent: 'center', color: 'var(--primary)' }}><Loader size={24} className="animate-spin" /></div>
                     ) : userReplies.length === 0 ? (
                         <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>No replies yet.</div>
                     ) : userReplies.map((reply, idx) => (
@@ -411,6 +444,87 @@ export const UserProfilePage = () => {
                         <h3 className="h3">Coming Soon</h3>
                         <p>User lists for following and followers are being improved.</p>
                     </div>
+                )}
+
+                {activeTab === 'broadcasts' && (
+                    loadingData ? (
+                        <div style={{ padding: '3rem', display: 'flex', justifyContent: 'center', color: 'var(--primary)' }}><Loader size={24} className="animate-spin" /></div>
+                    ) : userBroadcasts.length === 0 ? (
+                        <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                            <Repeat2 size={48} style={{ marginBottom: '1rem', opacity: 0.4 }} />
+                            <h3 className="h3" style={{ marginBottom: '0.5rem' }}>No broadcasts yet</h3>
+                            <p>When {isOwnProfile ? 'you broadcast' : `${profile.display_name} broadcasts`} a need, it will appear here.</p>
+                        </div>
+                    ) : (
+                        <div style={{ padding: '1rem 0' }}>
+                            {userBroadcasts.map((need, idx) => (
+                                <motion.div
+                                    key={need.id}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: idx * 0.05 }}
+                                    style={{ borderBottom: '1px solid var(--border-glass)' }}
+                                >
+                                    {/* Broadcaster attribution label */}
+                                    <div style={{ padding: '0.75rem 1.5rem 0 1.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 600 }}>
+                                        <Repeat2 size={14} />
+                                        {profile.display_name} broadcasted
+                                    </div>
+                                    <div style={{ padding: '0 1.5rem' }}>
+                                        <NeedCard need={need} />
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    )
+                )}
+
+                {activeTab === 'endorsements' && (
+                    loadingData ? (
+                        <div style={{ padding: '3rem', display: 'flex', justifyContent: 'center', color: 'var(--primary)' }}><Loader size={24} className="animate-spin" /></div>
+                    ) : userEndorsements.length === 0 ? (
+                        <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>No endorsements yet.</div>
+                    ) : (
+                        <div style={{ padding: '1rem 0' }}>
+                            {userEndorsements.map((endorsement, idx) => (
+                                <motion.div
+                                    key={endorsement.id}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: idx * 0.05 }}
+                                    style={{ borderBottom: '1px solid var(--border-glass)', padding: '1.5rem' }}
+                                >
+                                    <div style={{ display: 'flex', gap: '1.25rem' }}>
+                                        <div style={{
+                                            width: '44px', height: '44px', borderRadius: '50%', flexShrink: 0,
+                                            background: endorsement.profiles?.avatar_url ? `url(${endorsement.profiles.avatar_url}) center/cover` : 'var(--bg-surface)',
+                                            border: '1px solid var(--border-glass)',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '1.1rem'
+                                        }}>
+                                            {!endorsement.profiles?.avatar_url && endorsement.profiles?.display_name?.charAt(0).toUpperCase()}
+                                        </div>
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                                <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{endorsement.profiles?.display_name}</span>
+                                                <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>@{endorsement.profiles?.username}</span>
+                                                <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>• {formatTimeAgo(endorsement.created_at)}</span>
+                                            </div>
+                                            <p style={{ fontSize: '1rem', whiteSpace: 'pre-wrap', marginBottom: '1rem', color: 'var(--text-primary)', lineHeight: 1.5 }}>"{endorsement.message}"</p>
+
+                                            <div style={{
+                                                border: '1px solid var(--border-glass)', borderRadius: '12px',
+                                                padding: '0.875rem 1rem', background: 'var(--bg-surface)'
+                                            }}>
+                                                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>For helping with</p>
+                                                <p style={{ margin: 0, fontWeight: 500, fontSize: '0.95rem', color: 'var(--text-primary)' }}>{endorsement.needs?.title}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    )
                 )}
             </div>
         </div>

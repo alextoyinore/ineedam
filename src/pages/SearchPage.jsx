@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search as SearchIcon, ArrowLeft, SlidersHorizontal } from 'lucide-react';
+import { Search as SearchIcon, ArrowLeft, SlidersHorizontal, Loader } from 'lucide-react';
 import { NeedCard } from '../components/NeedCard';
 import { searchNeeds, shapeNeed } from '../lib/needsService';
 
@@ -140,13 +140,8 @@ export const SearchPage = () => {
             {/* Results List */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
                 {loading ? (
-                    <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
-                        <div style={{
-                            width: '32px', height: '32px', borderRadius: '50%',
-                            border: '3px solid var(--border-glass)',
-                            borderTop: '3px solid var(--primary)',
-                            animation: 'spin 0.8s linear infinite'
-                        }} />
+                    <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem', color: 'var(--primary)' }}>
+                        <Loader size={32} className="animate-spin" />
                     </div>
                 ) : results.length > 0 ? (
                     results.map((need) => (

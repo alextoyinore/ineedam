@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Tag, MapPin, Banknote, Clock, MessageSquare, Bookmark, Heart, MessageCircle } from 'lucide-react';
+import { Tag, MapPin, Banknote, Clock, MessageSquare, Bookmark, Heart, MessageCircle, Repeat2 } from 'lucide-react';
 import { ReplyModal } from './ReplyModal';
 import { useBookmarks } from '../context/BookmarksContext';
 import { useLikes } from '../context/LikesContext';
+import { useBroadcasts } from '../context/BroadcastsContext';
 import { getLikeCount } from '../lib/likesService';
 import { useAuth } from '../context/AuthContext';
 import { useSocial } from '../context/SocialContext';
@@ -16,6 +17,7 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
     const navigate = useNavigate();
     const { isBookmarked, toggleBookmark } = useBookmarks();
     const { isLiked: checkIsLiked, toggleLike: toggleLikeInContext } = useLikes();
+    const { isBroadcasted: checkIsBroadcasted, toggleBroadcast: toggleBroadcastInContext } = useBroadcasts();
     const { isFollowing: checkIsFollowing, toggleFollow } = useSocial();
     const { addNotification } = useNotifications();
 
@@ -25,6 +27,7 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
     const bookmarked = isBookmarked(need.id);
     const following = checkIsFollowing(need.authorId);
     const liked = checkIsLiked(need.id);
+    const broadcasted = checkIsBroadcasted(need.id);
 
     React.useEffect(() => {
         const loadCount = async () => {
@@ -47,6 +50,11 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
 
         // Optimistically update the count locally
         setLikeCount(prev => prevLiked ? prev - 1 : prev + 1);
+    };
+
+    const handleBroadcast = async (e) => {
+        e.stopPropagation();
+        await toggleBroadcastInContext(need.id);
     };
 
     const handleFollow = (e) => {
@@ -206,6 +214,17 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
                         }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'} onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}>
                             <MessageCircle size={16} />
                             <span className="btn-label-text">View Thread</span>
+                        </button>
+
+                        {/* Broadcast Button */}
+                        <button onClick={handleBroadcast} className="nav-link-hover" style={{
+                            display: 'flex', alignItems: 'center', gap: '0.4rem',
+                            color: broadcasted ? 'var(--accent)' : 'var(--text-muted)', fontSize: '0.9rem', background: 'transparent',
+                            transition: 'all 0.2s', padding: '0.25rem 0.5rem', borderRadius: '4px',
+                            cursor: 'pointer'
+                        }} onMouseEnter={(e) => e.currentTarget.style.color = broadcasted ? 'var(--accent)' : '#0d9488'} onMouseLeave={(e) => e.currentTarget.style.color = broadcasted ? 'var(--accent)' : 'var(--text-muted)'}>
+                            <Repeat2 size={16} />
+                            <span className="btn-label-text">{broadcasted ? 'Broadcasted' : 'Broadcast'}</span>
                         </button>
 
                         <button onClick={handleLike} className="nav-link-hover" style={{

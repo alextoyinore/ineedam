@@ -29,7 +29,7 @@ export const MarkMetModal = ({ isOpen, onClose, need, onConfirm }) => {
                 return;
             }
 
-            await onConfirm(need.id, helperProfile.id);
+            await onConfirm(need.id, helperProfile);
             setSuccess(true);
             setTimeout(() => {
                 setSuccess(false);

@@ -175,8 +175,8 @@ export const NeedDetailPage = () => {
 
     if (loading) {
         return (
-            <div style={{ padding: '4rem', display: 'flex', justifyContent: 'center' }}>
-                <div className="loader" />
+            <div style={{ padding: '4rem', display: 'flex', justifyContent: 'center', color: 'var(--primary)' }}>
+                <Loader size={32} className="animate-spin" />
             </div>
         );
     }

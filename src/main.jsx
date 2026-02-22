@@ -12,6 +12,7 @@ import { NotificationsProvider } from './context/NotificationsContext.jsx'
 import { MessagesProvider } from './context/MessagesContext.jsx'
 import { LikesProvider } from './context/LikesContext.jsx'
 import { SettingsProvider } from './context/SettingsContext.jsx'
+import { BroadcastsProvider } from './context/BroadcastsContext.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -25,7 +26,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
                   <NotificationsProvider>
                     <MessagesProvider>
                       <LikesProvider>
-                        <App />
+                        <BroadcastsProvider>
+                          <App />
+                        </BroadcastsProvider>
                       </LikesProvider>
                     </MessagesProvider>
                   </NotificationsProvider>

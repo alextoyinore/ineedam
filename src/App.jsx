@@ -1,5 +1,6 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { Loader } from 'lucide-react';
 import { Layout } from './components/Layout';
 import { PublicPageWrapper } from './components/PublicPageWrapper';
 import { useAuth } from './context/AuthContext';
@@ -27,14 +28,9 @@ import { SettingsPage } from './pages/SettingsPage';
 const AuthLoader = () => (
   <div style={{
     minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-    background: 'var(--bg-primary)',
+    background: 'var(--bg-primary)', color: 'var(--primary)'
   }}>
-    <div style={{
-      width: '40px', height: '40px', borderRadius: '50%',
-      border: '3px solid var(--border-glass)',
-      borderTop: '3px solid var(--primary)',
-      animation: 'spin 0.8s linear infinite',
-    }} />
+    <Loader size={48} className="animate-spin" />
   </div>
 );
 

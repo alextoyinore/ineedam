@@ -46,8 +46,10 @@ export const LandingPage = () => {
             </div>
 
             {/* Footer links */}
-            <div style={{ marginTop: '3rem', display: 'flex', gap: '1.5rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+            <div style={{ marginTop: '3rem', display: 'flex', gap: '1.5rem', flexWrap: 'wrap', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
                 <a href="/about" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>About</a>
+                <a href="/how-to-use" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>How to Use</a>
+                <a href="/faq" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>FAQ</a>
                 <a href="/privacy" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Privacy</a>
                 <a href="/terms" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Terms</a>
             </div>

@@ -56,8 +56,8 @@ export const BookmarksPage = () => {
             {/* Feed List */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
                 {loading ? (
-                    <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
-                        <Loader className="animate-spin" size={32} color="var(--primary)" />
+                    <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem', color: 'var(--primary)' }}>
+                        <Loader className="animate-spin" size={32} />
                     </div>
                 ) : needs.length > 0 ? (
                     needs.map((need, index) => (
