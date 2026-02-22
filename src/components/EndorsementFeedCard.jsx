@@ -29,7 +29,7 @@ export const EndorsementFeedCard = ({ endorsement }) => {
     const { isBroadcasted, toggleBroadcast } = useBroadcasts();
 
     const liked = hasNeed ? isLiked(need.id) : false;
-    const bookmarked = hasNeed ? isBookmarked(need.id) : false;
+    const bookmarked = isBookmarked(endorsement.id, 'endorsement');
     const broadcasted = hasNeed ? isBroadcasted(need.id) : false;
 
     const [likeCount, setLikeCount] = useState(0);
@@ -57,6 +57,11 @@ export const EndorsementFeedCard = ({ endorsement }) => {
 
     const handleActionClick = async (e, actionFn) => {
         e.stopPropagation();
+        if (actionFn === toggleBookmark) {
+            await actionFn(endorsement.id, 'endorsement');
+            return;
+        }
+
         if (hasNeed) {
             await actionFn(need.id);
             // Optimistic count updates

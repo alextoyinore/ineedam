@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Bookmark, Bell, Mail, User } from 'lucide-react';
+import { Home, Bookmark, Bell, Mail, User, Search } from 'lucide-react';
 import { useNotifications } from '../context/NotificationsContext';
 import { useMessages } from '../context/MessagesContext';
 import { useAuth } from '../context/AuthContext';
@@ -19,7 +19,9 @@ export const BottomNav = () => {
 
     const navItems = [
         { icon: Home, label: 'Home', path: '/' },
-        { icon: Bookmark, label: 'Saved', path: '/bookmarks' },
+        location.pathname === '/bookmarks'
+            ? { icon: Search, label: 'Explore', path: '/' }
+            : { icon: Bookmark, label: 'Saved', path: '/bookmarks' },
         { icon: Bell, label: 'Alerts', path: '/notifications', badge: unreadCount },
         { icon: Mail, label: 'Inbox', path: '/messages', badge: unreadThreadsCount },
         { icon: User, label: 'Profile', isButton: true }

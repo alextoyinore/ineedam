@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Send, DollarSign, MapPin, Clock } from 'lucide-react';
+import { Send, DollarSign, MapPin, Clock, Search } from 'lucide-react';
+import { CATEGORIES } from '../data/categories';
 
 export const PostNeedPage = () => {
     const [formData, setFormData] = useState({
         title: '',
-        category: 'Product',
+        category: 'Products',
         description: '',
         budgetMode: 'fixed',
         budgetMin: '',
@@ -13,6 +14,19 @@ export const PostNeedPage = () => {
         location: '',
         flexibility: 'Flexible start'
     });
+    const [categorySearch, setCategorySearch] = useState('');
+    const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+    const categoryRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (categoryRef.current && !categoryRef.current.contains(e.target)) {
+                setShowCategoryDropdown(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -58,13 +72,63 @@ export const PostNeedPage = () => {
                     </div>
 
                     <div className="form-grid-2">
-                        <div>
+                        <div style={{ position: 'relative' }} ref={categoryRef}>
                             <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Category</label>
-                            <select name="category" value={formData.category} onChange={handleChange} style={inputStyles}>
-                                <option value="Product">Product</option>
-                                <option value="Service">Service</option>
-                                <option value="Training">Training/Course</option>
-                            </select>
+                            <div
+                                onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                                style={{ ...inputStyles, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                            >
+                                <span>{formData.category || 'Select a category'}</span>
+                                <Search size={14} style={{ opacity: 0.5 }} />
+                            </div>
+
+                            {showCategoryDropdown && (
+                                <div style={{
+                                    position: 'absolute', top: '100%', left: 0, right: 0,
+                                    background: 'var(--bg-surface)', border: '1px solid var(--border-glass)',
+                                    borderRadius: '8px', marginTop: '4px', zIndex: 100,
+                                    boxShadow: '0 10px 25px rgba(0,0,0,0.2)', maxHeight: '300px',
+                                    display: 'flex', flexDirection: 'column'
+                                }}>
+                                    <div style={{ padding: '0.5rem', borderBottom: '1px solid var(--border-glass)' }}>
+                                        <input
+                                            autoFocus
+                                            type="text"
+                                            placeholder="Search categories..."
+                                            value={categorySearch}
+                                            onChange={(e) => setCategorySearch(e.target.value)}
+                                            onClick={(e) => e.stopPropagation()}
+                                            style={{ ...inputStyles, padding: '0.4rem 0.6rem', fontSize: '0.85rem' }}
+                                        />
+                                    </div>
+                                    <div style={{ overflowY: 'auto', flex: 1 }}>
+                                        {CATEGORIES.filter(cat => cat.toLowerCase().includes(categorySearch.toLowerCase())).map(cat => (
+                                            <div
+                                                key={cat}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setFormData(prev => ({ ...prev, category: cat }));
+                                                    setShowCategoryDropdown(false);
+                                                    setCategorySearch('');
+                                                }}
+                                                style={{
+                                                    padding: '0.7rem 1rem', cursor: 'pointer', fontSize: '0.9rem',
+                                                    background: formData.category === cat ? 'rgba(99, 102, 241, 0.1)' : 'transparent',
+                                                    borderLeft: formData.category === cat ? '3px solid var(--primary)' : '3px solid transparent'
+                                                }}
+                                                className="nav-link-hover"
+                                            >
+                                                {cat}
+                                            </div>
+                                        ))}
+                                        {CATEGORIES.filter(cat => cat.toLowerCase().includes(categorySearch.toLowerCase())).length === 0 && (
+                                            <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                                                No categories found
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                         <div>
                             <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Location / Delivery</label>

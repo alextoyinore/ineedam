@@ -1,14 +1,15 @@
 import { supabase } from './supabase';
 
 /**
- * Fetch all bookmark IDs for the current user.
+ * Fetch all bookmark records for the current user.
+ * Returns objects with { id, type } to differentiate needs from endorsements.
  */
 export const fetchBookmarks = async (userId) => {
     if (!userId) return [];
 
     const { data, error } = await supabase
         .from('bookmarks')
-        .select('need_id')
+        .select('need_id, endorsement_id')
         .eq('user_id', userId);
 
     if (error) {
@@ -16,19 +17,25 @@ export const fetchBookmarks = async (userId) => {
         return [];
     }
 
-    return data.map(b => b.need_id);
+    return data.map(b => {
+        if (b.need_id) return { id: b.need_id, type: 'need' };
+        if (b.endorsement_id) return { id: b.endorsement_id, type: 'endorsement' };
+        return null;
+    }).filter(Boolean);
 };
 
 /**
- * Fetch the full need objects for all bookmarks of a user.
+ * Fetch the full objects for all bookmarks of a user (needs or endorsements).
  */
-export const fetchFullBookmarkedNeeds = async (userId) => {
+export const fetchBookmarkedItems = async (userId) => {
     if (!userId) return [];
 
     const { data, error } = await supabase
         .from('bookmarks')
         .select(`
             need_id,
+            endorsement_id,
+            created_at,
             needs (
                 *,
                 profiles!needs_user_id_fkey (
@@ -38,25 +45,54 @@ export const fetchFullBookmarkedNeeds = async (userId) => {
                     banner_url,
                     bio
                 )
+            ),
+            endorsements (
+                id, message, created_at,
+                endorser_id,
+                endorsed_id,
+                need_id,
+                endorser:profiles!endorsements_endorser_id_fkey (
+                    id, display_name, username, avatar_url, bio
+                ),
+                endorsed:profiles!endorsements_endorsed_id_fkey (
+                    id, display_name, username, avatar_url, bio
+                ),
+                needs (
+                    id, title, description, category, status
+                )
             )
         `)
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
     if (error) {
-        console.error("Error fetching full bookmarked needs:", error);
+        console.error("Error fetching full bookmarked items:", error);
         return [];
     }
 
-    // Flatten the result to return an array of need objects
-    return data.map(b => b.needs).filter(n => n !== null);
+    // Flatten and tag with type
+    return data.map(b => {
+        if (b.needs) {
+            return { ...b.needs, type: 'need', bookmark_created_at: b.created_at };
+        }
+        if (b.endorsements) {
+            return { ...b.endorsements, type: 'endorsement', bookmark_created_at: b.created_at };
+        }
+        return null;
+    }).filter(Boolean);
 };
 
 /**
- * Toggle a bookmark for a specific need and user.
+ * Toggle a bookmark for a specific item and user.
+ * @param {string} userId
+ * @param {string} targetId - The ID of the need or endorsement
+ * @param {boolean} isCurrentlyBookmarked
+ * @param {string} type - 'need' or 'endorsement'
  */
-export const toggleBookmarkInDb = async (userId, needId, isCurrentlyBookmarked) => {
+export const toggleBookmarkInDb = async (userId, targetId, isCurrentlyBookmarked, type = 'need') => {
     if (!userId) return false;
+
+    const column = type === 'need' ? 'need_id' : 'endorsement_id';
 
     if (isCurrentlyBookmarked) {
         // Remove bookmark
@@ -64,10 +100,10 @@ export const toggleBookmarkInDb = async (userId, needId, isCurrentlyBookmarked) 
             .from('bookmarks')
             .delete()
             .eq('user_id', userId)
-            .eq('need_id', needId);
+            .eq(column, targetId);
 
         if (error) {
-            console.error("Error removing bookmark:", error);
+            console.error(`Error removing ${type} bookmark:`, error);
             throw error;
         }
         return false;
@@ -75,10 +111,10 @@ export const toggleBookmarkInDb = async (userId, needId, isCurrentlyBookmarked) 
         // Add bookmark
         const { error } = await supabase
             .from('bookmarks')
-            .insert([{ user_id: userId, need_id: needId }]);
+            .insert([{ user_id: userId, [column]: targetId }]);
 
         if (error) {
-            console.error("Error adding bookmark:", error);
+            console.error(`Error adding ${type} bookmark:`, error);
             throw error;
         }
         return true;

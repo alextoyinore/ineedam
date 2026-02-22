@@ -25,6 +25,8 @@ import { SettingsPage } from './pages/SettingsPage';
 import { MobileWhoToFollowPage } from './pages/MobileWhoToFollowPage';
 import { MobileWhatsHappeningPage } from './pages/MobileWhatsHappeningPage';
 import { PremiumPage } from './pages/PremiumPage';
+import { NotFoundPage } from './pages/NotFoundPage';
+import { ServerErrorPage } from './pages/ServerErrorPage';
 
 
 // Full-screen spinner while the session is being determined
@@ -50,6 +52,7 @@ function App() {
     <Routes>
       {/* ── Public: landing & auth ───────────────────────────── */}
       <Route path="/welcome" element={<LandingPage />} />
+      <Route path="/500" element={<ServerErrorPage />} />
 
       {/* ── Public: info pages (no social layout, no auth) ───── */}
       <Route path="/about" element={<PublicPageWrapper><AboutPage /></PublicPageWrapper>} />
@@ -79,6 +82,7 @@ function App() {
               <Route path="/need/:id" element={<NeedDetailPage />} />
               <Route path="/dashboard" element={<Navigate to={`/${useAuth().profile?.username || ''}`} replace />} />
               <Route path="/:username" element={<UserProfilePage />} />
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Layout>
         </ProtectedRoute>

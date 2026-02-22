@@ -6,13 +6,13 @@ const BookmarksContext = createContext(undefined);
 
 export const BookmarksProvider = ({ children }) => {
     const { user } = useAuth();
-    const [bookmarkedIds, setBookmarkedIds] = useState([]);
+    const [bookmarks, setBookmarks] = useState([]); // [{id, type}, ...]
     const [loading, setLoading] = useState(true);
 
     // Fetch bookmarks from Supabase when user changes
     useEffect(() => {
         if (!user) {
-            setBookmarkedIds([]);
+            setBookmarks([]);
             setLoading(false);
             return;
         }
@@ -20,8 +20,8 @@ export const BookmarksProvider = ({ children }) => {
         const loadBookmarks = async () => {
             setLoading(true);
             try {
-                const ids = await fetchBookmarks(user.id);
-                setBookmarkedIds(ids);
+                const items = await fetchBookmarks(user.id);
+                setBookmarks(items);
             } catch (err) {
                 console.error("Failed to load bookmarks context", err);
             } finally {
@@ -32,39 +32,39 @@ export const BookmarksProvider = ({ children }) => {
         loadBookmarks();
     }, [user]);
 
-    const toggleBookmark = async (id) => {
+    const toggleBookmark = async (id, type = 'need') => {
         if (!user) {
-            alert("Please sign in to bookmark needs.");
+            alert("Please sign in to bookmark items.");
             return;
         }
 
-        const isCurrentlyBookmarked = bookmarkedIds.includes(id);
+        const isCurrentlyBookmarked = bookmarks.some(b => b.id === id && b.type === type);
 
         // Optimistic UI update
-        setBookmarkedIds(prev =>
+        setBookmarks(prev =>
             isCurrentlyBookmarked
-                ? prev.filter(bookmarkId => bookmarkId !== id)
-                : [...prev, id]
+                ? prev.filter(b => !(b.id === id && b.type === type))
+                : [...prev, { id, type }]
         );
 
         // Background DB sync
         try {
-            await toggleBookmarkInDb(user.id, id, isCurrentlyBookmarked);
+            await toggleBookmarkInDb(user.id, id, isCurrentlyBookmarked, type);
         } catch (err) {
             console.error("Failed to sync bookmark to DB, reverting state", err);
             // Revert on failure
-            setBookmarkedIds(prev =>
+            setBookmarks(prev =>
                 isCurrentlyBookmarked
-                    ? [...prev, id]
-                    : prev.filter(bookmarkId => bookmarkId !== id)
+                    ? [...prev, { id, type }]
+                    : prev.filter(b => !(b.id === id && b.type === type))
             );
         }
     };
 
-    const isBookmarked = (id) => bookmarkedIds.includes(id);
+    const isBookmarked = (id, type = 'need') => bookmarks.some(b => b.id === id && b.type === type);
 
     return (
-        <BookmarksContext.Provider value={{ bookmarkedIds, toggleBookmark, isBookmarked }}>
+        <BookmarksContext.Provider value={{ bookmarkedIds: bookmarks.map(b => b.id), toggleBookmark, isBookmarked }}>
             {children}
         </BookmarksContext.Provider>
     );

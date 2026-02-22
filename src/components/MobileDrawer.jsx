@@ -84,7 +84,11 @@ export const MobileDrawer = ({ isOpen, onClose }) => {
                     >
                         {/* Drawer Header */}
                         <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border-glass)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <div
+                                onClick={() => handleNavigation('/')}
+                                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}
+                                className="nav-link-hover"
+                            >
                                 <div style={{
                                     width: '32px', height: '32px', borderRadius: '10px',
                                     background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
