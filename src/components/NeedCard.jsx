@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Tag, MapPin, Banknote, Clock, MessageSquare, Bookmark, Heart, MessageCircle, Repeat2 } from 'lucide-react';
+import { Tag, MapPin, Banknote, Clock, MessageSquare, Bookmark, Heart, MessageCircle, Repeat2, Award } from 'lucide-react';
 import { ReplyModal } from './ReplyModal';
 import { useBookmarks } from '../context/BookmarksContext';
 import { useLikes } from '../context/LikesContext';
@@ -23,6 +23,7 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
 
     const [likeCount, setLikeCount] = useState(0);
     const [hasLoadedCount, setHasLoadedCount] = useState(false);
+    const [endorsementCount, setEndorsementCount] = useState(0);
 
     const bookmarked = isBookmarked(need.id);
     const following = checkIsFollowing(need.authorId);
@@ -30,17 +31,26 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
     const broadcasted = checkIsBroadcasted(need.id);
 
     React.useEffect(() => {
-        const loadCount = async () => {
+        const loadCounts = async () => {
             try {
-                const count = await getLikeCount(need.id);
-                setLikeCount(count);
+                const [likes, { count, error }] = await Promise.all([
+                    getLikeCount(need.id),
+                    import('../lib/supabase').then(({ supabase }) =>
+                        supabase
+                            .from('endorsements')
+                            .select('*', { count: 'exact', head: true })
+                            .eq('endorsed_id', need.authorId)
+                    )
+                ]);
+                setLikeCount(likes);
+                setEndorsementCount(error ? 0 : (count || 0));
                 setHasLoadedCount(true);
             } catch (err) {
-                console.error("Error loading like count", err);
+                console.error("Error loading counts for needcard", err);
             }
         };
-        loadCount();
-    }, [need.id]);
+        loadCounts();
+    }, [need.id, need.authorId]);
 
     const handleLike = async (e) => {
         e.stopPropagation();
@@ -114,6 +124,15 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
                                     <span>@{need.authorUsername}</span>
                                 )}
                                 <span>• {need.postedAt}</span>
+                                {endorsementCount > 0 && (
+                                    <>
+                                        <span>•</span>
+                                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.15rem', color: 'var(--primary)' }} title={`${endorsementCount} Endorsement${endorsementCount !== 1 ? 's' : ''}`}>
+                                            <Award size={12} />
+                                            <span style={{ fontWeight: 600 }}>{endorsementCount}</span>
+                                        </span>
+                                    </>
+                                )}
                             </div>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

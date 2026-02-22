@@ -1,9 +1,26 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
+import { useAuth } from '../context/AuthContext';
 
 export const PublicPageWrapper = ({ children }) => {
+    const { session } = useAuth();
+    const navigate = useNavigate();
+
+    // If logged in, back goes to app root or previous page.
+    const backLink = session ? '/' : '/welcome';
+
+    // Allow users to go back in history if possible, otherwise fallback to backLink
+    const handleBack = (e) => {
+        e.preventDefault();
+        if (window.history.length > 2) {
+            navigate(-1);
+        } else {
+            navigate(backLink);
+        }
+    };
+
     return (
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
             {/* Minimal header */}
@@ -16,8 +33,9 @@ export const PublicPageWrapper = ({ children }) => {
                 borderBottom: '1px solid var(--border-glass)',
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <Link
-                        to="/welcome"
+                    <a
+                        href="#"
+                        onClick={handleBack}
                         style={{
                             display: 'flex', alignItems: 'center', gap: '0.4rem',
                             color: 'var(--text-muted)', textDecoration: 'none',
@@ -29,11 +47,11 @@ export const PublicPageWrapper = ({ children }) => {
                     >
                         <ArrowLeft size={16} />
                         Back
-                    </Link>
+                    </a>
 
                     <div style={{ width: '1px', height: '20px', background: 'var(--border-glass)' }} />
 
-                    <Link to="/welcome" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
+                    <Link to={backLink} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
                         <div style={{
                             width: '28px', height: '28px', borderRadius: '8px',
                             background: 'linear-gradient(135deg, var(--primary), var(--secondary))',

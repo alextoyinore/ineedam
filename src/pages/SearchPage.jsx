@@ -3,7 +3,8 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search as SearchIcon, ArrowLeft, SlidersHorizontal, Loader } from 'lucide-react';
 import { NeedCard } from '../components/NeedCard';
-import { searchNeeds, shapeNeed } from '../lib/needsService';
+import { searchMixedFeed } from '../lib/feedService';
+import { EndorsementFeedCard } from '../components/EndorsementFeedCard';
 
 export const SearchPage = () => {
     const [searchParams] = useSearchParams();
@@ -22,13 +23,13 @@ export const SearchPage = () => {
         const performSearch = async () => {
             setLoading(true);
             try {
-                const data = await searchNeeds({
+                const data = await searchMixedFeed({
                     query: query || trending,
                     category,
                     minBudget,
                     maxBudget
                 });
-                setResults(data ? data.map(shapeNeed) : []);
+                setResults(data || []);
             } catch (err) {
                 console.error("Search failed:", err);
                 setResults([]);
@@ -144,9 +145,9 @@ export const SearchPage = () => {
                         <Loader size={32} className="animate-spin" />
                     </div>
                 ) : results.length > 0 ? (
-                    results.map((need) => (
+                    results.map((item) => (
                         <motion.div
-                            key={need.id}
+                            key={`${item.type}-${item.id}`}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.2 }}
@@ -158,7 +159,11 @@ export const SearchPage = () => {
                             }}
                             className="nav-link-hover"
                         >
-                            <NeedCard need={need} />
+                            {item.type === 'need' ? (
+                                <NeedCard need={item} />
+                            ) : (
+                                <EndorsementFeedCard endorsement={item} />
+                            )}
                         </motion.div>
                     ))
                 ) : (

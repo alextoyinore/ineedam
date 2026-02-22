@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Calendar, Users } from 'lucide-react';
+import { MapPin, Calendar, Users, Award } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useSocial } from '../context/SocialContext';
 import { getFollowStats } from '../lib/socialService';
@@ -19,8 +19,22 @@ export const ProfileHoverCard = ({ userData, children }) => {
             setIsVisible(true);
             try {
                 setIsStatsLoading(true);
-                const followStats = await getFollowStats(userData.id);
-                setStats(followStats);
+                // We'll also fetch endorsement count to show here
+                const [followStats, { count, error }] = await Promise.all([
+                    getFollowStats(userData.id),
+                    // Query directly since we don't have a count-only method in service yet
+                    import('../lib/supabase').then(({ supabase }) =>
+                        supabase
+                            .from('endorsements')
+                            .select('*', { count: 'exact', head: true })
+                            .eq('endorsed_id', userData.id)
+                    )
+                ]);
+
+                setStats({
+                    ...followStats,
+                    endorsementCount: error ? 0 : (count || 0)
+                });
             } catch (err) {
                 console.error("Error fetching hover card stats:", err);
             } finally {
@@ -127,13 +141,19 @@ export const ProfileHoverCard = ({ userData, children }) => {
                                 </div>
                             )}
 
-                            <div style={{ display: 'flex', gap: '1rem', fontSize: '0.9rem' }}>
+                            <div style={{ display: 'flex', gap: '1rem', fontSize: '0.9rem', flexWrap: 'wrap' }}>
                                 <span style={{ color: 'var(--text-muted)' }}>
                                     <strong style={{ color: 'var(--text-primary)' }}>{stats.followingCount}</strong> Following
                                 </span>
                                 <span style={{ color: 'var(--text-muted)' }}>
                                     <strong style={{ color: 'var(--text-primary)' }}>{stats.followersCount}</strong> Followers
                                 </span>
+                                {stats.endorsementCount > 0 && (
+                                    <span style={{ color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '0.2rem' }} title="Endorsements">
+                                        <Award size={14} />
+                                        <strong style={{ color: 'var(--primary)' }}>{stats.endorsementCount}</strong> Endorsement{stats.endorsementCount !== 1 ? 's' : ''}
+                                    </span>
+                                )}
                             </div>
                         </div>
                     </motion.div>

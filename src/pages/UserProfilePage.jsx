@@ -11,6 +11,7 @@ import { EditProfileModal } from '../components/EditProfileModal';
 import { EditNeedModal } from '../components/EditNeedModal';
 import { MarkMetModal } from '../components/MarkMetModal';
 import { EndorseModal } from '../components/EndorseModal';
+import { EndorsementFeedCard } from '../components/EndorsementFeedCard';
 
 import { useSocial } from '../context/SocialContext';
 import { useAuth } from '../context/AuthContext';
@@ -574,43 +575,26 @@ export const UserProfilePage = () => {
                         <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>No endorsements yet.</div>
                     ) : (
                         <div style={{ padding: '1rem 0' }}>
-                            {userEndorsements.map((endorsement, idx) => (
-                                <motion.div
-                                    key={endorsement.id}
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    transition={{ delay: idx * 0.05 }}
-                                    style={{ borderBottom: '1px solid var(--border-glass)', padding: '1.5rem' }}
-                                >
-                                    <div style={{ display: 'flex', gap: '1.25rem' }}>
-                                        <div style={{
-                                            width: '44px', height: '44px', borderRadius: '50%', flexShrink: 0,
-                                            background: endorsement.profiles?.avatar_url ? `url(${endorsement.profiles.avatar_url}) center/cover` : 'var(--bg-surface)',
-                                            border: '1px solid var(--border-glass)',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '1.1rem'
-                                        }}>
-                                            {!endorsement.profiles?.avatar_url && endorsement.profiles?.display_name?.charAt(0).toUpperCase()}
-                                        </div>
-                                        <div style={{ flex: 1 }}>
-                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', alignItems: 'center', marginBottom: '0.5rem' }}>
-                                                <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{endorsement.profiles?.display_name}</span>
-                                                <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>@{endorsement.profiles?.username}</span>
-                                                <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>• {formatTimeAgo(endorsement.created_at)}</span>
-                                            </div>
-                                            <p style={{ fontSize: '1rem', whiteSpace: 'pre-wrap', marginBottom: '1rem', color: 'var(--text-primary)', lineHeight: 1.5 }}>"{endorsement.message}"</p>
+                            {userEndorsements.map((endorsement, idx) => {
+                                // Map the UserProfilePage's endorsement shape to the one expected by EndorsementFeedCard
+                                const mappedEndorsement = {
+                                    ...endorsement,
+                                    endorser: endorsement.profiles,
+                                    endorsed: profile
+                                };
 
-                                            <div style={{
-                                                border: '1px solid var(--border-glass)', borderRadius: '12px',
-                                                padding: '0.875rem 1rem', background: 'var(--bg-surface)'
-                                            }}>
-                                                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>For helping with</p>
-                                                <p style={{ margin: 0, fontWeight: 500, fontSize: '0.95rem', color: 'var(--text-primary)' }}>{endorsement.needs?.title}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            ))}
+                                return (
+                                    <motion.div
+                                        key={endorsement.id}
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ delay: idx * 0.05 }}
+                                        style={{ borderBottom: '1px solid var(--border-glass)', padding: '1.5rem' }}
+                                    >
+                                        <EndorsementFeedCard endorsement={mappedEndorsement} />
+                                    </motion.div>
+                                );
+                            })}
                         </div>
                     )
                 )}

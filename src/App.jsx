@@ -24,6 +24,7 @@ import { ChatDetail } from './pages/messages/ChatDetail';
 import { SettingsPage } from './pages/SettingsPage';
 import { MobileWhoToFollowPage } from './pages/MobileWhoToFollowPage';
 import { MobileWhatsHappeningPage } from './pages/MobileWhatsHappeningPage';
+import { PremiumPage } from './pages/PremiumPage';
 
 
 // Full-screen spinner while the session is being determined
@@ -74,6 +75,7 @@ function App() {
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/who-to-follow" element={<MobileWhoToFollowPage />} />
               <Route path="/whats-happening" element={<MobileWhatsHappeningPage />} />
+              <Route path="/premium" element={<PremiumPage />} />
               <Route path="/need/:id" element={<NeedDetailPage />} />
               <Route path="/dashboard" element={<Navigate to={`/${useAuth().profile?.username || ''}`} replace />} />
               <Route path="/:username" element={<UserProfilePage />} />

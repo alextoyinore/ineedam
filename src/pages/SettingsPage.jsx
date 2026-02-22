@@ -3,7 +3,7 @@ import { useSettings } from '../context/SettingsContext';
 import { useAuth } from '../context/AuthContext';
 import {
     Volume2, VolumeX, Bell, Shield, Moon, Sun, Monitor,
-    ArrowLeft, Trash2, LogOut
+    ArrowLeft, Trash2, LogOut, Star
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -172,6 +172,45 @@ export const SettingsPage = () => {
                         </div>
                     </div>
                 ))}
+
+                {/* Premium Teaser */}
+                <div>
+                    <h3 className="text-gradient" style={{
+                        marginBottom: '0.75rem',
+                        fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase',
+                        letterSpacing: '0.08em', display: 'inline-block'
+                    }}>
+                        Upgrade
+                    </h3>
+                    <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-glass)', borderRadius: '16px', overflow: 'hidden' }}>
+                        <button
+                            onClick={() => navigate('/premium')}
+                            style={{
+                                width: '100%', padding: '1rem 1.25rem', display: 'flex',
+                                alignItems: 'center', gap: '1rem', cursor: 'pointer',
+                                background: 'transparent', border: 'none', color: 'var(--text-primary)',
+                                textAlign: 'left'
+                            }}
+                            className="nav-link-hover"
+                        >
+                            <div style={{
+                                width: '38px', height: '38px', borderRadius: '10px',
+                                background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                                boxShadow: '0 4px 10px rgba(236, 72, 153, 0.2)'
+                            }}>
+                                <Star size={20} color="white" fill="white" />
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <p style={{ margin: 0, fontWeight: 700, fontSize: '0.95rem' }}>iNeedAm Premium</p>
+                                    <span style={{ fontSize: '0.65rem', background: 'var(--accent)', color: 'white', padding: '0.1rem 0.4rem', borderRadius: '9999px', fontWeight: 800 }}>NEW</span>
+                                </div>
+                                <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Unlock exclusive features and stand out</p>
+                            </div>
+                        </button>
+                    </div>
+                </div>
 
                 {/* Logout + Danger Zone */}
                 <div>

@@ -3,14 +3,15 @@ import { motion } from 'framer-motion';
 import { Loader } from 'lucide-react';
 import { NeedCard } from '../components/NeedCard';
 import { useSocial } from '../context/SocialContext';
-import { fetchNeeds, shapeNeed } from '../lib/needsService';
+import { fetchMixedFeed } from '../lib/feedService';
 import { supabase } from '../lib/supabase';
-import needsData from '../data/needs.json';
+import { shapeNeed } from '../lib/needsService';
+import { EndorsementFeedCard } from '../components/EndorsementFeedCard';
 
 export const ExplorePage = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [feedTab, setFeedTab] = useState('foryou');
-    const [needs, setNeeds] = useState([]);
+    const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const { following } = useSocial();
 
@@ -18,12 +19,11 @@ export const ExplorePage = () => {
         const load = async () => {
             setLoading(true);
             try {
-                const rows = await fetchNeeds();
-                setNeeds(rows ? rows.map(shapeNeed) : []);
+                const mixedItems = await fetchMixedFeed();
+                setItems(mixedItems || []);
             } catch (err) {
-                console.error("Error fetching needs:", err);
-                // Optionally show an error toaster here
-                setNeeds([]);
+                console.error("Error fetching mixed feed:", err);
+                setItems([]);
             } finally {
                 setLoading(false);
             }
@@ -33,24 +33,48 @@ export const ExplorePage = () => {
 
     // Subscribe to real-time inserts so new posts appear instantly
     useEffect(() => {
-        const channel = supabase
+        const needsChannel = supabase
             .channel('needs-feed')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'needs' }, (payload) => {
-                const shaped = shapeNeed({ ...payload.new, profiles: null });
-                setNeeds(prev => [shaped, ...prev]);
+                const shaped = { ...shapeNeed({ ...payload.new, profiles: null }), type: 'need' };
+                setItems(prev => [shaped, ...prev].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
             })
             .subscribe();
 
-        return () => supabase.removeChannel(channel);
+        const endorseChannel = supabase
+            .channel('endorse-feed')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'endorsements' }, (payload) => {
+                // Since real-time payload lacks joined profile data, we might need to fetch the full endorsement
+                // For MVP, we instruct the UI to reload or just push the basic shape if possible.
+                // It's safer to just trigger a re-fetch of the feed to get joined profile data for Endorsements
+                console.log("New endorsement, should reload feed");
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(needsChannel);
+            supabase.removeChannel(endorseChannel);
+        };
     }, []);
 
-    const filteredNeeds = needs.filter(n => {
-        const matchesSearch =
-            n.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            n.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const filteredItems = items.filter(item => {
+        let matchesSearch = false;
+        if (item.type === 'need') {
+            matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                item.description.toLowerCase().includes(searchQuery.toLowerCase());
+        } else if (item.type === 'endorsement') {
+            matchesSearch = (item.message && item.message.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                (item.endorsed?.display_name && item.endorsed.display_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                (item.endorser?.display_name && item.endorser.display_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                (item.needs?.title && item.needs.title.toLowerCase().includes(searchQuery.toLowerCase()));
+        }
 
         if (feedTab === 'following') {
-            return matchesSearch && following.includes(n.authorId);
+            // For endorsements, consider it following if they follow EITHER the endorser or the endorsed
+            if (item.type === 'endorsement') {
+                return matchesSearch && (following.includes(item.endorser_id) || following.includes(item.endorsed_id));
+            }
+            return matchesSearch && following.includes(item.authorId);
         }
         return matchesSearch;
     });
@@ -94,10 +118,10 @@ export const ExplorePage = () => {
                     <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem', color: 'var(--primary)' }}>
                         <Loader size={32} className="animate-spin" />
                     </div>
-                ) : filteredNeeds.length > 0 ? (
-                    filteredNeeds.map((need) => (
+                ) : filteredItems.length > 0 ? (
+                    filteredItems.map((item) => (
                         <motion.div
-                            key={need.id}
+                            key={`${item.type}-${item.id}`}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.2 }}
@@ -109,12 +133,16 @@ export const ExplorePage = () => {
                             }}
                             className="nav-link-hover"
                         >
-                            <NeedCard need={need} />
+                            {item.type === 'need' ? (
+                                <NeedCard need={item} />
+                            ) : (
+                                <EndorsementFeedCard endorsement={item} />
+                            )}
                         </motion.div>
                     ))
                 ) : (
                     <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                        No needs found matching your criteria.
+                        No items found matching your criteria.
                     </div>
                 )}
             </div>
