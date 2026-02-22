@@ -14,17 +14,23 @@ export const BottomNav = () => {
     const { profile } = useAuth();
 
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [shouldFocusSearch, setShouldFocusSearch] = useState(false);
+
+    const openSearchDrawer = () => {
+        setShouldFocusSearch(true);
+        setIsDrawerOpen(true);
+    };
 
     const profilePath = profile?.username ? `/${profile.username}` : '/dashboard';
 
     const navItems = [
         { icon: Home, label: 'Home', path: '/' },
         location.pathname === '/bookmarks'
-            ? { icon: Search, label: 'Explore', path: '/' }
+            ? { icon: Search, label: 'Explore', isButton: true, onClick: openSearchDrawer }
             : { icon: Bookmark, label: 'Saved', path: '/bookmarks' },
         { icon: Bell, label: 'Alerts', path: '/notifications', badge: unreadCount },
         { icon: Mail, label: 'Inbox', path: '/messages', badge: unreadThreadsCount },
-        { icon: User, label: 'Profile', isButton: true }
+        { icon: User, label: 'Profile', isButton: true, useAvatar: true }
     ];
 
     return (
@@ -35,12 +41,12 @@ export const BottomNav = () => {
                         return (
                             <button
                                 key={item.label}
-                                onClick={() => setIsDrawerOpen(true)}
+                                onClick={item.onClick || (() => setIsDrawerOpen(true))}
                                 className={`bottom-nav-item ${isDrawerOpen ? 'active' : ''}`}
                                 style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
                             >
                                 {/* Avatar or Icon */}
-                                {profile?.avatar_url ? (
+                                {item.useAvatar && profile?.avatar_url ? (
                                     <div style={{
                                         width: '24px', height: '24px', borderRadius: '50%',
                                         background: `url(${profile.avatar_url}) center/cover`,
@@ -69,7 +75,14 @@ export const BottomNav = () => {
                     )
                 })}
             </nav>
-            <MobileDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
+            <MobileDrawer
+                isOpen={isDrawerOpen}
+                onClose={() => {
+                    setIsDrawerOpen(false);
+                    setShouldFocusSearch(false);
+                }}
+                autoFocusSearch={shouldFocusSearch}
+            />
         </>
     );
 };

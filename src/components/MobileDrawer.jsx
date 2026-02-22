@@ -1,15 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { X, Settings, HelpCircle, FileText, Shield, Users, TrendingUp, Award } from 'lucide-react';
+import { X, Settings, HelpCircle, FileText, Shield, Users, TrendingUp, Award, Search, Bookmark, SlidersHorizontal, Trash2 } from 'lucide-react';
 import { fetchMetCounts } from '../lib/needsService';
 import { getFollowStats } from '../lib/socialService';
 import { fetchEndorsementsForUser } from '../lib/endorsementService';
 
-export const MobileDrawer = ({ isOpen, onClose }) => {
+export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false }) => {
     const { profile, signOut } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+    const searchInputRef = useRef(null);
+    const [searchQuery, setSearchQuery] = useState('');
     const [stats, setStats] = useState({
         needsMet: 0,
         fulfilledRequests: 0,
@@ -17,6 +20,14 @@ export const MobileDrawer = ({ isOpen, onClose }) => {
         followingCount: 0,
         endorsementsCount: 0
     });
+
+    useEffect(() => {
+        if (isOpen && autoFocusSearch && searchInputRef.current) {
+            setTimeout(() => {
+                searchInputRef.current.focus();
+            }, 300);
+        }
+    }, [isOpen, autoFocusSearch]);
 
     useEffect(() => {
         if (isOpen && profile) {
@@ -151,6 +162,39 @@ export const MobileDrawer = ({ isOpen, onClose }) => {
                                     </div>
                                 </div>
                             )}
+
+                            {/* Search Bar */}
+                            <div style={{ padding: '0.5rem 1.5rem 1rem' }}>
+                                <form
+                                    onSubmit={(e) => {
+                                        e.preventDefault();
+                                        if (searchQuery.trim()) {
+                                            handleNavigation(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+                                            setSearchQuery('');
+                                        }
+                                    }}
+                                    style={{ position: 'relative' }}
+                                >
+                                    <Search size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                                    <input
+                                        ref={searchInputRef}
+                                        type="text"
+                                        placeholder="Search Ineedam..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        style={{
+                                            width: '100%',
+                                            padding: '0.75rem 1rem 0.75rem 2.8rem',
+                                            background: 'var(--bg-base)', // Changed from dark glass to standard surface
+                                            border: '1px solid var(--border-glass)',
+                                            borderRadius: '12px',
+                                            color: 'var(--text-primary)',
+                                            fontSize: '0.95rem',
+                                            outline: 'none'
+                                        }}
+                                    />
+                                </form>
+                            </div>
 
                             {/* Mobile specific links (extracted from Right Sidebar) */}
                             <div style={{ padding: '0.5rem 0', borderBottom: '1px solid var(--border-glass)' }}>
