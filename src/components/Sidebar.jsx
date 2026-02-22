@@ -31,7 +31,7 @@ export const Sidebar = ({ onPostClick }) => {
                 </Link>
 
                 {/* Navigation Links */}
-                <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                     <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>
                         <Home size={24} />
                         <span className="nav-text">Home</span>

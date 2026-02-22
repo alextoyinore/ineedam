@@ -108,11 +108,11 @@ export const ChatDetail = () => {
                 overflowY: 'auto',
                 padding: isMobile ? '1rem' : '1.5rem',
                 display: 'flex',
-                flexDirection: 'column',
+                flexDirection: 'column-reverse',
                 gap: '1rem',
                 WebkitOverflowScrolling: 'touch'
             }}>
-                {activeThread.messages.map(msg => (
+                {[...activeThread.messages].reverse().map(msg => (
                     <div
                         key={msg.id}
                         style={{

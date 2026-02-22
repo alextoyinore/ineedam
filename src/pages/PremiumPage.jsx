@@ -80,16 +80,16 @@ export const PremiumPage = () => {
                         </div>
                     </div>
 
-                    <h1 className="h1" style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>
+                    <h1 className="h1" style={{ fontSize: 'clamp(2rem, 8vw, 2.5rem)', marginBottom: '0.75rem', lineHeight: 1.1 }}>
                         Supercharge your <span className="text-gradient">Impact</span>
                     </h1>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', lineHeight: 1.6, maxWidth: '400px', margin: '0 auto' }}>
+                    <p style={{ color: 'var(--text-muted)', fontSize: 'clamp(1rem, 4vw, 1.1rem)', lineHeight: 1.6, maxWidth: '400px', margin: '0 auto 0.5rem auto' }}>
                         Get ready to unlock exclusive tools to boost your trust, reach more people, and help faster.
                     </p>
                 </motion.div>
 
                 {/* Features List */}
-                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '3rem' }}>
+                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 'clamp(1rem, 3vw, 1.5rem)', marginBottom: '3rem' }}>
                     {features.map((feature, idx) => (
                         <motion.div
                             key={idx}
@@ -98,27 +98,28 @@ export const PremiumPage = () => {
                             transition={{ delay: 0.2 + idx * 0.1 }}
                             style={{
                                 display: 'flex',
-                                gap: '1.25rem',
-                                padding: '1.5rem',
+                                gap: 'clamp(0.75rem, 3vw, 1.25rem)',
+                                padding: 'clamp(1rem, 4vw, 1.5rem)',
                                 background: 'var(--bg-surface)',
                                 borderRadius: '20px',
                                 border: '1px solid var(--border-glass)',
-                                boxShadow: '0 4px 20px rgba(0,0,0,0.02)'
+                                boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
+                                alignItems: 'flex-start'
                             }}
                         >
                             <div style={{
-                                width: '48px', height: '48px', borderRadius: '14px',
+                                width: 'clamp(40px, 10vw, 48px)', height: 'clamp(40px, 10vw, 48px)', borderRadius: '14px',
                                 background: 'rgba(99, 102, 241, 0.08)',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 flexShrink: 0
                             }}>
-                                {feature.icon}
+                                {React.cloneElement(feature.icon, { size: 'clamp(20px, 5vw, 24px)' })}
                             </div>
                             <div>
-                                <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                                <h3 style={{ margin: '0 0 0.25rem 0', fontSize: 'clamp(1.05rem, 4.5vw, 1.1rem)', fontWeight: 700, color: 'var(--text-primary)' }}>
                                     {feature.title}
                                 </h3>
-                                <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.5 }}>
+                                <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: 'clamp(0.9rem, 3.5vw, 0.95rem)', lineHeight: 1.5 }}>
                                     {feature.description}
                                 </p>
                             </div>
