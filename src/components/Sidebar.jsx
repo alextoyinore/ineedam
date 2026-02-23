@@ -18,8 +18,9 @@ export const Sidebar = ({ onPostClick }) => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', height: '100%', padding: '1.25rem 0' }}>
 
                 {/* Logo */}
-                <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', padding: '0 1rem' }}>
-                    <img src="/logo.svg" alt="Ineedam Logo" style={{ height: '40px' }} />
+                <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', padding: '0 1rem' }} className="sidebar-logo-container">
+                    <img src="/logo.svg" alt="Ineedam Logo" className="full-text-logo" style={{ height: '40px' }} />
+                    <img src="/icon.svg" alt="Ineedam Icon" className="icon-only-logo" style={{ height: '40px', display: 'none' }} />
                 </Link>
 
                 {/* Navigation Links */}

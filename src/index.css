@@ -192,6 +192,7 @@ button {
   grid-template-columns: 250px minmax(0, 600px) 300px;
   gap: 2rem;
   justify-content: center;
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
   min-height: 100vh;
@@ -525,6 +526,7 @@ button {
     justify-content: start;
     gap: 1rem;
     padding: 0 1rem;
+    width: 100%;
   }
 
   .social-sidebar-left {
@@ -533,17 +535,23 @@ button {
 
   /* Center items in iconic mode */
   .social-sidebar-left .nav-link,
-  .social-sidebar-left a,
+  .social-sidebar-left a:not(.sidebar-logo-container),
   .social-sidebar-left .btn-primary,
-  .social-sidebar-left .nav-link-hover {
+  .social-sidebar-left .nav-link-hover,
+  .sidebar-logo-container {
     justify-content: center !important;
     padding: 1rem 0 !important;
     gap: 0 !important;
   }
 
   .social-sidebar-left .nav-text,
-  .social-sidebar-left .btn-primary span {
+  .social-sidebar-left .btn-primary span,
+  .full-text-logo {
     display: none !important;
+  }
+
+  .icon-only-logo {
+    display: block !important;
   }
 
   .social-sidebar-right {
