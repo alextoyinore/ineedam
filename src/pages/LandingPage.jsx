@@ -53,6 +53,7 @@ export const LandingPage = () => {
                 <a href="/faq" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>FAQ</a>
                 <a href="/privacy" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Privacy</a>
                 <a href="/terms" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Terms</a>
+                <a href="/rules" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Rules</a>
             </div>
 
             <AuthModal

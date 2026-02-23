@@ -3,7 +3,7 @@ import { useSettings } from '../context/SettingsContext';
 import { useAuth } from '../context/AuthContext';
 import {
     Volume2, VolumeX, Bell, Shield, Moon, Sun, Monitor,
-    ArrowLeft, Trash2, LogOut, Star
+    ArrowLeft, Trash2, LogOut, Star, UserX
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -67,6 +67,14 @@ export const SettingsPage = () => {
                     type: 'toggle',
                     icon: <Shield size={20} />,
                     value: settings.privateProfile
+                },
+                {
+                    id: 'blockedAccounts',
+                    label: 'Blocked Accounts',
+                    description: 'Manage users you have blocked',
+                    type: 'link',
+                    path: '/blocked-accounts',
+                    icon: <UserX size={20} />
                 }
             ]
         }
@@ -132,7 +140,19 @@ export const SettingsPage = () => {
                                         <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>{item.description}</p>
                                     </div>
 
-                                    {item.type === 'toggle' ? (
+                                    {item.type === 'link' ? (
+                                        <button
+                                            onClick={() => navigate(item.path)}
+                                            style={{
+                                                padding: '0.4rem 1rem', borderRadius: '8px',
+                                                background: 'var(--bg-base)', border: '1px solid var(--border-glass)',
+                                                color: 'var(--text-primary)', cursor: 'pointer', fontSize: '0.85rem'
+                                            }}
+                                            className="nav-link-hover"
+                                        >
+                                            View
+                                        </button>
+                                    ) : item.type === 'toggle' ? (
                                         <button
                                             onClick={() => toggleSetting(item.id)}
                                             style={{

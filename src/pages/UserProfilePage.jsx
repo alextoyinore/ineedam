@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     ArrowLeft, Calendar, MapPin, Users, Mail, UserPlus, UserMinus,
-    ShieldCheck, Edit3, CheckCircle, Trash2, Settings, Repeat2, Loader
+    ShieldCheck, Edit3, CheckCircle, Trash2, Settings, Repeat2, Loader,
+    MoreVertical, Flag, Ban
 } from 'lucide-react';
 
 import { NeedCard } from '../components/NeedCard';
@@ -12,6 +13,7 @@ import { EditNeedModal } from '../components/EditNeedModal';
 import { MarkMetModal } from '../components/MarkMetModal';
 import { EndorseModal } from '../components/EndorseModal';
 import { EndorsementFeedCard } from '../components/EndorsementFeedCard';
+import { ReportModal } from '../components/ReportModal';
 
 import { useSocial } from '../context/SocialContext';
 import { useAuth } from '../context/AuthContext';
@@ -25,6 +27,7 @@ import { fetchRepliesByUser, formatTimeAgo } from '../lib/replyService';
 import { getOrCreateThread } from '../lib/messageService';
 import { fetchBroadcastedNeeds } from '../lib/broadcastService';
 import { fetchEndorsementsForUser } from '../lib/endorsementService';
+import { checkBlockStatus, blockUser, unblockUser } from '../lib/moderationService';
 
 export const UserProfilePage = () => {
     const { username } = useParams();
@@ -36,6 +39,8 @@ export const UserProfilePage = () => {
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('needs');
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [blockStatus, setBlockStatus] = useState({ hasBlocked: false, isBlockedBy: false });
 
     // Data State
     const [userNeeds, setUserNeeds] = useState([]);
@@ -59,6 +64,7 @@ export const UserProfilePage = () => {
     const [isEndorseModalOpen, setIsEndorseModalOpen] = useState(false);
     const [selectedNeed, setSelectedNeed] = useState(null);
     const [needToEndorse, setNeedToEndorse] = useState(null);
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
     const isOwnProfile = currentUser?.id === profile?.id;
     const isFollowing = profile && following.includes(profile.id);
@@ -95,6 +101,11 @@ export const UserProfilePage = () => {
                 setFollowersList(followersData || []);
                 setFollowingList(followingData || []);
                 setStats({ ...metStats, ...followStats });
+
+                if (currentUser && currentUser.id !== profileData.id) {
+                    const blockInfo = await checkBlockStatus(currentUser.id, profileData.id);
+                    setBlockStatus(blockInfo);
+                }
             } catch (err) {
                 console.error("Error loading profile page:", err);
             } finally {
@@ -110,6 +121,26 @@ export const UserProfilePage = () => {
 
     const handleProfileUpdate = (updatedProfile) => {
         setProfile(updatedProfile);
+    };
+
+    const handleToggleBlock = async () => {
+        if (!currentUser) return;
+        setIsMenuOpen(false);
+        try {
+            if (blockStatus.hasBlocked) {
+                await unblockUser(currentUser.id, profile.id);
+                setBlockStatus(prev => ({ ...prev, hasBlocked: false }));
+            } else {
+                if (window.confirm(`Are you sure you want to block ${profile.display_name}? They will no longer be able to message or interact with you.`)) {
+                    await blockUser(currentUser.id, profile.id);
+                    setBlockStatus(prev => ({ ...prev, hasBlocked: true }));
+                    // If following, maybe optimistically unfollow too (complex here, keeping simple)
+                }
+            }
+        } catch (err) {
+            console.error('Failed to toggle block status:', err);
+            alert('Failed to update block status.');
+        }
     };
 
     const handleMessage = async () => {
@@ -229,6 +260,12 @@ export const UserProfilePage = () => {
                 }}
             />
 
+            <ReportModal
+                isOpen={isReportModalOpen}
+                onClose={() => setIsReportModalOpen(false)}
+                reportedProfile={profile}
+            />
+
             {/* Header */}
             <header className="sticky-header" style={{
                 padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem'
@@ -315,6 +352,61 @@ export const UserProfilePage = () => {
                                 >
                                     {isFollowing ? 'Following' : 'Follow'}
                                 </button>
+
+                                <div style={{ position: 'relative' }}>
+                                    <button
+                                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                        style={{
+                                            padding: '0.5rem', borderRadius: '50%', border: '1px solid var(--border-glass)',
+                                            color: 'var(--text-primary)', background: 'var(--bg-surface)', cursor: 'pointer'
+                                        }}
+                                        className="glass-panel-hover"
+                                    >
+                                        <MoreVertical size={20} />
+                                    </button>
+
+                                    <AnimatePresence>
+                                        {isMenuOpen && (
+                                            <>
+                                                <div style={{ position: 'fixed', inset: 0, zIndex: 90 }} onClick={() => setIsMenuOpen(false)} />
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                    style={{
+                                                        position: 'absolute', top: 'calc(100% + 0.5rem)', right: 0, zIndex: 100,
+                                                        background: 'var(--bg-surface-glass)', backdropFilter: 'blur(16px)',
+                                                        border: '1px solid var(--border-glass)', borderRadius: '12px',
+                                                        padding: '0.5rem', minWidth: '160px', boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
+                                                    }}
+                                                >
+                                                    <button
+                                                        onClick={() => { setIsMenuOpen(false); setIsReportModalOpen(true); }}
+                                                        style={{
+                                                            width: '100%', padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                                            background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer',
+                                                            textAlign: 'left', borderRadius: '8px'
+                                                        }}
+                                                        className="nav-link-hover"
+                                                    >
+                                                        <Flag size={16} /> Report User
+                                                    </button>
+                                                    <button
+                                                        onClick={handleToggleBlock}
+                                                        style={{
+                                                            width: '100%', padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                                            background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer',
+                                                            textAlign: 'left', borderRadius: '8px'
+                                                        }}
+                                                        className="nav-link-hover"
+                                                    >
+                                                        <Ban size={16} /> {blockStatus.hasBlocked ? 'Unblock User' : 'Block User'}
+                                                    </button>
+                                                </motion.div>
+                                            </>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
                             </>
                         )}
                     </div>
@@ -355,250 +447,270 @@ export const UserProfilePage = () => {
                 </div>
             </div>
 
-            {/* Tabs */}
-            <div style={{ display: 'flex', borderBottom: '1px solid var(--border-glass)', overflowX: 'auto' }}>
-                {['needs', 'broadcasts', 'endorsements', 'replies', 'following', 'followers'].map(tab => (
-                    <button
-                        key={tab}
-                        onClick={() => setActiveTab(tab)}
-                        style={{
-                            flex: 1, padding: '1rem', fontWeight: 600, fontSize: '0.9rem',
-                            color: activeTab === tab ? 'var(--text-primary)' : 'var(--text-muted)',
-                            position: 'relative', transition: 'background-color 0.2s',
-                            textTransform: 'capitalize', whiteSpace: 'nowrap'
-                        }}
-                        className="nav-link-hover"
-                    >
-                        {tab === 'needs' ? 'Posts' : tab}
-                        {activeTab === tab && (
-                            <div style={{ position: 'absolute', bottom: 0, left: '15%', right: '15%', height: '4px', background: 'var(--primary)', borderRadius: '4px 4px 0 0' }} />
-                        )}
+            {/* Block Overlays */}
+            {blockStatus.isBlockedBy ? (
+                <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                    <Ban size={48} style={{ opacity: 0.3, marginBottom: '1rem' }} />
+                    <h3 className="h3">You cannot view this profile</h3>
+                    <p>This user has restricted who can see their content.</p>
+                </div>
+            ) : blockStatus.hasBlocked ? (
+                <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                    <Ban size={48} style={{ opacity: 0.3, marginBottom: '1rem' }} />
+                    <h3 className="h3">You blocked this user</h3>
+                    <p>You must unblock them to see their content.</p>
+                    <button onClick={handleToggleBlock} className="btn btn-secondary" style={{ marginTop: '1rem', padding: '0.5rem 1.5rem', borderRadius: '9999px' }}>
+                        Unblock
                     </button>
-                ))}
-            </div>
+                </div>
+            ) : (
+                <>
+                    {/* Tabs */}
+                    <div style={{ display: 'flex', borderBottom: '1px solid var(--border-glass)', overflowX: 'auto' }}>
+                        {['needs', 'broadcasts', 'endorsements', 'replies', 'following', 'followers'].map(tab => (
+                            <button
+                                key={tab}
+                                onClick={() => setActiveTab(tab)}
+                                style={{
+                                    flex: 1, padding: '1rem', fontWeight: 600, fontSize: '0.9rem',
+                                    color: activeTab === tab ? 'var(--text-primary)' : 'var(--text-muted)',
+                                    position: 'relative', transition: 'background-color 0.2s',
+                                    textTransform: 'capitalize', whiteSpace: 'nowrap'
+                                }}
+                                className="nav-link-hover"
+                            >
+                                {tab === 'needs' ? 'Posts' : tab}
+                                {activeTab === tab && (
+                                    <div style={{ position: 'absolute', bottom: 0, left: '15%', right: '15%', height: '4px', background: 'var(--primary)', borderRadius: '4px 4px 0 0' }} />
+                                )}
+                            </button>
+                        ))}
+                    </div>
 
-            {/* Tab Content */}
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                {activeTab === 'needs' && (
-                    loadingData ? (
-                        <div style={{ padding: '3rem', display: 'flex', justifyContent: 'center', color: 'var(--primary)' }}><Loader size={24} className="animate-spin" /></div>
-                    ) : userNeeds.length === 0 ? (
-                        <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>No posts yet.</div>
-                    ) : (
-                        <div style={{ padding: '1rem 0' }}>
-                            {userNeeds.map((need, idx) => (
-                                <motion.div
-                                    key={need.id}
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    transition={{ delay: idx * 0.1 }}
-                                    style={{ borderBottom: '1px solid var(--border-glass)' }}
-                                >
-                                    <div style={{ padding: '0 1.5rem' }}>
-                                        <NeedCard need={need} />
-                                    </div>
-                                    {isOwnProfile && (
-                                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', marginBottom: '1.5rem', paddingLeft: '6rem' }}>
-                                            {need.status !== 'met' && (
-                                                <button onClick={() => { setSelectedNeed(need); setIsNeedEditModalOpen(true); }} className="btn btn-secondary" style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem', borderRadius: '9999px' }}>Edit</button>
+                    {/* Tab Content */}
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        {activeTab === 'needs' && (
+                            loadingData ? (
+                                <div style={{ padding: '3rem', display: 'flex', justifyContent: 'center', color: 'var(--primary)' }}><Loader size={24} className="animate-spin" /></div>
+                            ) : userNeeds.length === 0 ? (
+                                <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>No posts yet.</div>
+                            ) : (
+                                <div style={{ padding: '1rem 0' }}>
+                                    {userNeeds.map((need, idx) => (
+                                        <motion.div
+                                            key={need.id}
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            transition={{ delay: idx * 0.1 }}
+                                            style={{ borderBottom: '1px solid var(--border-glass)' }}
+                                        >
+                                            <div style={{ padding: '0 1.5rem' }}>
+                                                <NeedCard need={need} />
+                                            </div>
+                                            {isOwnProfile && (
+                                                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', marginBottom: '1.5rem', paddingLeft: '6rem' }}>
+                                                    {need.status !== 'met' && (
+                                                        <button onClick={() => { setSelectedNeed(need); setIsNeedEditModalOpen(true); }} className="btn btn-secondary" style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem', borderRadius: '9999px' }}>Edit</button>
+                                                    )}
+                                                    {need.status === 'open' && (
+                                                        <button onClick={() => handleMarkMet(need)} className="btn btn-secondary" style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem', color: '#10b981', borderRadius: '9999px' }}>Mark Met</button>
+                                                    )}
+                                                    {need.status === 'open' && (
+                                                        <button onClick={() => handleArchive(need.id)} className="btn btn-secondary" style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem', color: '#ef4444', borderRadius: '9999px', marginLeft: 'auto', marginRight: '1.5rem' }}>Archive</button>
+                                                    )}
+                                                </div>
                                             )}
-                                            {need.status === 'open' && (
-                                                <button onClick={() => handleMarkMet(need)} className="btn btn-secondary" style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem', color: '#10b981', borderRadius: '9999px' }}>Mark Met</button>
-                                            )}
-                                            {need.status === 'open' && (
-                                                <button onClick={() => handleArchive(need.id)} className="btn btn-secondary" style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem', color: '#ef4444', borderRadius: '9999px', marginLeft: 'auto', marginRight: '1.5rem' }}>Archive</button>
-                                            )}
-                                        </div>
-                                    )}
-                                </motion.div>
-                            ))}
-                        </div>
-                    )
-                )}
-
-                {activeTab === 'replies' && (
-                    loadingData ? (
-                        <div style={{ padding: '3rem', display: 'flex', justifyContent: 'center', color: 'var(--primary)' }}><Loader size={24} className="animate-spin" /></div>
-                    ) : userReplies.length === 0 ? (
-                        <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>No replies yet.</div>
-                    ) : userReplies.map((reply, idx) => (
-                        <div key={reply.id} className="nav-link-hover" style={{ padding: '1.5rem', borderBottom: '1px solid var(--border-glass)', display: 'flex', gap: '1rem' }}>
-                            <div style={{
-                                width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
-                                background: profile.avatar_url ? `url(${profile.avatar_url}) center/cover` : 'var(--bg-surface)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'
-                            }}>
-                                {!profile.avatar_url && profile.display_name.charAt(0).toUpperCase()}
-                            </div>
-                            <div style={{ flex: 1 }}>
-                                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                                    <span style={{ fontWeight: 700 }}>{profile.display_name}</span>
-                                    <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>@{profile.username}</span>
-                                    <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>• {formatTimeAgo(reply.created_at)}</span>
+                                        </motion.div>
+                                    ))}
                                 </div>
-                                <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-                                    Replying to need <span style={{ color: 'var(--primary)' }}>"{reply.needs?.title}"</span>
-                                </p>
-                                <p style={{ fontSize: '0.95rem', whiteSpace: 'pre-wrap' }}>{reply.content}</p>
-                            </div>
-                        </div>
-                    ))
-                )}
+                            )
+                        )}
 
-                {activeTab === 'following' && (
-                    loadingData ? (
-                        <div style={{ padding: '3rem', display: 'flex', justifyContent: 'center', color: 'var(--primary)' }}><Loader size={24} className="animate-spin" /></div>
-                    ) : followingList.length === 0 ? (
-                        <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                            <Users size={48} style={{ marginBottom: '1rem', opacity: 0.5 }} />
-                            <h3 className="h3">Not following anyone</h3>
-                            <p>When {isOwnProfile ? 'you follow' : `${profile.display_name} follows`} someone, they will appear here.</p>
-                        </div>
-                    ) : (
-                        <div style={{ padding: '1rem 0' }}>
-                            {followingList.map((user, idx) => (
-                                <motion.div
-                                    key={user.id}
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    transition={{ delay: idx * 0.05 }}
-                                    onClick={() => navigate(`/${user.username}`)}
-                                    style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border-glass)', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }}
-                                    className="nav-link-hover"
-                                >
+                        {activeTab === 'replies' && (
+                            loadingData ? (
+                                <div style={{ padding: '3rem', display: 'flex', justifyContent: 'center', color: 'var(--primary)' }}><Loader size={24} className="animate-spin" /></div>
+                            ) : userReplies.length === 0 ? (
+                                <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>No replies yet.</div>
+                            ) : userReplies.map((reply, idx) => (
+                                <div key={reply.id} className="nav-link-hover" style={{ padding: '1.5rem', borderBottom: '1px solid var(--border-glass)', display: 'flex', gap: '1rem' }}>
                                     <div style={{
-                                        width: '48px', height: '48px', borderRadius: '50%', flexShrink: 0,
-                                        background: user.avatar_url ? `url(${user.avatar_url}) center/cover` : 'var(--bg-surface)',
-                                        border: '1px solid var(--border-glass)',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        color: 'var(--text-primary)', fontWeight: 'bold'
+                                        width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
+                                        background: profile.avatar_url ? `url(${profile.avatar_url}) center/cover` : 'var(--bg-surface)',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'
                                     }}>
-                                        {!user.avatar_url && user.display_name?.charAt(0).toUpperCase()}
+                                        {!profile.avatar_url && profile.display_name.charAt(0).toUpperCase()}
                                     </div>
                                     <div style={{ flex: 1 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                            <div>
-                                                <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '1rem' }}>{user.display_name}</div>
-                                                <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>@{user.username}</div>
-                                            </div>
+                                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                            <span style={{ fontWeight: 700 }}>{profile.display_name}</span>
+                                            <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>@{profile.username}</span>
+                                            <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>• {formatTimeAgo(reply.created_at)}</span>
                                         </div>
-                                        {user.bio && <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem', color: 'var(--text-primary)' }}>{user.bio}</p>}
+                                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
+                                            Replying to need <span style={{ color: 'var(--primary)' }}>"{reply.needs?.title}"</span>
+                                        </p>
+                                        <p style={{ fontSize: '0.95rem', whiteSpace: 'pre-wrap' }}>{reply.content}</p>
                                     </div>
-                                </motion.div>
-                            ))}
-                        </div>
-                    )
-                )}
+                                </div>
+                            ))
+                        )}
 
-                {activeTab === 'followers' && (
-                    loadingData ? (
-                        <div style={{ padding: '3rem', display: 'flex', justifyContent: 'center', color: 'var(--primary)' }}><Loader size={24} className="animate-spin" /></div>
-                    ) : followersList.length === 0 ? (
-                        <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                            <Users size={48} style={{ marginBottom: '1rem', opacity: 0.5 }} />
-                            <h3 className="h3">No followers yet</h3>
-                            <p>When people follow {isOwnProfile ? 'you' : profile.display_name}, they will appear here.</p>
-                        </div>
-                    ) : (
-                        <div style={{ padding: '1rem 0' }}>
-                            {followersList.map((user, idx) => (
-                                <motion.div
-                                    key={user.id}
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    transition={{ delay: idx * 0.05 }}
-                                    onClick={() => navigate(`/${user.username}`)}
-                                    style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border-glass)', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }}
-                                    className="nav-link-hover"
-                                >
-                                    <div style={{
-                                        width: '48px', height: '48px', borderRadius: '50%', flexShrink: 0,
-                                        background: user.avatar_url ? `url(${user.avatar_url}) center/cover` : 'var(--bg-surface)',
-                                        border: '1px solid var(--border-glass)',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        color: 'var(--text-primary)', fontWeight: 'bold'
-                                    }}>
-                                        {!user.avatar_url && user.display_name?.charAt(0).toUpperCase()}
-                                    </div>
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                            <div>
-                                                <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '1rem' }}>{user.display_name}</div>
-                                                <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>@{user.username}</div>
+                        {activeTab === 'following' && (
+                            loadingData ? (
+                                <div style={{ padding: '3rem', display: 'flex', justifyContent: 'center', color: 'var(--primary)' }}><Loader size={24} className="animate-spin" /></div>
+                            ) : followingList.length === 0 ? (
+                                <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                                    <Users size={48} style={{ marginBottom: '1rem', opacity: 0.5 }} />
+                                    <h3 className="h3">Not following anyone</h3>
+                                    <p>When {isOwnProfile ? 'you follow' : `${profile.display_name} follows`} someone, they will appear here.</p>
+                                </div>
+                            ) : (
+                                <div style={{ padding: '1rem 0' }}>
+                                    {followingList.map((user, idx) => (
+                                        <motion.div
+                                            key={user.id}
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            transition={{ delay: idx * 0.05 }}
+                                            onClick={() => navigate(`/${user.username}`)}
+                                            style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border-glass)', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }}
+                                            className="nav-link-hover"
+                                        >
+                                            <div style={{
+                                                width: '48px', height: '48px', borderRadius: '50%', flexShrink: 0,
+                                                background: user.avatar_url ? `url(${user.avatar_url}) center/cover` : 'var(--bg-surface)',
+                                                border: '1px solid var(--border-glass)',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                color: 'var(--text-primary)', fontWeight: 'bold'
+                                            }}>
+                                                {!user.avatar_url && user.display_name?.charAt(0).toUpperCase()}
                                             </div>
-                                        </div>
-                                        {user.bio && <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem', color: 'var(--text-primary)' }}>{user.bio}</p>}
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </div>
-                    )
-                )}
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                    <div>
+                                                        <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '1rem' }}>{user.display_name}</div>
+                                                        <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>@{user.username}</div>
+                                                    </div>
+                                                </div>
+                                                {user.bio && <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem', color: 'var(--text-primary)' }}>{user.bio}</p>}
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            )
+                        )}
 
-                {activeTab === 'broadcasts' && (
-                    loadingData ? (
-                        <div style={{ padding: '3rem', display: 'flex', justifyContent: 'center', color: 'var(--primary)' }}><Loader size={24} className="animate-spin" /></div>
-                    ) : userBroadcasts.length === 0 ? (
-                        <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                            <Repeat2 size={48} style={{ marginBottom: '1rem', opacity: 0.4 }} />
-                            <h3 className="h3" style={{ marginBottom: '0.5rem' }}>No broadcasts yet</h3>
-                            <p>When {isOwnProfile ? 'you broadcast' : `${profile.display_name} broadcasts`} a need, it will appear here.</p>
-                        </div>
-                    ) : (
-                        <div style={{ padding: '1rem 0' }}>
-                            {userBroadcasts.map((need, idx) => (
-                                <motion.div
-                                    key={need.id}
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    transition={{ delay: idx * 0.05 }}
-                                    style={{ borderBottom: '1px solid var(--border-glass)' }}
-                                >
-                                    {/* Broadcaster attribution label */}
-                                    <div style={{ padding: '0.75rem 1.5rem 0 1.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 600 }}>
-                                        <Repeat2 size={14} />
-                                        {profile.display_name} broadcasted
-                                    </div>
-                                    <div style={{ padding: '0 1.5rem' }}>
-                                        <NeedCard need={need} />
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </div>
-                    )
-                )}
+                        {activeTab === 'followers' && (
+                            loadingData ? (
+                                <div style={{ padding: '3rem', display: 'flex', justifyContent: 'center', color: 'var(--primary)' }}><Loader size={24} className="animate-spin" /></div>
+                            ) : followersList.length === 0 ? (
+                                <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                                    <Users size={48} style={{ marginBottom: '1rem', opacity: 0.5 }} />
+                                    <h3 className="h3">No followers yet</h3>
+                                    <p>When people follow {isOwnProfile ? 'you' : profile.display_name}, they will appear here.</p>
+                                </div>
+                            ) : (
+                                <div style={{ padding: '1rem 0' }}>
+                                    {followersList.map((user, idx) => (
+                                        <motion.div
+                                            key={user.id}
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            transition={{ delay: idx * 0.05 }}
+                                            onClick={() => navigate(`/${user.username}`)}
+                                            style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border-glass)', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }}
+                                            className="nav-link-hover"
+                                        >
+                                            <div style={{
+                                                width: '48px', height: '48px', borderRadius: '50%', flexShrink: 0,
+                                                background: user.avatar_url ? `url(${user.avatar_url}) center/cover` : 'var(--bg-surface)',
+                                                border: '1px solid var(--border-glass)',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                color: 'var(--text-primary)', fontWeight: 'bold'
+                                            }}>
+                                                {!user.avatar_url && user.display_name?.charAt(0).toUpperCase()}
+                                            </div>
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                    <div>
+                                                        <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '1rem' }}>{user.display_name}</div>
+                                                        <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>@{user.username}</div>
+                                                    </div>
+                                                </div>
+                                                {user.bio && <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem', color: 'var(--text-primary)' }}>{user.bio}</p>}
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            )
+                        )}
 
-                {activeTab === 'endorsements' && (
-                    loadingData ? (
-                        <div style={{ padding: '3rem', display: 'flex', justifyContent: 'center', color: 'var(--primary)' }}><Loader size={24} className="animate-spin" /></div>
-                    ) : userEndorsements.length === 0 ? (
-                        <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>No endorsements yet.</div>
-                    ) : (
-                        <div style={{ padding: '1rem 0' }}>
-                            {userEndorsements.map((endorsement, idx) => {
-                                // Map the UserProfilePage's endorsement shape to the one expected by EndorsementFeedCard
-                                const mappedEndorsement = {
-                                    ...endorsement,
-                                    endorser: endorsement.profiles,
-                                    endorsed: profile
-                                };
+                        {activeTab === 'broadcasts' && (
+                            loadingData ? (
+                                <div style={{ padding: '3rem', display: 'flex', justifyContent: 'center', color: 'var(--primary)' }}><Loader size={24} className="animate-spin" /></div>
+                            ) : userBroadcasts.length === 0 ? (
+                                <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                                    <Repeat2 size={48} style={{ marginBottom: '1rem', opacity: 0.4 }} />
+                                    <h3 className="h3" style={{ marginBottom: '0.5rem' }}>No broadcasts yet</h3>
+                                    <p>When {isOwnProfile ? 'you broadcast' : `${profile.display_name} broadcasts`} a need, it will appear here.</p>
+                                </div>
+                            ) : (
+                                <div style={{ padding: '1rem 0' }}>
+                                    {userBroadcasts.map((need, idx) => (
+                                        <motion.div
+                                            key={need.id}
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            transition={{ delay: idx * 0.05 }}
+                                            style={{ borderBottom: '1px solid var(--border-glass)' }}
+                                        >
+                                            {/* Broadcaster attribution label */}
+                                            <div style={{ padding: '0.75rem 1.5rem 0 1.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 600 }}>
+                                                <Repeat2 size={14} />
+                                                {profile.display_name} broadcasted
+                                            </div>
+                                            <div style={{ padding: '0 1.5rem' }}>
+                                                <NeedCard need={need} />
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            )
+                        )}
 
-                                return (
-                                    <motion.div
-                                        key={endorsement.id}
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        transition={{ delay: idx * 0.05 }}
-                                        style={{ borderBottom: '1px solid var(--border-glass)', padding: '1.5rem' }}
-                                    >
-                                        <EndorsementFeedCard endorsement={mappedEndorsement} />
-                                    </motion.div>
-                                );
-                            })}
-                        </div>
-                    )
-                )}
-            </div>
+                        {activeTab === 'endorsements' && (
+                            loadingData ? (
+                                <div style={{ padding: '3rem', display: 'flex', justifyContent: 'center', color: 'var(--primary)' }}><Loader size={24} className="animate-spin" /></div>
+                            ) : userEndorsements.length === 0 ? (
+                                <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>No endorsements yet.</div>
+                            ) : (
+                                <div style={{ padding: '1rem 0' }}>
+                                    {userEndorsements.map((endorsement, idx) => {
+                                        // Map the UserProfilePage's endorsement shape to the one expected by EndorsementFeedCard
+                                        const mappedEndorsement = {
+                                            ...endorsement,
+                                            endorser: endorsement.profiles,
+                                            endorsed: profile
+                                        };
+
+                                        return (
+                                            <motion.div
+                                                key={endorsement.id}
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                transition={{ delay: idx * 0.05 }}
+                                                style={{ borderBottom: '1px solid var(--border-glass)', padding: '1.5rem' }}
+                                            >
+                                                <EndorsementFeedCard endorsement={mappedEndorsement} />
+                                            </motion.div>
+                                        );
+                                    })}
+                                </div>
+                            )
+                        )}
+                    </div>
+                </>
+            )}
         </div>
     );
 };

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { X, Settings, HelpCircle, FileText, Shield, Users, TrendingUp, Award, Search, Bookmark, SlidersHorizontal, Trash2 } from 'lucide-react';
+import { X, Settings, HelpCircle, FileText, Shield, Users, TrendingUp, Award, Search, Bookmark, SlidersHorizontal, Trash2, BookOpen } from 'lucide-react';
 import { fetchMetCounts } from '../lib/needsService';
 import { getFollowStats } from '../lib/socialService';
 import { fetchEndorsementsForUser } from '../lib/endorsementService';
@@ -241,6 +241,14 @@ export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false }) => {
                                 >
                                     <FileText size={20} />
                                     <span style={{ fontWeight: 500 }}>Terms of Service</span>
+                                </div>
+                                <div
+                                    onClick={() => handleNavigation('/rules')}
+                                    style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', color: 'var(--text-primary)' }}
+                                    className="nav-link-hover"
+                                >
+                                    <BookOpen size={20} />
+                                    <span style={{ fontWeight: 500 }}>Rules of Engagement</span>
                                 </div>
                             </div>
 

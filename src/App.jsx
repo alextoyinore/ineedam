@@ -22,12 +22,14 @@ import { MessagesPage } from './pages/MessagesPage';
 import { MessageThreads } from './pages/messages/MessageThreads';
 import { ChatDetail } from './pages/messages/ChatDetail';
 import { SettingsPage } from './pages/SettingsPage';
+import { RuleOfEngagementPage } from './pages/RuleOfEngagementPage';
 import { MobileWhoToFollowPage } from './pages/MobileWhoToFollowPage';
 import { MobileWhatsHappeningPage } from './pages/MobileWhatsHappeningPage';
 import { CategoriesPage } from './pages/CategoriesPage';
 import { PremiumPage } from './pages/PremiumPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { ServerErrorPage } from './pages/ServerErrorPage';
+import { BlockedAccountsPage } from './pages/BlockedAccountsPage';
 
 
 // Full-screen spinner while the session is being determined
@@ -62,6 +64,7 @@ function App() {
       <Route path="/reset-password" element={<PublicPageWrapper><ResetPasswordPage /></PublicPageWrapper>} />
       <Route path="/privacy" element={<PublicPageWrapper><PrivacyPolicyPage /></PublicPageWrapper>} />
       <Route path="/terms" element={<PublicPageWrapper><TermsOfServicePage /></PublicPageWrapper>} />
+      <Route path="/rules" element={<PublicPageWrapper><RuleOfEngagementPage /></PublicPageWrapper>} />
 
       {/* ── Protected: all app routes inside social layout ────── */}
       <Route path="/*" element={
@@ -81,6 +84,7 @@ function App() {
               <Route path="/whats-happening" element={<MobileWhatsHappeningPage />} />
               <Route path="/categories" element={<CategoriesPage />} />
               <Route path="/premium" element={<PremiumPage />} />
+              <Route path="/blocked-accounts" element={<BlockedAccountsPage />} />
               <Route path="/need/:id" element={<NeedDetailPage />} />
               <Route path="/dashboard" element={<Navigate to={`/${useAuth().profile?.username || ''}`} replace />} />
               <Route path="/:username" element={<UserProfilePage />} />

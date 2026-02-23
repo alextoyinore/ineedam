@@ -255,6 +255,7 @@ export const RightSidebar = () => {
                     <span onClick={() => navigate('/how-to-use')} style={{ fontSize: '0.8rem', color: 'var(--text-muted)', cursor: 'pointer' }} className="nav-link-hover">How to Use</span>
                     <span onClick={() => navigate('/privacy')} style={{ fontSize: '0.8rem', color: 'var(--text-muted)', cursor: 'pointer' }} className="nav-link-hover">Privacy</span>
                     <span onClick={() => navigate('/terms')} style={{ fontSize: '0.8rem', color: 'var(--text-muted)', cursor: 'pointer' }} className="nav-link-hover">Terms</span>
+                    <span onClick={() => navigate('/rules')} style={{ fontSize: '0.8rem', color: 'var(--text-muted)', cursor: 'pointer' }} className="nav-link-hover">Rules</span>
                     <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>© 2026 Ineedam</span>
                 </div>
 
