@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -28,6 +28,7 @@ import { getOrCreateThread } from '../lib/messageService';
 import { fetchBroadcastedNeeds } from '../lib/broadcastService';
 import { fetchEndorsementsForUser } from '../lib/endorsementService';
 import { checkBlockStatus, blockUser, unblockUser } from '../lib/moderationService';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 
 export const UserProfilePage = () => {
     const { username } = useParams();
@@ -56,6 +57,12 @@ export const UserProfilePage = () => {
         followersCount: 0,
         followingCount: 0
     });
+
+    // Pagination for Needs
+    const [needsPage, setNeedsPage] = useState(0);
+    const [hasMoreNeeds, setHasMoreNeeds] = useState(true);
+    const [loadingMoreNeeds, setLoadingMoreNeeds] = useState(false);
+    const PAGE_SIZE = 10;
 
     // Modals State
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -95,6 +102,8 @@ export const UserProfilePage = () => {
                 ]);
 
                 setUserNeeds(needsData ? needsData.map(shapeNeed) : []);
+                setNeedsPage(1);
+                setHasMoreNeeds(needsData?.length === PAGE_SIZE);
                 setUserReplies(repliesData || []);
                 setUserBroadcasts(broadcastsData ? broadcastsData.map(shapeNeed) : []);
                 setUserEndorsements(endorsementsData || []);
@@ -207,6 +216,32 @@ export const UserProfilePage = () => {
             throw err;
         }
     };
+
+    const loadMoreNeeds = useCallback(async () => {
+        if (!profile || !hasMoreNeeds || loadingMoreNeeds) return;
+
+        setLoadingMoreNeeds(true);
+        try {
+            const from = needsPage * PAGE_SIZE;
+            const to = from + PAGE_SIZE - 1;
+            const moreNeeds = await fetchNeedsByUser(profile.id, from, to);
+
+            if (moreNeeds && moreNeeds.length > 0) {
+                setUserNeeds(prev => [...prev, ...moreNeeds.map(shapeNeed)]);
+                setNeedsPage(prev => prev + 1);
+            }
+
+            if (!moreNeeds || moreNeeds.length < PAGE_SIZE) {
+                setHasMoreNeeds(false);
+            }
+        } catch (err) {
+            console.error("Error loading more needs:", err);
+        } finally {
+            setLoadingMoreNeeds(false);
+        }
+    }, [profile, hasMoreNeeds, loadingMoreNeeds, needsPage]);
+
+    const lastNeedRef = useInfiniteScroll(loadMoreNeeds, hasMoreNeeds, loadingData || loadingMoreNeeds);
 
     if (loading) {
         return (
@@ -519,6 +554,12 @@ export const UserProfilePage = () => {
                                             )}
                                         </motion.div>
                                     ))}
+                                    <div ref={lastNeedRef} style={{ height: '20px' }} />
+                                    {loadingMoreNeeds && (
+                                        <div style={{ display: 'flex', justifyContent: 'center', padding: '1rem', color: 'var(--primary)' }}>
+                                            <Loader size={24} className="animate-spin" />
+                                        </div>
+                                    )}
                                 </div>
                             )
                         )}

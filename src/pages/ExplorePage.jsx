@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Loader } from 'lucide-react';
 import { NeedCard } from '../components/NeedCard';
@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabase';
 import { shapeNeed } from '../lib/needsService';
 import { EndorsementFeedCard } from '../components/EndorsementFeedCard';
 import { useNavigate } from 'react-router-dom';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 
 export const ExplorePage = () => {
     const navigate = useNavigate();
@@ -15,23 +16,52 @@ export const ExplorePage = () => {
     const [feedTab, setFeedTab] = useState('foryou');
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [page, setPage] = useState(0);
+    const [hasMore, setHasMore] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const PAGE_SIZE = 10;
     const { following } = useSocial();
 
-    useEffect(() => {
-        const load = async () => {
+    const loadItems = useCallback(async (isInitial = false) => {
+        if (isInitial) {
             setLoading(true);
-            try {
-                const mixedItems = await fetchMixedFeed();
+            setPage(0);
+        } else {
+            setLoadingMore(true);
+        }
+
+        try {
+            const currentPage = isInitial ? 0 : page;
+            const from = currentPage * PAGE_SIZE;
+            const to = from + PAGE_SIZE - 1;
+
+            const mixedItems = await fetchMixedFeed(from, to);
+
+            if (isInitial) {
                 setItems(mixedItems || []);
-            } catch (err) {
-                console.error("Error fetching mixed feed:", err);
-                setItems([]);
-            } finally {
-                setLoading(false);
+            } else {
+                setItems(prev => [...prev, ...(mixedItems || [])]);
             }
-        };
-        load();
+
+            if (!mixedItems || mixedItems.length < PAGE_SIZE) {
+                setHasMore(false);
+            } else {
+                setHasMore(true);
+                setPage(currentPage + 1);
+            }
+        } catch (err) {
+            console.error("Error fetching mixed feed:", err);
+        } finally {
+            setLoading(false);
+            setLoadingMore(false);
+        }
+    }, [page]);
+
+    useEffect(() => {
+        loadItems(true);
     }, []);
+
+    const lastElementRef = useInfiniteScroll(loadItems, hasMore, loading || loadingMore);
 
     // Subscribe to real-time inserts so new posts appear instantly
     useEffect(() => {
@@ -145,6 +175,15 @@ export const ExplorePage = () => {
                 ) : (
                     <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
                         No items found matching your criteria.
+                    </div>
+                )}
+
+                {/* Sentinel for infinite scroll */}
+                <div ref={lastElementRef} style={{ height: '20px' }} />
+
+                {loadingMore && (
+                    <div style={{ display: 'flex', justifyContent: 'center', padding: '1rem', color: 'var(--primary)' }}>
+                        <Loader size={24} className="animate-spin" />
                     </div>
                 )}
             </div>

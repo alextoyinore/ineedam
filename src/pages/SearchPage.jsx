@@ -1,10 +1,11 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search as SearchIcon, ArrowLeft, SlidersHorizontal, Loader } from 'lucide-react';
 import { NeedCard } from '../components/NeedCard';
 import { searchMixedFeed } from '../lib/feedService';
 import { EndorsementFeedCard } from '../components/EndorsementFeedCard';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 
 export const SearchPage = () => {
     const [searchParams] = useSearchParams();
@@ -19,33 +20,63 @@ export const SearchPage = () => {
     const [maxBudget, setMaxBudget] = useState('');
     const [timeframe, setTimeframe] = useState('all'); // all, today, week, month
 
-    useEffect(() => {
-        const performSearch = async () => {
-            setLoading(true);
-            try {
-                const data = await searchMixedFeed({
-                    query: query || trending,
-                    category,
-                    minBudget,
-                    maxBudget
-                });
-                setResults(data || []);
-            } catch (err) {
-                console.error("Search failed:", err);
-                setResults([]);
-            } finally {
-                setLoading(false);
-            }
-        };
+    const [page, setPage] = useState(0);
+    const [hasMore, setHasMore] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const PAGE_SIZE = 10;
 
-        // For "What's happening" items, we might use query/trending interchangeably
+    const performSearch = useCallback(async (isInitial = false) => {
+        if (isInitial) {
+            setLoading(true);
+            setPage(0);
+        } else {
+            setLoadingMore(true);
+        }
+
+        try {
+            const currentPage = isInitial ? 0 : page;
+            const from = currentPage * PAGE_SIZE;
+            const to = from + PAGE_SIZE - 1;
+
+            const data = await searchMixedFeed({
+                query: query || trending,
+                category,
+                minBudget,
+                maxBudget
+            }, from, to);
+
+            if (isInitial) {
+                setResults(data || []);
+            } else {
+                setResults(prev => [...prev, ...(data || [])]);
+            }
+
+            if (!data || data.length < PAGE_SIZE) {
+                setHasMore(false);
+            } else {
+                setHasMore(true);
+                setPage(currentPage + 1);
+            }
+        } catch (err) {
+            console.error("Search failed:", err);
+            if (isInitial) setResults([]);
+        } finally {
+            setLoading(false);
+            setLoadingMore(false);
+        }
+    }, [query, trending, category, minBudget, maxBudget, page]);
+
+    useEffect(() => {
         if (query || category || trending || minBudget || maxBudget) {
-            performSearch();
+            performSearch(true);
         } else {
             setResults([]);
             setLoading(false);
+            setHasMore(false);
         }
     }, [query, category, trending, minBudget, maxBudget]);
+
+    const lastElementRef = useInfiniteScroll(performSearch, hasMore, loading || loadingMore);
 
     const viewTitle = useMemo(() => {
         if (category) return 'Category';
@@ -145,20 +176,22 @@ export const SearchPage = () => {
                         <Loader size={32} className="animate-spin" />
                     </div>
                 ) : results.length > 0 ? (
-                    results.map((item) => (
-                        <motion.div
-                            key={`${item.type}-${item.id}`}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ duration: 0.2 }}
-                        >
-                            {item.type === 'need' ? (
-                                <NeedCard need={item} />
-                            ) : (
-                                <EndorsementFeedCard endorsement={item} />
-                            )}
-                        </motion.div>
-                    ))
+                    <>
+                        {results.map((item) => (
+                            <motion.div
+                                key={`${item.type}-${item.id}`}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ duration: 0.2 }}
+                            >
+                                {item.type === 'need' ? (
+                                    <NeedCard need={item} />
+                                ) : (
+                                    <EndorsementFeedCard endorsement={item} />
+                                )}
+                            </motion.div>
+                        ))}
+                    </>
                 ) : (
                     <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
                         <div style={{ padding: '1.5rem', borderRadius: '50%', background: 'var(--bg-surface)', border: '1px solid var(--border-glass)' }}>
@@ -171,6 +204,15 @@ export const SearchPage = () => {
                         <Link to="/" className="btn btn-primary" style={{ marginTop: '1rem' }}>
                             Back to Home
                         </Link>
+                    </div>
+                )}
+
+                {/* Sentinel for infinite scroll */}
+                <div ref={lastElementRef} style={{ height: '20px' }} />
+
+                {loadingMore && (
+                    <div style={{ display: 'flex', justifyContent: 'center', padding: '1rem', color: 'var(--primary)' }}>
+                        <Loader size={24} className="animate-spin" />
                     </div>
                 )}
             </div>

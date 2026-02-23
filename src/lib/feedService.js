@@ -5,7 +5,7 @@ import { timeAgo } from './needsService';
 /**
  * Fetch all endorsements globally, shaping them so they match Need items structure.
  */
-export const fetchAllEndorsements = async () => {
+export const fetchAllEndorsements = async (from = 0, to = 9) => {
     const { data, error } = await supabase
         .from('endorsements')
         .select(`
@@ -17,7 +17,8 @@ export const fetchAllEndorsements = async () => {
             endorsed:profiles!endorsements_endorsed_id_fkey(id, display_name, username, avatar_url, bio),
             needs(id, title)
         `)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(from, to);
 
     if (error) {
         console.error('Error fetching global endorsements:', error);
@@ -34,13 +35,14 @@ export const fetchAllEndorsements = async () => {
 /**
  * Fetch and merge needs and endorsements from the database together.
  */
-export const fetchMixedFeed = async () => {
+export const fetchMixedFeed = async (from = 0, to = 5) => {
     const [{ data: needsData, error: needsError }, endorsements] = await Promise.all([
         supabase
             .from('needs')
             .select('*, profiles!needs_user_id_fkey(display_name, avatar_url, username, banner_url, bio)')
-            .order('created_at', { ascending: false }),
-        fetchAllEndorsements()
+            .order('created_at', { ascending: false })
+            .range(from, to),
+        fetchAllEndorsements(from, to)
     ]);
 
     if (needsError) throw needsError;
@@ -66,7 +68,7 @@ export const fetchMixedFeed = async () => {
  * Optimally, Supabase searching across multiple tables is better done using a DB View or RPC function.
  * For MVP, we fetch mixed data and filter.
  */
-export const searchMixedFeed = async ({ query, category, minBudget, maxBudget }) => {
+export const searchMixedFeed = async ({ query, category, minBudget, maxBudget }, from = 0, to = 9) => {
     let supabaseQuery = supabase
         .from('needs')
         .select('*, profiles!needs_user_id_fkey(display_name, avatar_url, username, banner_url, bio)');
@@ -85,8 +87,8 @@ export const searchMixedFeed = async ({ query, category, minBudget, maxBudget })
     }
 
     const [{ data: needsData, error: needsError }, endorsements] = await Promise.all([
-        supabaseQuery.order('created_at', { ascending: false }),
-        fetchAllEndorsements()
+        supabaseQuery.order('created_at', { ascending: false }).range(from, to),
+        fetchAllEndorsements(from, to)
     ]);
 
     if (needsError) throw needsError;

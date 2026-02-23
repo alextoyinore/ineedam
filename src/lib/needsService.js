@@ -50,11 +50,12 @@ export const createNeed = async (needData, userId) => {
 /**
  * Fetch all needs ordered by newest first.
  */
-export const fetchNeeds = async () => {
+export const fetchNeeds = async (from = 0, to = 9) => {
     const { data, error } = await supabase
         .from('needs')
         .select('*, profiles!needs_user_id_fkey(display_name, avatar_url, username, banner_url, bio)')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(from, to);
 
     if (error) throw error;
     return data;
@@ -63,12 +64,13 @@ export const fetchNeeds = async () => {
 /**
  * Fetch all needs for a specific user ID.
  */
-export const fetchNeedsByUser = async (userId) => {
+export const fetchNeedsByUser = async (userId, from = 0, to = 9) => {
     const { data, error } = await supabase
         .from('needs')
         .select('*, profiles!needs_user_id_fkey(display_name, avatar_url, username, banner_url, bio)')
         .eq('user_id', userId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(from, to);
 
     if (error) throw error;
     return data;
@@ -250,7 +252,10 @@ export const searchNeeds = async ({ query, category, minBudget, maxBudget }) => 
         supabaseQuery = supabaseQuery.lte('budget_min', parseFloat(maxBudget));
     }
 
-    const { data, error } = await supabaseQuery.order('created_at', { ascending: false });
+    // Defaulting to 0-9 if no page logic passed, though often handled via from/to
+    const { data, error } = await supabaseQuery
+        .order('created_at', { ascending: false })
+        .range(from, to);
 
     if (error) throw error;
     return data;
