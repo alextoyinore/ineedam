@@ -7,7 +7,7 @@ import { useMessages } from '../../context/MessagesContext';
 export const ChatDetail = () => {
     const { threadId } = useParams();
     const navigate = useNavigate();
-    const { threads, sendMessage, markThreadAsRead, loadingThreads } = useMessages();
+    const { threads, sendMessage, markThreadAsRead, loadingThreads, setActiveThreadId } = useMessages();
     const [messageText, setMessageText] = useState('');
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
@@ -18,6 +18,13 @@ export const ChatDetail = () => {
     }, []);
 
     const activeThread = threads.find(t => String(t.id) === String(threadId));
+
+    useEffect(() => {
+        if (threadId) {
+            setActiveThreadId(threadId);
+        }
+        return () => setActiveThreadId(null);
+    }, [threadId, setActiveThreadId]);
 
     useEffect(() => {
         if (activeThread && activeThread.unread) {

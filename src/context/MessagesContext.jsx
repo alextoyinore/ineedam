@@ -11,6 +11,13 @@ export const MessagesProvider = ({ children }) => {
     const { user } = useAuth();
     const [threads, setThreads] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [activeThreadId, setActiveThreadId] = useState(null);
+    const activeThreadIdRef = React.useRef(null);
+
+    // Keep ref in sync with state for real-time listener closure
+    useEffect(() => {
+        activeThreadIdRef.current = activeThreadId;
+    }, [activeThreadId]);
 
     const loadThreads = async () => {
         if (!user) {
@@ -40,9 +47,15 @@ export const MessagesProvider = ({ children }) => {
                     { event: '*', schema: 'public', table: 'messages' },
                     (payload) => {
                         loadThreads();
-                        // Play received sound if we are not the sender
+                        // Play received sound if we are not the sender 
+                        // AND we are not currently looking at this specific thread
                         if (payload.new && payload.new.sender_id !== user.id) {
-                            soundService.playMessageReceived();
+                            const incomingThreadId = String(payload.new.thread_id);
+                            const currentActiveId = activeThreadIdRef.current ? String(activeThreadIdRef.current) : null;
+
+                            if (incomingThreadId !== currentActiveId) {
+                                soundService.playMessageReceived();
+                            }
                         }
                     }
                 )
@@ -132,6 +145,8 @@ export const MessagesProvider = ({ children }) => {
             startChat,
             markThreadAsRead,
             unreadThreadsCount,
+            setActiveThreadId,
+            activeThreadId,
             refreshThreads: loadThreads,
             loadingThreads: loading
         }}>
