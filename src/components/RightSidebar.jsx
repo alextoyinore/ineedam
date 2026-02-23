@@ -214,7 +214,7 @@ export const RightSidebar = () => {
                 )}
 
                 {/* Categories Widget */}
-                <div style={{
+                {/* <div style={{
                     padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem',
                     background: 'var(--bg-surface)', border: '1px solid var(--border-glass)', borderRadius: '16px'
                 }}>
@@ -246,7 +246,7 @@ export const RightSidebar = () => {
                     >
                         See all →
                     </span>
-                </div>
+                </div> */}
 
                 {/* Footer Links */}
                 <div style={{ padding: '0 1rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem 1rem' }}>

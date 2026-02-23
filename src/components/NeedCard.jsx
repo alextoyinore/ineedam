@@ -84,12 +84,15 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
         toggleFollow(need.authorId);
     };
     return (
-        <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.5rem',
-            position: 'relative',
-        }}>
+        <div
+            onClick={() => !isFullDetail && navigate(`/need/${need.id}`)}
+            style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.5rem',
+                position: 'relative',
+                cursor: !isFullDetail ? 'pointer' : 'default',
+            }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', minWidth: 0 }}>
                     <ProfileHoverCard userData={{

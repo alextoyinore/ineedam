@@ -4,6 +4,7 @@ import { Loader } from 'lucide-react';
 import { Layout } from './components/Layout';
 import { PublicPageWrapper } from './components/PublicPageWrapper';
 import { useAuth } from './context/AuthContext';
+import { MessageSecurityProvider } from './context/MessageSecurityContext';
 
 import { ExplorePage } from './pages/ExplorePage';
 import { NeedDetailPage } from './pages/NeedDetailPage';
@@ -69,28 +70,30 @@ function App() {
       {/* ── Protected: all app routes inside social layout ────── */}
       <Route path="/*" element={
         <ProtectedRoute>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<ExplorePage />} />
-              <Route path="/bookmarks" element={<BookmarksPage />} />
-              <Route path="/notifications" element={<NotificationsPage />} />
-              <Route path="/messages" element={<MessagesPage />}>
-                <Route index element={<MessageThreads />} />
-                <Route path=":threadId" element={<ChatDetail />} />
-              </Route>
-              <Route path="/search" element={<SearchPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/who-to-follow" element={<MobileWhoToFollowPage />} />
-              <Route path="/whats-happening" element={<MobileWhatsHappeningPage />} />
-              <Route path="/categories" element={<CategoriesPage />} />
-              <Route path="/premium" element={<PremiumPage />} />
-              <Route path="/blocked-accounts" element={<BlockedAccountsPage />} />
-              <Route path="/need/:id" element={<NeedDetailPage />} />
-              <Route path="/dashboard" element={<Navigate to={`/${useAuth().profile?.username || ''}`} replace />} />
-              <Route path="/:username" element={<UserProfilePage />} />
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </Layout>
+          <MessageSecurityProvider>
+            <Layout>
+              <Routes>
+                <Route path="/" element={<ExplorePage />} />
+                <Route path="/bookmarks" element={<BookmarksPage />} />
+                <Route path="/notifications" element={<NotificationsPage />} />
+                <Route path="/messages" element={<MessagesPage />}>
+                  <Route index element={<MessageThreads />} />
+                  <Route path=":threadId" element={<ChatDetail />} />
+                </Route>
+                <Route path="/search" element={<SearchPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/who-to-follow" element={<MobileWhoToFollowPage />} />
+                <Route path="/whats-happening" element={<MobileWhatsHappeningPage />} />
+                <Route path="/categories" element={<CategoriesPage />} />
+                <Route path="/premium" element={<PremiumPage />} />
+                <Route path="/blocked-accounts" element={<BlockedAccountsPage />} />
+                <Route path="/need/:id" element={<NeedDetailPage />} />
+                <Route path="/dashboard" element={<Navigate to={`/${useAuth().profile?.username || ''}`} replace />} />
+                <Route path="/:username" element={<UserProfilePage />} />
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </Layout>
+          </MessageSecurityProvider>
         </ProtectedRoute>
       } />
     </Routes>

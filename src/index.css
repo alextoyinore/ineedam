@@ -2,6 +2,7 @@
 [data-theme='light'] {
   /* Color Palette - Vibrant Light Mode */
   --bg-base: #f8fafc;
+  --bg-base-rgb: 248, 250, 252;
   --bg-surface: #ffffff;
   --bg-surface-glass: rgba(255, 255, 255, 0.7);
   --bg-surface-glass-hover: rgba(255, 255, 255, 0.9);
@@ -38,6 +39,7 @@ html {
 [data-theme='dark'] {
   /* Color Palette - Vibrant Dark Mode (Original) */
   --bg-base: #0f1115;
+  --bg-base-rgb: 15, 17, 21;
   --bg-surface: #1a1d24;
   --bg-surface-glass: rgba(26, 29, 36, 0.6);
   --bg-surface-glass-hover: rgba(26, 29, 36, 0.8);

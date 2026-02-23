@@ -7,8 +7,10 @@ import { fetchMixedFeed } from '../lib/feedService';
 import { supabase } from '../lib/supabase';
 import { shapeNeed } from '../lib/needsService';
 import { EndorsementFeedCard } from '../components/EndorsementFeedCard';
+import { useNavigate } from 'react-router-dom';
 
 export const ExplorePage = () => {
+    const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [feedTab, setFeedTab] = useState('foryou');
     const [items, setItems] = useState([]);
@@ -132,6 +134,13 @@ export const ExplorePage = () => {
                                 cursor: 'pointer'
                             }}
                             className="nav-link-hover"
+                            onClick={() => {
+                                if (item.type === 'need') {
+                                    navigate(`/need/${item.id}`);
+                                } else if (item.type === 'endorsement' && item.needs?.id) {
+                                    navigate(`/need/${item.needs.id}`);
+                                }
+                            }}
                         >
                             {item.type === 'need' ? (
                                 <NeedCard need={item} />

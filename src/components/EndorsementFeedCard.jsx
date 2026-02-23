@@ -94,12 +94,15 @@ export const EndorsementFeedCard = ({ endorsement }) => {
     } : null;
 
     return (
-        <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.75rem',
-            position: 'relative',
-        }}>
+        <div
+            onClick={() => hasNeed && navigate(`/need/${need.id}`)}
+            style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.75rem',
+                position: 'relative',
+                cursor: hasNeed ? 'pointer' : 'default',
+            }}>
             {dummyNeed && (
                 <ReplyModal
                     isOpen={isReplyModalOpen}

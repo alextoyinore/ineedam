@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
+import { MessagePinOverlay } from '../components/MessagePinOverlay';
+
 export const MessagesPage = () => {
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const location = useLocation();
@@ -24,7 +26,9 @@ export const MessagesPage = () => {
             overflow: 'hidden',
             position: 'relative'
         }}>
-            <Outlet />
+            <MessagePinOverlay>
+                <Outlet />
+            </MessagePinOverlay>
         </div>
     );
 };
