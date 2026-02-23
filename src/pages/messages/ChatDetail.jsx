@@ -137,7 +137,7 @@ export const ChatDetail = () => {
                                 background: isMe ? 'var(--primary)' : 'var(--bg-base)',
                                 color: isMe ? 'white' : 'var(--text-primary)',
                                 fontSize: '0.92rem',
-                                boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                                // boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
                             }}>
                                 {msg.text}
                             </div>

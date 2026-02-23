@@ -204,11 +204,13 @@ export const fetchMetCounts = async (userId) => {
 
 /**
  * Get stats of needs per category.
+ * @param {string|null} since - optional ISO date string to filter from (e.g. past 24h, past 3h)
  */
-export const getCategoryStats = async () => {
-    const { data, error } = await supabase
-        .from('needs')
-        .select('category');
+export const getCategoryStats = async (since = null) => {
+    let query = supabase.from('needs').select('category');
+    if (since) query = query.gte('created_at', since);
+
+    const { data, error } = await query;
 
     if (error) {
         console.error("Error fetching category stats", error);
@@ -252,6 +254,41 @@ export const searchNeeds = async ({ query, category, minBudget, maxBudget }) => 
 
     if (error) throw error;
     return data;
+};
+
+/**
+ * Fetch all categories with their need count and latest need, sorted by engagement desc.
+ * Returns: [{ category, count, latestNeed: { id, title, author } }]
+ */
+export const getCategoryPreviews = async () => {
+    const { data, error } = await supabase
+        .from('needs')
+        .select('id, title, category, created_at, profiles!needs_user_id_fkey(display_name, username)')
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching category previews', error);
+        return [];
+    }
+
+    // Group by category: track count and keep the first row (latest) per category
+    const grouped = {};
+    for (const row of data) {
+        if (!grouped[row.category]) {
+            grouped[row.category] = {
+                category: row.category,
+                count: 0,
+                latestNeed: {
+                    id: row.id,
+                    title: row.title,
+                    author: row.profiles?.display_name || row.profiles?.username || 'Someone',
+                },
+            };
+        }
+        grouped[row.category].count += 1;
+    }
+
+    return Object.values(grouped).sort((a, b) => b.count - a.count);
 };
 
 export const timeAgo = (dateStr) => {

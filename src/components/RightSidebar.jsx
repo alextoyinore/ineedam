@@ -13,7 +13,10 @@ export const RightSidebar = () => {
     const [query, setQuery] = useState('');
     const [suggestedUsers, setSuggestedUsers] = useState([]);
     const [categoryStats, setCategoryStats] = useState({});
+    const [trendingStats, setTrendingStats] = useState({});
+    const [trendTimeframe, setTrendTimeframe] = useState('all'); // 'all' | 'today' | '3h'
     const [loading, setLoading] = useState(true);
+    const [trendLoading, setTrendLoading] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -35,6 +38,30 @@ export const RightSidebar = () => {
         loadSidebarData();
     }, [user]);
 
+    // Re-fetch trending stats whenever the timeframe tab changes
+    useEffect(() => {
+        const loadTrending = async () => {
+            setTrendLoading(true);
+            try {
+                let since = null;
+                if (trendTimeframe === 'today') {
+                    const d = new Date();
+                    d.setHours(0, 0, 0, 0);
+                    since = d.toISOString();
+                } else if (trendTimeframe === '3h') {
+                    since = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
+                }
+                const stats = await getCategoryStats(since);
+                setTrendingStats(stats);
+            } catch (err) {
+                console.error('Failed to load trending stats', err);
+            } finally {
+                setTrendLoading(false);
+            }
+        };
+        loadTrending();
+    }, [trendTimeframe]);
+
     const handleKeyDown = (e) => {
         if (e.key === 'Enter' && query.trim()) {
             navigate(`/search?q=${encodeURIComponent(query.trim())}`);
@@ -47,9 +74,21 @@ export const RightSidebar = () => {
         setSuggestedUsers(prev => prev.filter(u => u.id !== userId));
     };
 
-    const trendingCategories = Object.entries(categoryStats)
+    // Sort trending by engagement for selected timeframe, top 3
+    const trendingCategories = Object.entries(trendingStats)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 3);
+
+    // All-time sort by engagement desc, cap at 10 for the pill widget
+    const topCategories = Object.entries(categoryStats)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10);
+
+    const TABS = [
+        { key: 'all', label: 'All time' },
+        { key: 'today', label: 'Today' },
+        { key: '3h', label: '3h' },
+    ];
     return (
         <aside className="social-sidebar-right">
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', height: '100%', padding: '1.5rem 0' }}>
@@ -82,12 +121,36 @@ export const RightSidebar = () => {
                     padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem',
                     background: 'var(--bg-surface)', border: '1px solid var(--border-glass)', borderRadius: '16px'
                 }}>
-                    <h3 className="h3" style={{ fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <TrendingUp size={18} color="var(--primary)" />
-                        What's happening
-                    </h3>
+                    {/* Header row: title + tab toggle */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                        <h3 className="h3" style={{ fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+                            <TrendingUp size={16} color="var(--primary)" />
+                            What's happening
+                        </h3>
 
-                    {trendingCategories.length > 0 ? (
+                    </div>
+
+                    {/* <div style={{ display: 'flex', gap: '0.25rem' }}>
+                        {TABS.map(tab => (
+                            <button
+                                key={tab.key}
+                                onClick={() => setTrendTimeframe(tab.key)}
+                                style={{
+                                    padding: '0.2rem 0.55rem', borderRadius: '9999px', border: 'none',
+                                    fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer',
+                                    background: trendTimeframe === tab.key ? 'var(--text-muted)' : 'transparent',
+                                    color: trendTimeframe === tab.key ? 'white' : 'var(--text-muted)',
+                                    transition: 'all 0.15s'
+                                }}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
+                    </div> */}
+
+                    {trendLoading ? (
+                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>Loading…</p>
+                    ) : trendingCategories.length > 0 ? (
                         trendingCategories.map(([cat, count]) => (
                             <div
                                 key={cat}
@@ -103,6 +166,13 @@ export const RightSidebar = () => {
                     ) : (
                         <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>No trends yet</p>
                     )}
+                    <span
+                        onClick={() => navigate('/categories')}
+                        style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 600, cursor: 'pointer', marginTop: '0.25rem' }}
+                        className="nav-link-hover"
+                    >
+                        See all →
+                    </span>
                 </div>
 
                 {/* Who to follow */}
@@ -150,8 +220,8 @@ export const RightSidebar = () => {
                 }}>
                     <h3 className="h3" style={{ fontSize: '1.1rem' }}>Categories</h3>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                        {Object.keys(categoryStats).length > 0 ? (
-                            Object.keys(categoryStats).map(cat => (
+                        {topCategories.length > 0 ? (
+                            topCategories.map(([cat, count]) => (
                                 <span
                                     key={cat}
                                     onClick={() => navigate(`/search?cat=${encodeURIComponent(cat)}`)}
@@ -162,13 +232,20 @@ export const RightSidebar = () => {
                                     }} className="glass-panel-hover"
                                 >
                                     {cat}
-                                    <span style={{ opacity: 0.6, fontSize: '0.75rem', fontWeight: 600 }}>{categoryStats[cat]}</span>
+                                    <span style={{ opacity: 0.6, fontSize: '0.75rem', fontWeight: 600 }}>{count}</span>
                                 </span>
                             ))
                         ) : (
                             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>No categories found</p>
                         )}
                     </div>
+                    <span
+                        onClick={() => navigate('/categories')}
+                        style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 600, cursor: 'pointer' }}
+                        className="nav-link-hover"
+                    >
+                        See all →
+                    </span>
                 </div>
 
                 {/* Footer Links */}
