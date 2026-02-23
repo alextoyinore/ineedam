@@ -92,6 +92,9 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
                 gap: '0.5rem',
                 position: 'relative',
                 cursor: !isFullDetail ? 'pointer' : 'default',
+                borderBottom: isFullDetail ? 'none' : '1px solid var(--border-glass)',
+                margin: '0',
+                padding: '1.5rem'
             }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', minWidth: 0 }}>

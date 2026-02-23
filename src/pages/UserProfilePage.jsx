@@ -502,11 +502,8 @@ export const UserProfilePage = () => {
                                             initial={{ opacity: 0 }}
                                             animate={{ opacity: 1 }}
                                             transition={{ delay: idx * 0.1 }}
-                                            style={{ borderBottom: '1px solid var(--border-glass)' }}
                                         >
-                                            <div style={{ padding: '0 1.5rem' }}>
-                                                <NeedCard need={need} />
-                                            </div>
+                                            <NeedCard need={need} />
                                             {isOwnProfile && (
                                                 <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', marginBottom: '1.5rem', paddingLeft: '6rem' }}>
                                                     {need.status !== 'met' && (
@@ -574,7 +571,6 @@ export const UserProfilePage = () => {
                                             transition={{ delay: idx * 0.05 }}
                                             onClick={() => navigate(`/${user.username}`)}
                                             style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border-glass)', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }}
-                                            className="nav-link-hover"
                                         >
                                             <div style={{
                                                 width: '48px', height: '48px', borderRadius: '50%', flexShrink: 0,
@@ -619,7 +615,7 @@ export const UserProfilePage = () => {
                                             transition={{ delay: idx * 0.05 }}
                                             onClick={() => navigate(`/${user.username}`)}
                                             style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border-glass)', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }}
-                                            className="nav-link-hover"
+                                            className="card-hover"
                                         >
                                             <div style={{
                                                 width: '48px', height: '48px', borderRadius: '50%', flexShrink: 0,
@@ -662,16 +658,13 @@ export const UserProfilePage = () => {
                                             initial={{ opacity: 0 }}
                                             animate={{ opacity: 1 }}
                                             transition={{ delay: idx * 0.05 }}
-                                            style={{ borderBottom: '1px solid var(--border-glass)' }}
                                         >
                                             {/* Broadcaster attribution label */}
                                             <div style={{ padding: '0.75rem 1.5rem 0 1.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 600 }}>
                                                 <Repeat2 size={14} />
                                                 {profile.display_name} broadcasted
                                             </div>
-                                            <div style={{ padding: '0 1.5rem' }}>
-                                                <NeedCard need={need} />
-                                            </div>
+                                            <NeedCard need={need} />
                                         </motion.div>
                                     ))}
                                 </div>
@@ -699,7 +692,6 @@ export const UserProfilePage = () => {
                                                 initial={{ opacity: 0 }}
                                                 animate={{ opacity: 1 }}
                                                 transition={{ delay: idx * 0.05 }}
-                                                style={{ borderBottom: '1px solid var(--border-glass)', padding: '1.5rem' }}
                                             >
                                                 <EndorsementFeedCard endorsement={mappedEndorsement} />
                                             </motion.div>

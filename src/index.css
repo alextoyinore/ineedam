@@ -144,6 +144,14 @@ button {
   transform: translateY(-2px);
 }
 
+.nav-link-hover {
+  transition: all 0.2s ease-in-out;
+}
+
+.nav-link-hover:hover {
+  background-color: rgba(var(--bg-base-rgb), 0.5);
+}
+
 /* Button Variants */
 .btn {
   display: inline-flex;

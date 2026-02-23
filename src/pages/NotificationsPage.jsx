@@ -76,7 +76,6 @@ export const NotificationsPage = () => {
                                 cursor: 'pointer', position: 'relative',
                                 width: '100%'
                             }}
-                            className="nav-link-hover"
                         >
                             {!notif.read && (
                                 <div style={{
@@ -113,6 +112,6 @@ export const NotificationsPage = () => {
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 };

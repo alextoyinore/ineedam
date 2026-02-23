@@ -102,6 +102,8 @@ export const EndorsementFeedCard = ({ endorsement }) => {
                 gap: '0.75rem',
                 position: 'relative',
                 cursor: hasNeed ? 'pointer' : 'default',
+                padding: '1.5rem',
+                borderBottom: '1px solid var(--border-glass)'
             }}>
             {dummyNeed && (
                 <ReplyModal

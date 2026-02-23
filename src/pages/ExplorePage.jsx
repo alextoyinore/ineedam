@@ -127,13 +127,6 @@ export const ExplorePage = () => {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.2 }}
-                            style={{
-                                borderBottom: '1px solid var(--border-glass)',
-                                padding: '1.5rem',
-                                transition: 'background-color 0.2s',
-                                cursor: 'pointer'
-                            }}
-                            className="nav-link-hover"
                             onClick={() => {
                                 if (item.type === 'need') {
                                     navigate(`/need/${item.id}`);

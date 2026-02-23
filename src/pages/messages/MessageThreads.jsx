@@ -137,7 +137,6 @@ export const MessageThreads = () => {
                                     key={profile.id}
                                     onClick={() => handleStartChat(profile.id)}
                                     style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', borderRadius: '12px' }}
-                                    className="nav-link-hover"
                                 >
                                     <div className="avatar-md" style={{
                                         borderRadius: '50%', flexShrink: 0,
@@ -170,7 +169,6 @@ export const MessageThreads = () => {
                                 cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.05)',
                                 position: 'relative'
                             }}
-                            className="nav-link-hover"
                         >
                             {thread.unread && (
                                 <div style={{ position: 'absolute', left: '0.4rem', top: '50%', transform: 'translateY(-50%)', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary)' }} />

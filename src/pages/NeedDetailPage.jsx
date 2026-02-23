@@ -19,6 +19,7 @@ const ReplyItem = ({ reply, need, depth = 0, onReply }) => {
     return (
         <div style={{ marginLeft: depth > 0 ? '1.5rem' : 0, borderLeft: depth > 0 ? '2px solid var(--border-glass)' : 'none' }}>
             <div
+                className="card-hover"
                 style={{
                     padding: '1rem 1.5rem',
                     borderBottom: '1px solid var(--border-glass)',
@@ -254,8 +255,8 @@ export const NeedDetailPage = () => {
                             {isPrivateReply ? 'Private Reply' : 'Public Reply'}
                         </button>
 
-                        <button type="submit" disabled={!replyText.trim() || submittingReply || !user} className="btn btn-primary" style={{ padding: '0.5rem 1.5rem', borderRadius: '9999px' }}>
-                            Reply
+                        <button type="submit" disabled={!replyText.trim() || submittingReply || !user} className="btn btn-primary" style={{ padding: '0.5rem 1.5rem', borderRadius: '9999px', minWidth: '100px' }}>
+                            {submittingReply ? <Loader size={18} className="animate-spin" /> : 'Reply'}
                         </button>
                     </div>
                 </form>

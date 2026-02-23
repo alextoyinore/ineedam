@@ -61,7 +61,6 @@ export const MobileWhoToFollowPage = () => {
                                 padding: '1rem 1.5rem', borderBottom: '1px solid var(--border-glass)',
                                 display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer'
                             }}
-                            className="nav-link-hover"
                         >
                             <div style={{
                                 width: '48px', height: '48px', borderRadius: '50%', flexShrink: 0,
