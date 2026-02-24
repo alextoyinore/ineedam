@@ -211,7 +211,7 @@ export const NeedDetailPage = () => {
                 <h2 className="h2" style={{ fontSize: '1.25rem', margin: 0 }}>Thread</h2>
             </header>
 
-            <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border-glass)' }}>
+            <div style={{ padding: '', borderBottom: '1px solid var(--border-glass)' }}>
                 <NeedCard need={need} isFullDetail={true} />
             </div>
 
