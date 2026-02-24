@@ -49,7 +49,16 @@ export const shapeNeed = (row: any) => {
         authorAvatar: row.profiles?.avatar_url || null,
         imageUrl: row.image_url || undefined,
         status: row.status || 'open',
+        created_at: row.created_at,
     };
+};
+
+export const updateNeedStatus = async (id: string, status: string) => {
+    const { error } = await supabase
+        .from('needs')
+        .update({ status })
+        .eq('id', id);
+    if (error) throw error;
 };
 
 export const getNeedById = async (id: string) => {
@@ -69,6 +78,7 @@ export const fetchNeeds = async (from: any = 0, to: any = 9) => {
     const { data, error } = await supabase
         .from('needs')
         .select('*, profiles!needs_user_id_fkey(display_name, avatar_url, username, banner_url, bio)')
+        .neq('status', 'archived')
         .order('created_at', { ascending: false })
         .range(from, to);
 

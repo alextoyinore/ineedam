@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { shapeNeed } from './needsService';
 
 /**
  * Toggle a broadcast for a need.
@@ -6,20 +7,22 @@ import { supabase } from './supabase';
  * @param {string} needId
  * @param {boolean} currentlyBroadcasted
  */
-export const toggleBroadcast = async (userId, needId, currentlyBroadcasted) => {
-    if (!userId || !needId) return;
+export const toggleBroadcast = async (userId, targetId, currentlyBroadcasted, type = 'need') => {
+    if (!userId || !targetId) return;
+
+    const column = type === 'need' ? 'need_id' : 'endorsement_id';
 
     if (currentlyBroadcasted) {
         const { error } = await supabase
             .from('broadcasts')
             .delete()
             .eq('user_id', userId)
-            .eq('need_id', needId);
+            .eq(column, targetId);
         if (error) throw error;
     } else {
         const { error } = await supabase
             .from('broadcasts')
-            .insert([{ user_id: userId, need_id: needId }]);
+            .insert([{ user_id: userId, [column]: targetId }]);
         if (error) throw error;
     }
 };
@@ -33,7 +36,7 @@ export const fetchUserBroadcasts = async (userId) => {
 
     const { data, error } = await supabase
         .from('broadcasts')
-        .select('need_id')
+        .select('need_id, endorsement_id')
         .eq('user_id', userId);
 
     if (error) {
@@ -41,7 +44,7 @@ export const fetchUserBroadcasts = async (userId) => {
         return [];
     }
 
-    return data.map(item => item.need_id);
+    return data.map(item => item.need_id || item.endorsement_id).filter(Boolean);
 };
 
 /**
@@ -54,14 +57,20 @@ export const fetchBroadcastedNeeds = async (userId) => {
     const { data, error } = await supabase
         .from('broadcasts')
         .select(`
-            created_at,
-            need_id,
+            id, created_at,
+            profiles (id, display_name, username, avatar_url),
             needs (
                 id, title, description, category, budget_mode, budget_min, budget_max,
                 currency, location, flexibility, image_url, status, created_at,
                 profiles!needs_user_id_fkey (
                     id, display_name, username, avatar_url
                 )
+            ),
+            endorsements (
+                id, message, created_at,
+                endorser:profiles!endorsements_endorser_id_fkey(id, display_name, username, avatar_url, bio),
+                endorsed:profiles!endorsements_endorsed_id_fkey(id, display_name, username, avatar_url, bio),
+                needs:needs(id, title, category, budget_min, status)
             )
         `)
         .eq('user_id', userId)
@@ -72,7 +81,89 @@ export const fetchBroadcastedNeeds = async (userId) => {
         return [];
     }
 
-    return data.map(b => b.needs).filter(Boolean);
+    return data.map(b => {
+        if (b.needs) {
+            return {
+                ...shapeNeed(b.needs),
+                type: 'broadcast',
+                broadcast_id: b.id,
+                broadcast_created_at: b.created_at,
+                broadcasted_by: b.profiles,
+                created_at: b.created_at
+            };
+        } else if (b.endorsements) {
+            return {
+                ...b.endorsements,
+                type: 'broadcast_endorsement',
+                broadcast_id: b.id,
+                broadcast_created_at: b.created_at,
+                broadcasted_by: b.profiles,
+                created_at: b.created_at
+            };
+        }
+        return null;
+    }).filter(b => b && b.broadcast_id);
+};
+
+/**
+ * Fetch all recent broadcasts globally.
+ * @param {number} from
+ * @param {number} to
+ */
+export const fetchAllBroadcasts = async (from = 0, to = 9) => {
+    const { data, error } = await supabase
+        .from('broadcasts')
+        .select(`
+            id, created_at,
+            profiles (id, display_name, username, avatar_url),
+            needs (
+                id, title, description, category, budget_mode, budget_min, budget_max,
+                currency, location, flexibility, image_url, status, created_at,
+                profiles!needs_user_id_fkey (
+                    id, display_name, username, avatar_url
+                )
+            ),
+            endorsements (
+                id, message, created_at,
+                endorser:profiles!endorsements_endorser_id_fkey(id, display_name, username, avatar_url, bio),
+                endorsed:profiles!endorsements_endorsed_id_fkey(id, display_name, username, avatar_url, bio),
+                needs:needs(id, title, category, budget_min, status)
+            )
+        `)
+        .order('created_at', { ascending: false })
+        .range(from, to);
+
+    if (error) {
+        console.error('Error fetching global broadcasts:', error);
+        return [];
+    }
+
+    return data.map(b => {
+        if (b.needs) {
+            if (b.needs.status === 'archived') return null;
+            return {
+                ...shapeNeed(b.needs),
+                type: 'broadcast',
+                broadcast_id: b.id,
+                broadcast_created_at: b.created_at,
+                broadcasted_by: b.profiles,
+                created_at: b.created_at
+            };
+        } else if (b.endorsements) {
+            if (b.endorsements.needs?.status === 'archived') return null;
+            return {
+                ...b.endorsements,
+                category: b.endorsements.needs?.category,
+                budgetMin: b.endorsements.needs?.budget_min,
+                type: 'broadcast_endorsement',
+                broadcast_id: b.id,
+                broadcast_created_at: b.created_at,
+                broadcasted_by: b.profiles,
+                created_at: b.created_at
+            };
+        }
+        return null;
+    }).filter(b => b !== null);
 };
 
 /**
@@ -80,22 +171,25 @@ export const fetchBroadcastedNeeds = async (userId) => {
  * Returns an object mapping needId -> count
  * @param {string[]} needIds
  */
-export const fetchBroadcastCounts = async (needIds) => {
-    if (!needIds?.length) return {};
+export const fetchBroadcastCounts = async (ids, type = 'need') => {
+    if (!ids?.length) return {};
+
+    const column = type === 'need' ? 'need_id' : 'endorsement_id';
 
     const { data, error } = await supabase
         .from('broadcasts')
-        .select('need_id')
-        .in('need_id', needIds);
+        .select(column)
+        .in(column, ids);
 
     if (error) {
-        console.error('Error fetching broadcast counts:', error);
+        console.error(`Error fetching broadcast counts for ${type}:`, error);
         return {};
     }
 
     const counts = {};
     data.forEach(item => {
-        counts[item.need_id] = (counts[item.need_id] || 0) + 1;
+        const id = item[column];
+        counts[id] = (counts[id] || 0) + 1;
     });
 
     return counts;
@@ -103,15 +197,16 @@ export const fetchBroadcastCounts = async (needIds) => {
 /**
  * Fetch broadcast count for a single need
  */
-export const getBroadcastCount = async (needId) => {
-    if (!needId) return 0;
+export const getBroadcastCount = async (targetId, type = 'need') => {
+    if (!targetId) return 0;
+    const column = type === 'need' ? 'need_id' : 'endorsement_id';
     const { count, error } = await supabase
         .from('broadcasts')
         .select('*', { count: 'exact', head: true })
-        .eq('need_id', needId);
+        .eq(column, targetId);
 
     if (error) {
-        console.error('Error fetching single broadcast count:', error);
+        console.error(`Error fetching single ${type} broadcast count:`, error);
         return 0;
     }
     return count || 0;

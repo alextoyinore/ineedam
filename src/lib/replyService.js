@@ -121,3 +121,10 @@ export const getReplyCount = async (needId) => {
     }
     return count || 0;
 };
+export const updateReplyStatus = async (replyId, status) => {
+    const { error } = await supabase
+        .from('replies')
+        .update({ status })
+        .eq('id', replyId);
+    if (error) throw error;
+};

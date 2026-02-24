@@ -9,7 +9,7 @@ export const fetchBookmarks = async (userId) => {
 
     const { data, error } = await supabase
         .from('bookmarks')
-        .select('need_id, endorsement_id')
+        .select('need_id, endorsement_id, broadcast_id')
         .eq('user_id', userId);
 
     if (error) {
@@ -20,6 +20,7 @@ export const fetchBookmarks = async (userId) => {
     return data.map(b => {
         if (b.need_id) return { id: b.need_id, type: 'need' };
         if (b.endorsement_id) return { id: b.endorsement_id, type: 'endorsement' };
+        if (b.broadcast_id) return { id: b.broadcast_id, type: 'broadcast' };
         return null;
     }).filter(Boolean);
 };
@@ -35,6 +36,7 @@ export const fetchBookmarkedItems = async (userId) => {
         .select(`
             need_id,
             endorsement_id,
+            broadcast_id,
             created_at,
             needs (
                 *,
@@ -60,6 +62,16 @@ export const fetchBookmarkedItems = async (userId) => {
                 needs (
                     id, title, description, category, status
                 )
+            ),
+            broadcasts (
+                id, created_at, need_id,
+                profiles (id, display_name, username, avatar_url),
+                needs (
+                    *,
+                    profiles!needs_user_id_fkey (
+                        id, display_name, username, avatar_url
+                    )
+                )
             )
         `)
         .eq('user_id', userId)
@@ -78,6 +90,18 @@ export const fetchBookmarkedItems = async (userId) => {
         if (b.endorsements) {
             return { ...b.endorsements, type: 'endorsement', bookmark_created_at: b.created_at };
         }
+        if (b.broadcasts) {
+            // Shape the broadcasted need for consistent rendering
+            const { shapeNeed } = require('./needsService');
+            return {
+                ...shapeNeed(b.broadcasts.needs),
+                type: 'broadcast',
+                broadcast_created_at: b.broadcasts.created_at,
+                broadcasted_by: b.broadcasts.profiles,
+                bookmark_created_at: b.created_at,
+                broadcast_id: b.broadcasts.id
+            };
+        }
         return null;
     }).filter(Boolean);
 };
@@ -92,7 +116,9 @@ export const fetchBookmarkedItems = async (userId) => {
 export const toggleBookmarkInDb = async (userId, targetId, isCurrentlyBookmarked, type = 'need') => {
     if (!userId) return false;
 
-    const column = type === 'need' ? 'need_id' : 'endorsement_id';
+    let column = 'need_id';
+    if (type === 'endorsement') column = 'endorsement_id';
+    if (type === 'broadcast') column = 'broadcast_id';
 
     if (isCurrentlyBookmarked) {
         // Remove bookmark

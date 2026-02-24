@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import { shapeNeed } from './needsService';
 import { timeAgo } from './needsService';
+import { fetchAllBroadcasts } from './broadcastService';
 
 /**
  * Fetch all endorsements globally, shaping them so they match Need items structure.
@@ -15,7 +16,7 @@ export const fetchAllEndorsements = async (from = 0, to = 9) => {
             need_id,
             endorser:profiles!endorsements_endorser_id_fkey(id, display_name, username, avatar_url, bio),
             endorsed:profiles!endorsements_endorsed_id_fkey(id, display_name, username, avatar_url, bio),
-            needs(id, title)
+            needs(id, title, category, budget_min, status)
         `)
         .order('created_at', { ascending: false })
         .range(from, to);
@@ -25,24 +26,28 @@ export const fetchAllEndorsements = async (from = 0, to = 9) => {
         return [];
     }
 
-    return data.map(e => ({
-        ...e,
-        type: 'endorsement', // Discriminate the kind of feed card
-        postedAt: timeAgo(e.created_at)
-    }));
+    return (data || [])
+        .filter(e => e.needs && e.needs.status !== 'archived')
+        .map(e => ({
+            ...e,
+            type: 'endorsement',
+            postedAt: timeAgo(e.created_at)
+        }));
 };
 
 /**
  * Fetch and merge needs and endorsements from the database together.
  */
 export const fetchMixedFeed = async (from = 0, to = 5) => {
-    const [{ data: needsData, error: needsError }, endorsements] = await Promise.all([
+    const [{ data: needsData, error: needsError }, endorsements, broadcasts] = await Promise.all([
         supabase
             .from('needs')
             .select('*, profiles!needs_user_id_fkey(display_name, avatar_url, username, banner_url, bio)')
+            .neq('status', 'archived')
             .order('created_at', { ascending: false })
             .range(from, to),
-        fetchAllEndorsements(from, to)
+        fetchAllEndorsements(from, to),
+        fetchAllBroadcasts(from, to)
     ]);
 
     if (needsError) throw needsError;
@@ -54,7 +59,7 @@ export const fetchMixedFeed = async (from = 0, to = 5) => {
     }));
 
     // Merge and sort
-    const mixed = [...shapedNeeds, ...endorsements].sort((a, b) => {
+    const mixed = [...shapedNeeds, ...endorsements, ...broadcasts].sort((a, b) => {
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
 
@@ -86,9 +91,10 @@ export const searchMixedFeed = async ({ query, category, minBudget, maxBudget },
         supabaseQuery = supabaseQuery.lte('budget_min', parseFloat(maxBudget));
     }
 
-    const [{ data: needsData, error: needsError }, endorsements] = await Promise.all([
-        supabaseQuery.order('created_at', { ascending: false }).range(from, to),
-        fetchAllEndorsements(from, to)
+    const [{ data: needsData, error: needsError }, endorsements, broadcasts] = await Promise.all([
+        supabaseQuery.neq('status', 'archived').order('created_at', { ascending: false }).range(from, to),
+        fetchAllEndorsements(from, to),
+        fetchAllBroadcasts(from, to)
     ]);
 
     if (needsError) throw needsError;
@@ -99,26 +105,47 @@ export const searchMixedFeed = async ({ query, category, minBudget, maxBudget },
         created_at: need.created_at
     }));
 
-    // Filter endorsements manually in JS
+    // Filter endorsements and broadcasts manually in JS
     let filteredEndorsements = endorsements;
+    let filteredBroadcasts = broadcasts;
+
+    // Filter by query string
     if (query) {
         const lowerQuery = query.toLowerCase();
-        filteredEndorsements = endorsements.filter(e =>
+        filteredEndorsements = filteredEndorsements.filter(e =>
             (e.message && e.message.toLowerCase().includes(lowerQuery)) ||
             (e.endorsed.display_name && e.endorsed.display_name.toLowerCase().includes(lowerQuery)) ||
             (e.endorser.display_name && e.endorser.display_name.toLowerCase().includes(lowerQuery)) ||
             (e.needs.title && e.needs.title.toLowerCase().includes(lowerQuery))
         );
+
+        filteredBroadcasts = filteredBroadcasts.filter(b =>
+            (b.title && b.title.toLowerCase().includes(lowerQuery)) ||
+            (b.description && b.description.toLowerCase().includes(lowerQuery)) ||
+            (b.broadcasted_by?.display_name && b.broadcasted_by.display_name.toLowerCase().includes(lowerQuery))
+        );
     }
 
-    // If they strictly want category/budget, endorsements might not apply natively, but we can return them if it's just a query text match.
-    // If they search specifically by category/budget, maybe drop endorsements. 
-    if (category || minBudget || maxBudget) {
-        filteredEndorsements = [];
+    // Filter by category
+    if (category) {
+        filteredEndorsements = filteredEndorsements.filter(e => e.needs?.category === category);
+        filteredBroadcasts = filteredBroadcasts.filter(b => b.category === category);
+    }
+
+    // Filter by budget
+    if (minBudget) {
+        const min = parseFloat(minBudget);
+        filteredEndorsements = filteredEndorsements.filter(e => e.needs?.budget_min >= min);
+        filteredBroadcasts = filteredBroadcasts.filter(b => b.budgetMin >= min);
+    }
+    if (maxBudget) {
+        const max = parseFloat(maxBudget);
+        filteredEndorsements = filteredEndorsements.filter(e => e.needs?.budget_min <= max);
+        filteredBroadcasts = filteredBroadcasts.filter(b => b.budgetMin <= max);
     }
 
     // Merge and sort
-    const mixed = [...shapedNeeds, ...filteredEndorsements].sort((a, b) => {
+    const mixed = [...shapedNeeds, ...filteredEndorsements, ...filteredBroadcasts].sort((a, b) => {
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
 

@@ -179,15 +179,21 @@ export const SearchPage = () => {
                     <>
                         {results.map((item) => (
                             <motion.div
-                                key={`${item.type}-${item.id}`}
+                                key={`${item.type}-${item.broadcast_id || item.id}`}
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ duration: 0.2 }}
                             >
-                                {item.type === 'need' ? (
-                                    <NeedCard need={item} />
+                                {item.type === 'need' || item.type === 'broadcast' ? (
+                                    <NeedCard
+                                        need={item}
+                                        broadcastedBy={item.type === 'broadcast' ? item.broadcasted_by : null}
+                                    />
                                 ) : (
-                                    <EndorsementFeedCard endorsement={item} />
+                                    <EndorsementFeedCard
+                                        endorsement={item}
+                                        broadcastedBy={item.type === 'broadcast_endorsement' ? item.broadcasted_by : null}
+                                    />
                                 )}
                             </motion.div>
                         ))}

@@ -9,19 +9,25 @@ const BroadcastsContext = createContext();
 
 export const BroadcastsProvider = ({ children }) => {
     const { user } = useAuth();
-    const [broadcastedNeedIds, setBroadcastedNeedIds] = useState([]);
+    const [broadcasts, setBroadcasts] = useState([]); // [{id, type}, ...]
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const loadBroadcasts = async () => {
             if (!user) {
-                setBroadcastedNeedIds([]);
+                setBroadcasts([]);
                 setLoading(false);
                 return;
             }
             try {
-                const ids = await fetchUserBroadcasts(user.id);
-                setBroadcastedNeedIds(ids);
+                // fetchUserBroadcasts now returns array of IDs. 
+                // However, our service currently doesn't easily distinguish them without another fetch or schema change info.
+                // For now, let's just fetch everything and treat them as generic IDs, 
+                // or better, update the service to return objects.
+                const items = await fetchUserBroadcasts(user.id);
+                // Since fetchUserBroadcasts currently returns a flat array of IDs, 
+                // we'll treat them as generic. But to be safe, we'll store them as objects if we can.
+                setBroadcasts(items.map(id => ({ id })));
             } catch (err) {
                 console.error('Failed to load user broadcasts:', err);
             } finally {
@@ -33,34 +39,34 @@ export const BroadcastsProvider = ({ children }) => {
     }, [user]);
 
     const isBroadcasted = useCallback(
-        (needId) => broadcastedNeedIds.includes(needId),
-        [broadcastedNeedIds]
+        (targetId, type = 'need') => broadcasts.some(b => b.id === targetId),
+        [broadcasts]
     );
 
-    const toggleBroadcast = async (needId) => {
+    const toggleBroadcast = async (targetId, type = 'need') => {
         if (!user) {
             alert('Please sign in to broadcast posts.');
             return;
         }
 
-        const currentlyBroadcasted = isBroadcasted(needId);
+        const currentlyBroadcasted = isBroadcasted(targetId, type);
 
         // Optimistic UI update
-        setBroadcastedNeedIds(prev =>
+        setBroadcasts(prev =>
             currentlyBroadcasted
-                ? prev.filter(id => id !== needId)
-                : [...prev, needId]
+                ? prev.filter(b => b.id !== targetId)
+                : [...prev, { id: targetId, type }]
         );
 
         try {
-            await toggleBroadcastApi(user.id, needId, currentlyBroadcasted);
+            await toggleBroadcastApi(user.id, targetId, currentlyBroadcasted, type);
         } catch (err) {
             console.error('Failed to toggle broadcast:', err);
             // Revert on error
-            setBroadcastedNeedIds(prev =>
+            setBroadcasts(prev =>
                 currentlyBroadcasted
-                    ? [...prev, needId]
-                    : prev.filter(id => id !== needId)
+                    ? [...prev, { id: targetId, type }]
+                    : prev.filter(b => b.id !== targetId)
             );
             alert('Could not update broadcast. Please try again.');
         }
@@ -68,7 +74,7 @@ export const BroadcastsProvider = ({ children }) => {
 
     return (
         <BroadcastsContext.Provider value={{
-            broadcastedNeedIds,
+            broadcastedIds: broadcasts.map(b => b.id),
             isBroadcasted,
             toggleBroadcast,
             loadingBroadcasts: loading

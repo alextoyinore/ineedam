@@ -31,6 +31,7 @@ import { PremiumPage } from './pages/PremiumPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { ServerErrorPage } from './pages/ServerErrorPage';
 import { BlockedAccountsPage } from './pages/BlockedAccountsPage';
+import { ArchivedContentPage } from './pages/ArchivedContentPage';
 
 
 // Full-screen spinner while the session is being determined
@@ -87,6 +88,7 @@ function App() {
                 <Route path="/categories" element={<CategoriesPage />} />
                 <Route path="/premium" element={<PremiumPage />} />
                 <Route path="/blocked-accounts" element={<BlockedAccountsPage />} />
+                <Route path="/settings/archived" element={<ArchivedContentPage />} />
                 <Route path="/need/:id" element={<NeedDetailPage />} />
                 <Route path="/dashboard" element={<Navigate to={`/${useAuth().profile?.username || ''}`} replace />} />
                 <Route path="/:username" element={<UserProfilePage />} />

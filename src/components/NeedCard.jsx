@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Tag, MapPin, Banknote, Clock, MessageSquare, Bookmark, Heart, MessageCircle, Repeat2, Award } from 'lucide-react';
+import { Tag, MapPin, Banknote, Clock, MessageSquare, Bookmark, Heart, MessageCircle, Repeat2, Award, Trash2 } from 'lucide-react';
 import { ReplyModal } from './ReplyModal';
 import { useBookmarks } from '../context/BookmarksContext';
 import { useLikes } from '../context/LikesContext';
@@ -12,8 +12,9 @@ import { useAuth } from '../context/AuthContext';
 import { useSocial } from '../context/SocialContext';
 import { useNotifications } from '../context/NotificationsContext';
 import { ProfileHoverCard } from './ProfileHoverCard';
+import { updateNeedStatus } from '../lib/needsService';
 
-export const NeedCard = ({ need, isFullDetail = false }) => {
+export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null }) => {
     const { user } = useAuth();
     const [isReplyOpen, setIsReplyOpen] = useState(false);
     const navigate = useNavigate();
@@ -28,8 +29,13 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
     const [broadcastCount, setBroadcastCount] = useState(0);
     const [hasLoadedCount, setHasLoadedCount] = useState(false);
     const [endorsementCount, setEndorsementCount] = useState(0);
+    const [isArchived, setIsArchived] = useState(false);
 
-    const bookmarked = isBookmarked(need.id);
+    const isBroadcast = broadcastedBy || need.type === 'broadcast';
+    const targetId = isBroadcast ? (need.broadcast_id || need.id) : need.id;
+    const targetType = isBroadcast ? 'broadcast' : 'need';
+
+    const bookmarked = isBookmarked(targetId, targetType);
     const following = checkIsFollowing(need.authorId);
     const liked = checkIsLiked(need.id);
     const broadcasted = checkIsBroadcasted(need.id);
@@ -83,6 +89,19 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
         e.stopPropagation();
         toggleFollow(need.authorId);
     };
+
+    const handleArchive = async (e) => {
+        e.stopPropagation();
+        if (!window.confirm("Archive this post? It will be hidden from the feed.")) return;
+        try {
+            await updateNeedStatus(need.id, 'archived');
+            setIsArchived(true);
+        } catch (err) {
+            console.error("Failed to archive need", err);
+        }
+    };
+
+    if (isArchived) return null;
     return (
         <div
             onClick={() => !isFullDetail && navigate(`/need/${need.id}`)}
@@ -96,6 +115,32 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
                 margin: '0',
                 padding: '1.5rem'
             }}>
+            {/* Broadcast Header */}
+            {broadcastedBy && (
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    color: 'var(--accent)',
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                    marginBottom: '0.5rem',
+                    marginLeft: '3.25rem' // Align with content, after avatar space
+                }}>
+                    <Repeat2 size={16} />
+                    <span
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/${broadcastedBy.username}`);
+                        }}
+                        style={{ cursor: 'pointer' }}
+                        onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
+                        onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
+                    >
+                        {broadcastedBy.display_name} broadcasted
+                    </span>
+                </div>
+            )}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', minWidth: 0 }}>
                     <ProfileHoverCard userData={{
@@ -116,9 +161,9 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
                                 cursor: 'pointer'
                             }}>
                             {need.authorAvatar ? (
-                                <img src={need.authorAvatar} alt={need.author} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                <img src={need.authorAvatar} alt={need.author || 'User'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             ) : (
-                                need.author.charAt(0).toUpperCase()
+                                (need.author || '?').charAt(0).toUpperCase()
                             )}
                         </div>
                     </ProfileHoverCard>
@@ -174,21 +219,38 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
                     </div>
                 </div>
 
-                {/* Follow Button - Anchored to the right */}
-                {user && need.authorId !== user.id && (
-                    <button
-                        onClick={handleFollow}
-                        style={{
-                            fontSize: '0.8rem', fontWeight: 600, padding: '0.2rem 0.6rem',
-                            borderRadius: '9999px', border: following ? '1px solid var(--border-glass)' : '1px solid var(--primary)',
-                            background: following ? 'transparent' : 'var(--primary)',
-                            color: following ? 'var(--text-primary)' : 'white',
-                            cursor: 'pointer', transition: 'all 0.2s', flexShrink: 0
-                        }}
-                    >
-                        {following ? 'Following' : 'Follow'}
-                    </button>
-                )}
+                {/* Follow & Archive Buttons - Anchored to the right */}
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    {user && need.authorId !== user.id && (
+                        <button
+                            onClick={handleFollow}
+                            style={{
+                                fontSize: '0.8rem', fontWeight: 600, padding: '0.2rem 0.6rem',
+                                borderRadius: '9999px', border: following ? '1px solid var(--border-glass)' : '1px solid var(--primary)',
+                                background: following ? 'transparent' : 'var(--primary)',
+                                color: following ? 'var(--text-primary)' : 'white',
+                                cursor: 'pointer', transition: 'all 0.2s', flexShrink: 0
+                            }}
+                        >
+                            {following ? 'Following' : 'Follow'}
+                        </button>
+                    )}
+                    {user && need.authorId === user.id && (
+                        <button
+                            onClick={handleArchive}
+                            className="nav-link-hover"
+                            style={{
+                                padding: '0.4rem', borderRadius: '50%', color: 'var(--text-muted)',
+                                background: 'transparent', transition: 'all 0.2s'
+                            }}
+                            title="Archive Post"
+                            onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'}
+                            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+                        >
+                            <Trash2 size={18} />
+                        </button>
+                    )}
+                </div>
             </div>
 
 
@@ -240,13 +302,9 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
                             cursor: 'pointer'
                         }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'} onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}>
                             <MessageSquare size={16} />
-                            <span>
-                                {replyCount > 0 ? (
-                                    replyCount
-                                ) : (
-                                    <span className="btn-label-text">Reply</span>
-                                )}
-                            </span>
+                            {replyCount > 0 && (
+                                <span>{replyCount}</span>
+                            )}
                         </button>
 
                         <button onClick={() => navigate(`/need/${need.id}`)} className="nav-link-hover" style={{
@@ -256,7 +314,6 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
                             cursor: 'pointer'
                         }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'} onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}>
                             <MessageCircle size={16} />
-                            <span className="btn-label-text">View Thread</span>
                         </button>
 
                         {/* Broadcast Button */}
@@ -267,13 +324,9 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
                             cursor: 'pointer'
                         }} onMouseEnter={(e) => e.currentTarget.style.color = broadcasted ? 'var(--accent)' : '#0d9488'} onMouseLeave={(e) => e.currentTarget.style.color = broadcasted ? 'var(--accent)' : 'var(--text-muted)'}>
                             <Repeat2 size={16} />
-                            <span>
-                                {broadcastCount > 0 ? (
-                                    broadcastCount
-                                ) : (
-                                    <span className="btn-label-text">Broadcast</span>
-                                )}
-                            </span>
+                            {broadcastCount > 0 && (
+                                <span>{broadcastCount}</span>
+                            )}
                         </button>
 
                         <button onClick={handleLike} className="nav-link-hover" style={{
@@ -283,23 +336,22 @@ export const NeedCard = ({ need, isFullDetail = false }) => {
                             cursor: 'pointer'
                         }} onMouseEnter={(e) => e.currentTarget.style.color = liked ? '#f87171' : '#ef4444'} onMouseLeave={(e) => e.currentTarget.style.color = liked ? '#ef4444' : 'var(--text-muted)'}>
                             <Heart size={16} fill={liked ? 'currentColor' : 'none'} />
-                            <span>
-                                {likeCount > 0 ? (
-                                    likeCount
-                                ) : (
-                                    <span className="btn-label-text">Like</span>
-                                )}
-                            </span>
+                            {likeCount > 0 && (
+                                <span>{likeCount}</span>
+                            )}
                         </button>
                     </div>
 
                     {/* Bookmark Action right-aligned */}
-                    <button onClick={(e) => { e.stopPropagation(); toggleBookmark(need.id); }} className="nav-link-hover" style={{
+                    <button onClick={(e) => {
+                        e.stopPropagation();
+                        toggleBookmark(targetId, targetType);
+                    }} className="nav-link-hover" style={{
                         display: 'flex', alignItems: 'center', gap: '0.5rem',
                         color: bookmarked ? 'var(--primary)' : 'var(--text-muted)', fontSize: '0.9rem', background: 'transparent',
                         transition: 'color 0.2s, transform 0.1s', padding: '0.25rem', borderRadius: '50%',
                         cursor: 'pointer', transform: bookmarked ? 'scale(1.1)' : 'scale(1)'
-                    }} title={bookmarked ? "Remove Bookmark" : "Bookmark Need"}>
+                    }} title={bookmarked ? `Remove ${targetType === 'broadcast' ? 'Broadcast ' : ''}Bookmark` : `Bookmark ${targetType === 'broadcast' ? 'Broadcast' : 'Need'}`}>
                         <Bookmark size={18} fill={bookmarked ? 'currentColor' : 'none'} />
                     </button>
                 </div>

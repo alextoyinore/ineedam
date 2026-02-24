@@ -90,26 +90,56 @@ export const ExplorePage = () => {
     }, []);
 
     const filteredItems = items.filter(item => {
-        let matchesSearch = false;
-        if (item.type === 'need') {
-            matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                item.description.toLowerCase().includes(searchQuery.toLowerCase());
-        } else if (item.type === 'endorsement') {
-            matchesSearch = (item.message && item.message.toLowerCase().includes(searchQuery.toLowerCase())) ||
-                (item.endorsed?.display_name && item.endorsed.display_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
-                (item.endorser?.display_name && item.endorser.display_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
-                (item.needs?.title && item.needs.title.toLowerCase().includes(searchQuery.toLowerCase()));
+        if (!searchQuery) return true;
+
+        const query = searchQuery.toLowerCase();
+
+        if (item.type === 'need' || item.type === 'broadcast') {
+            const matchesNeed = (item.title?.toLowerCase() || '').includes(query) ||
+                (item.description?.toLowerCase() || '').includes(query);
+            const matchesBroadcaster = item.broadcasted_by?.display_name?.toLowerCase().includes(query);
+            return matchesNeed || matchesBroadcaster;
         }
 
-        if (feedTab === 'following') {
-            // For endorsements, consider it following if they follow EITHER the endorser or the endorsed
-            if (item.type === 'endorsement') {
-                return matchesSearch && (following.includes(item.endorser_id) || following.includes(item.endorsed_id));
-            }
-            return matchesSearch && following.includes(item.authorId);
+        if (item.type === 'endorsement' || item.type === 'broadcast_endorsement') {
+            return (item.message?.toLowerCase() || '').includes(query) ||
+                (item.endorser?.display_name?.toLowerCase() || '').includes(query) ||
+                (item.endorsed?.display_name?.toLowerCase() || '').includes(query);
         }
-        return matchesSearch;
+
+        return false;
+    }).filter(item => {
+        if (feedTab === 'following') {
+            if (item.type === 'broadcast' || item.type === 'broadcast_endorsement') {
+                return following.includes(item.broadcasted_by?.id);
+            }
+            if (item.type === 'endorsement') {
+                return following.includes(item.endorser_id) || following.includes(item.endorsed_id);
+            }
+            return following.includes(item.authorId);
+        }
+        return true;
     });
+
+    const renderItem = (item) => {
+        if (item.type === 'need' || item.type === 'broadcast') {
+            return (
+                <NeedCard
+                    need={item}
+                    broadcastedBy={item.type === 'broadcast' ? item.broadcasted_by : null}
+                />
+            );
+        }
+        if (item.type === 'endorsement' || item.type === 'broadcast_endorsement') {
+            return (
+                <EndorsementFeedCard
+                    endorsement={item}
+                    broadcastedBy={item.type === 'broadcast_endorsement' ? item.broadcasted_by : null}
+                />
+            );
+        }
+        return null;
+    };
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -153,23 +183,19 @@ export const ExplorePage = () => {
                 ) : filteredItems.length > 0 ? (
                     filteredItems.map((item) => (
                         <motion.div
-                            key={`${item.type}-${item.id}`}
+                            key={`${item.type}-${item.broadcast_id || item.id}`}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.2 }}
                             onClick={() => {
-                                if (item.type === 'need') {
+                                if (item.type === 'need' || item.type === 'broadcast') {
                                     navigate(`/need/${item.id}`);
-                                } else if (item.type === 'endorsement' && item.needs?.id) {
-                                    navigate(`/need/${item.needs.id}`);
+                                } else if ((item.type === 'endorsement' || item.type === 'broadcast_endorsement') && (item.needs?.id || item.need_id)) {
+                                    navigate(`/need/${item.needs?.id || item.need_id}`);
                                 }
                             }}
                         >
-                            {item.type === 'need' ? (
-                                <NeedCard need={item} />
-                            ) : (
-                                <EndorsementFeedCard endorsement={item} />
-                            )}
+                            {renderItem(item)}
                         </motion.div>
                     ))
                 ) : (

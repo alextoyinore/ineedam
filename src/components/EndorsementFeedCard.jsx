@@ -11,7 +11,7 @@ import { getLikeCount } from '../lib/likesService';
 import { getReplyCount } from '../lib/replyService';
 import { getBroadcastCount } from '../lib/broadcastService';
 
-export const EndorsementFeedCard = ({ endorsement }) => {
+export const EndorsementFeedCard = ({ endorsement, broadcastedBy = null }) => {
     const navigate = useNavigate();
     const [isReplyModalOpen, setIsReplyModalOpen] = useState(false);
 
@@ -28,22 +28,25 @@ export const EndorsementFeedCard = ({ endorsement }) => {
     const { isBookmarked, toggleBookmark } = useBookmarks();
     const { isBroadcasted, toggleBroadcast } = useBroadcasts();
 
+    const isBroadcast = broadcastedBy || endorsement.type === 'broadcast_endorsement';
+    const targetId = isBroadcast ? (endorsement.broadcast_id || endorsement.id) : endorsement.id;
+    const targetType = isBroadcast ? 'broadcast' : 'endorsement';
+
     const liked = hasNeed ? isLiked(need.id) : false;
-    const bookmarked = isBookmarked(endorsement.id, 'endorsement');
-    const broadcasted = hasNeed ? isBroadcasted(need.id) : false;
+    const bookmarked = isBookmarked(targetId, targetType);
+    const broadcasted = isBroadcasted(endorsement.id, 'endorsement');
 
     const [likeCount, setLikeCount] = useState(0);
     const [replyCount, setReplyCount] = useState(0);
     const [broadcastCount, setBroadcastCount] = useState(0);
 
     useEffect(() => {
-        if (!hasNeed) return;
         const loadCounts = async () => {
             try {
                 const [likes, replies, broadcasts] = await Promise.all([
-                    getLikeCount(need.id),
-                    getReplyCount(need.id),
-                    getBroadcastCount(need.id)
+                    hasNeed ? getLikeCount(need.id) : 0,
+                    hasNeed ? getReplyCount(need.id) : 0,
+                    getBroadcastCount(endorsement.id, 'endorsement')
                 ]);
                 setLikeCount(likes);
                 setReplyCount(replies);
@@ -53,12 +56,18 @@ export const EndorsementFeedCard = ({ endorsement }) => {
             }
         };
         loadCounts();
-    }, [need?.id, hasNeed]);
+    }, [need?.id, endorsement.id, hasNeed]);
 
     const handleActionClick = async (e, actionFn) => {
         e.stopPropagation();
         if (actionFn === toggleBookmark) {
+            await actionFn(targetId, targetType);
+            return;
+        }
+
+        if (actionFn === toggleBroadcast) {
             await actionFn(endorsement.id, 'endorsement');
+            setBroadcastCount(prev => broadcasted ? prev - 1 : prev + 1);
             return;
         }
 
@@ -67,8 +76,6 @@ export const EndorsementFeedCard = ({ endorsement }) => {
             // Optimistic count updates
             if (actionFn === toggleLike) {
                 setLikeCount(prev => liked ? prev - 1 : prev + 1);
-            } else if (actionFn === toggleBroadcast) {
-                setBroadcastCount(prev => broadcasted ? prev - 1 : prev + 1);
             }
         }
     };
@@ -105,6 +112,32 @@ export const EndorsementFeedCard = ({ endorsement }) => {
                 padding: '1.5rem',
                 borderBottom: '1px solid var(--border-glass)'
             }}>
+            {/* Broadcast Header */}
+            {broadcastedBy && (
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    color: 'var(--accent)',
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                    marginBottom: '0.5rem',
+                    marginLeft: '3.25rem' // Align with content
+                }}>
+                    <Repeat2 size={16} />
+                    <span
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/${broadcastedBy.username}`);
+                        }}
+                        style={{ cursor: 'pointer' }}
+                        onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
+                        onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
+                    >
+                        {broadcastedBy.display_name} broadcasted
+                    </span>
+                </div>
+            )}
             {dummyNeed && (
                 <ReplyModal
                     isOpen={isReplyModalOpen}
@@ -223,13 +256,9 @@ export const EndorsementFeedCard = ({ endorsement }) => {
                                 cursor: 'pointer', border: 'none'
                             }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'} onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}>
                                 <MessageSquare size={16} />
-                                <span>
-                                    {replyCount > 0 ? (
-                                        replyCount
-                                    ) : (
-                                        <span className="btn-label-text">Reply</span>
-                                    )}
-                                </span>
+                                {replyCount > 0 && (
+                                    <span>{replyCount}</span>
+                                )}
                             </button>
 
                             <button onClick={handleThreadClick} className="nav-link-hover" style={{
@@ -239,7 +268,6 @@ export const EndorsementFeedCard = ({ endorsement }) => {
                                 cursor: 'pointer', border: 'none'
                             }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'} onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}>
                                 <MessageCircle size={16} />
-                                <span className="btn-label-text">View Thread</span>
                             </button>
 
                             {/* Broadcast Button */}
@@ -250,13 +278,9 @@ export const EndorsementFeedCard = ({ endorsement }) => {
                                 cursor: 'pointer', border: 'none'
                             }} onMouseEnter={(e) => e.currentTarget.style.color = broadcasted ? 'var(--accent)' : '#0d9488'} onMouseLeave={(e) => e.currentTarget.style.color = broadcasted ? 'var(--accent)' : 'var(--text-muted)'}>
                                 <Repeat2 size={16} />
-                                <span>
-                                    {broadcastCount > 0 ? (
-                                        broadcastCount
-                                    ) : (
-                                        <span className="btn-label-text">Broadcast</span>
-                                    )}
-                                </span>
+                                {broadcastCount > 0 && (
+                                    <span>{broadcastCount}</span>
+                                )}
                             </button>
 
                             <button onClick={(e) => handleActionClick(e, toggleLike)} className="nav-link-hover" style={{
@@ -266,13 +290,9 @@ export const EndorsementFeedCard = ({ endorsement }) => {
                                 cursor: 'pointer', border: 'none'
                             }} onMouseEnter={(e) => e.currentTarget.style.color = liked ? '#f87171' : '#ef4444'} onMouseLeave={(e) => e.currentTarget.style.color = liked ? '#ef4444' : 'var(--text-muted)'}>
                                 <Heart size={16} fill={liked ? 'currentColor' : 'none'} />
-                                <span>
-                                    {likeCount > 0 ? (
-                                        likeCount
-                                    ) : (
-                                        <span className="btn-label-text">Like</span>
-                                    )}
-                                </span>
+                                {likeCount > 0 && (
+                                    <span>{likeCount}</span>
+                                )}
                             </button>
                         </div>
 

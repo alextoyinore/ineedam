@@ -54,6 +54,7 @@ export const fetchNeeds = async (from = 0, to = 9) => {
     const { data, error } = await supabase
         .from('needs')
         .select('*, profiles!needs_user_id_fkey(display_name, avatar_url, username, banner_url, bio)')
+        .neq('status', 'archived')
         .order('created_at', { ascending: false })
         .range(from, to);
 
@@ -69,6 +70,7 @@ export const fetchNeedsByUser = async (userId, from = 0, to = 9) => {
         .from('needs')
         .select('*, profiles!needs_user_id_fkey(display_name, avatar_url, username, banner_url, bio)')
         .eq('user_id', userId)
+        .neq('status', 'archived')
         .order('created_at', { ascending: false })
         .range(from, to);
 
@@ -139,6 +141,7 @@ export const shapeNeed = (row) => {
         budgetMin: row.budget_min,
         budgetMax: row.budget_max,
         currency: row.currency,
+        created_at: row.created_at
     };
 };
 
@@ -209,7 +212,7 @@ export const fetchMetCounts = async (userId) => {
  * @param {string|null} since - optional ISO date string to filter from (e.g. past 24h, past 3h)
  */
 export const getCategoryStats = async (since = null) => {
-    let query = supabase.from('needs').select('category');
+    let query = supabase.from('needs').select('category').neq('status', 'archived');
     if (since) query = query.gte('created_at', since);
 
     const { data, error } = await query;
@@ -254,8 +257,9 @@ export const searchNeeds = async ({ query, category, minBudget, maxBudget }) => 
 
     // Defaulting to 0-9 if no page logic passed, though often handled via from/to
     const { data, error } = await supabaseQuery
+        .neq('status', 'archived')
         .order('created_at', { ascending: false })
-        .range(from, to);
+        .range(from || 0, to || 9);
 
     if (error) throw error;
     return data;
@@ -269,6 +273,7 @@ export const getCategoryPreviews = async () => {
     const { data, error } = await supabase
         .from('needs')
         .select('id, title, category, created_at, profiles!needs_user_id_fkey(display_name, username)')
+        .neq('status', 'archived')
         .order('created_at', { ascending: false });
 
     if (error) {

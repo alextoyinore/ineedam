@@ -66,13 +66,19 @@ export const fetchRepliesForNeed = async (needId: string): Promise<any[]> => {
     if (!needId) return [];
     const { data, error } = await supabase
         .from('replies')
-        .select('*, profiles(display_name, avatar_url, username, bio)')
+        .select('*, profiles(display_name, avatar_url, username)')
         .eq('need_id', needId)
+        .neq('status', 'archived')
         .order('created_at', { ascending: true });
 
-    if (error) {
-        console.error('Error fetching replies:', error);
-        return [];
-    }
+    if (error) throw error;
     return data;
+};
+
+export const updateReplyStatus = async (replyId: string, status: string) => {
+    const { error } = await supabase
+        .from('replies')
+        .update({ status })
+        .eq('id', replyId);
+    if (error) throw error;
 };

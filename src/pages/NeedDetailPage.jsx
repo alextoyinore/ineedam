@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Send, Loader, Lock, Globe, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Send, Loader, Lock, Globe, MessageSquare, Trash2 } from 'lucide-react';
 import { NeedCard } from '../components/NeedCard';
 import { getNeedById, shapeNeed } from '../lib/needsService';
-import { fetchRepliesForNeed, createReply, formatTimeAgo } from '../lib/replyService';
+import { fetchRepliesForNeed, createReply, formatTimeAgo, updateReplyStatus } from '../lib/replyService';
 import { useAuth } from '../context/AuthContext';
 import { ProfileHoverCard } from '../components/ProfileHoverCard';
 import { ReplyModal } from '../components/ReplyModal';
 
-const ReplyItem = ({ reply, need, depth = 0, onReply }) => {
+const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive }) => {
     const { user } = useAuth();
     const isMe = user && reply.user_id === user.id;
     const authorName = reply.profiles?.display_name || 'Anonymous';
@@ -80,11 +80,24 @@ const ReplyItem = ({ reply, need, depth = 0, onReply }) => {
                         >
                             <MessageSquare size={14} /> Reply
                         </button>
+
+                        {(isMe || (user && need.authorId === user.id)) && (
+                            <button
+                                onClick={() => onArchive(reply.id)}
+                                style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.85rem', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}
+                                className="nav-link-hover"
+                                title="Archive Reply"
+                                onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'}
+                                onMouseLeave={(e) => e.currentTarget.style.color = 'inherit'}
+                            >
+                                <Trash2 size={14} /> Archive
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
             {reply.children && reply.children.map(child => (
-                <ReplyItem key={child.id} reply={child} need={need} depth={depth + 1} onReply={onReply} />
+                <ReplyItem key={child.id} reply={child} need={need} depth={depth + 1} onReply={onReply} onArchive={onArchive} />
             ))}
         </div>
     );
@@ -112,11 +125,12 @@ export const NeedDetailPage = () => {
         const load = async () => {
             setLoading(true);
             try {
-                const needData = await getNeedById(id);
+                const [needData, repliesData] = await Promise.all([
+                    getNeedById(id),
+                    fetchRepliesForNeed(id)
+                ]);
                 setNeed(shapeNeed(needData));
-
-                const repliesData = await fetchRepliesForNeed(id);
-                setReplies(repliesData || []);
+                setReplies((repliesData || []).filter(r => r.status !== 'archived'));
             } catch (err) {
                 console.error("Failed to load need or replies:", err);
                 setNeed(null);
@@ -171,7 +185,17 @@ export const NeedDetailPage = () => {
         setIsReplyModalOpen(false);
         setActiveParentReply(null);
         // Refresh replies
-        fetchRepliesForNeed(id).then(data => setReplies(data || []));
+        fetchRepliesForNeed(id).then(data => setReplies((data || []).filter(r => r.status !== 'archived')));
+    };
+
+    const handleArchiveReply = async (replyId) => {
+        if (!window.confirm("Archive this reply? It will be hidden from the thread.")) return;
+        try {
+            await updateReplyStatus(replyId, 'archived');
+            setReplies(prev => prev.filter(r => r.id !== replyId));
+        } catch (err) {
+            console.error("Failed to archive reply", err);
+        }
     };
 
     if (loading) {
@@ -264,7 +288,7 @@ export const NeedDetailPage = () => {
 
             <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {replyTree.map(reply => (
-                    <ReplyItem key={reply.id} reply={reply} need={need} onReply={handleOpenReplyToReply} />
+                    <ReplyItem key={reply.id} reply={reply} need={need} onReply={handleOpenReplyToReply} onArchive={handleArchiveReply} />
                 ))}
             </div>
 

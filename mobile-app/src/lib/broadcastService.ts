@@ -1,20 +1,22 @@
 import { supabase } from './supabase';
 
-/** Toggle a broadcast for a need. */
-export const toggleBroadcast = async (userId: string, needId: string, currentlyBroadcasted: boolean) => {
-    if (!userId || !needId) return;
+/** Toggle a broadcast for a need or endorsement. */
+export const toggleBroadcast = async (userId: string, targetId: string, currentlyBroadcasted: boolean, type: 'need' | 'endorsement' = 'need') => {
+    if (!userId || !targetId) return;
+
+    const column = type === 'need' ? 'need_id' : 'endorsement_id';
 
     if (currentlyBroadcasted) {
         const { error } = await supabase
             .from('broadcasts')
             .delete()
             .eq('user_id', userId)
-            .eq('need_id', needId);
+            .eq(column, targetId);
         if (error) throw error;
     } else {
         const { error } = await supabase
             .from('broadcasts')
-            .insert([{ user_id: userId, need_id: needId }]);
+            .insert([{ user_id: userId, [column]: targetId }]);
         if (error) throw error;
     }
 };

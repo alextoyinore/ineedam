@@ -75,6 +75,14 @@ export const SettingsPage = () => {
                     type: 'link',
                     path: '/blocked-accounts',
                     icon: <UserX size={20} />
+                },
+                {
+                    id: 'archivedContent',
+                    label: 'Archived Content',
+                    description: 'View and restore archived posts and replies',
+                    type: 'link',
+                    path: '/settings/archived',
+                    icon: <Trash2 size={20} />
                 }
             ]
         }

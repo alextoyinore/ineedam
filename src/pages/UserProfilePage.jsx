@@ -90,7 +90,7 @@ export const UserProfilePage = () => {
                 setProfile(profileData);
 
                 // Load needs, replies and stats
-                const [needsData, repliesData, broadcastsData, metStats, followStats, endorsementsData, followersData, followingData] = await Promise.all([
+                const results = await Promise.allSettled([
                     fetchNeedsByUser(profileData.id),
                     fetchRepliesByUser(profileData.id),
                     fetchBroadcastedNeeds(profileData.id),
@@ -101,11 +101,38 @@ export const UserProfilePage = () => {
                     getFollowing(profileData.id)
                 ]);
 
-                setUserNeeds(needsData ? needsData.map(shapeNeed) : []);
+                const needsData = results[0].status === 'fulfilled' ? results[0].value : [];
+                const repliesData = results[1].status === 'fulfilled' ? results[1].value : [];
+                const broadcastsData = results[2].status === 'fulfilled' ? results[2].value : [];
+                const metStats = results[3].status === 'fulfilled' ? results[3].value : { needsMet: 0, fulfilledRequests: 0 };
+                const followStats = results[4].status === 'fulfilled' ? results[4].value : { followersCount: 0, followingCount: 0 };
+                const endorsementsData = results[5].status === 'fulfilled' ? results[5].value : [];
+                const followersData = results[6].status === 'fulfilled' ? results[6].value : [];
+                const followingData = results[7].status === 'fulfilled' ? results[7].value : [];
+
+                const shapedNeeds = (needsData || [])
+                    .filter(n => n.status !== 'archived')
+                    .map(shapeNeed)
+                    .map(n => ({ ...n, type: 'need' }));
+
+                const filteredReplies = (repliesData || []).filter(r => r.status !== 'archived');
+                const shapedBroadcasts = broadcastsData || [];
+                const shapedEndorsements = (endorsementsData || []).map(e => ({ ...e, type: 'endorsement' }));
+                const shapedReplies = (filteredReplies || []).map(r => ({ ...r, type: 'reply' }));
+
+                const mixedFeed = [...shapedNeeds, ...shapedEndorsements, ...shapedReplies, ...shapedBroadcasts]
+                    .filter(item => item && (item.created_at || item.broadcast_created_at))
+                    .sort((a, b) => {
+                        const timeA = new Date(a.broadcast_created_at || a.created_at).getTime();
+                        const timeB = new Date(b.broadcast_created_at || b.created_at).getTime();
+                        return timeB - timeA;
+                    });
+
+                setUserNeeds(mixedFeed); // Now userNeeds holds the mixed feed
                 setNeedsPage(1);
-                setHasMoreNeeds(needsData?.length === PAGE_SIZE);
-                setUserReplies(repliesData || []);
-                setUserBroadcasts(broadcastsData ? broadcastsData.map(shapeNeed) : []);
+                setHasMoreNeeds(mixedFeed.length >= PAGE_SIZE); // Check based on mixed feed length
+                setUserReplies(filteredReplies);
+                setUserBroadcasts(shapedBroadcasts); // Keep for the specific tab if still needed
                 setUserEndorsements(endorsementsData || []);
                 setFollowersList(followersData || []);
                 setFollowingList(followingData || []);
@@ -531,29 +558,69 @@ export const UserProfilePage = () => {
                                 <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>No posts yet.</div>
                             ) : (
                                 <div style={{ padding: '1rem 0' }}>
-                                    {userNeeds.map((need, idx) => (
-                                        <motion.div
-                                            key={need.id}
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            transition={{ delay: idx * 0.1 }}
-                                        >
-                                            <NeedCard need={need} />
-                                            {isOwnProfile && (
-                                                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', marginBottom: '1.5rem', paddingLeft: '6rem' }}>
-                                                    {need.status !== 'met' && (
-                                                        <button onClick={() => { setSelectedNeed(need); setIsNeedEditModalOpen(true); }} className="btn btn-secondary" style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem', borderRadius: '9999px' }}>Edit</button>
-                                                    )}
-                                                    {need.status === 'open' && (
-                                                        <button onClick={() => handleMarkMet(need)} className="btn btn-secondary" style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem', color: '#10b981', borderRadius: '9999px' }}>Mark Met</button>
-                                                    )}
-                                                    {need.status === 'open' && (
-                                                        <button onClick={() => handleArchive(need.id)} className="btn btn-secondary" style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem', color: '#ef4444', borderRadius: '9999px', marginLeft: 'auto', marginRight: '1.5rem' }}>Archive</button>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </motion.div>
-                                    ))}
+                                    {userNeeds.map((item, idx) => {
+                                        const isOwnItem = isOwnProfile && item.type === 'need' && item.authorId === profile.id;
+
+                                        return (
+                                            <motion.div
+                                                key={`${item.type}-${item.id}`}
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                transition={{ delay: idx * 0.1 }}
+                                            >
+                                                {item.type === 'need' || item.type === 'broadcast' ? (
+                                                    <NeedCard
+                                                        need={item}
+                                                        broadcastedBy={item.type === 'broadcast' ? item.broadcasted_by : null}
+                                                    />
+                                                ) : item.type === 'endorsement' || item.type === 'broadcast_endorsement' ? (
+                                                    <EndorsementFeedCard
+                                                        endorsement={item}
+                                                        broadcastedBy={item.type === 'broadcast_endorsement' ? item.broadcasted_by : null}
+                                                    />
+                                                ) : item.type === 'reply' ? (
+                                                    <div className="nav-link-hover" style={{ padding: '1.5rem', borderBottom: '1px solid var(--border-glass)', display: 'flex', gap: '1rem' }}>
+                                                        <div style={{
+                                                            width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
+                                                            background: profile.avatar_url ? `url(${profile.avatar_url}) center/cover` : 'var(--bg-surface)',
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', overflow: 'hidden'
+                                                        }}>
+                                                            {profile.avatar_url ? (
+                                                                <img src={profile.avatar_url} alt={profile.display_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                            ) : (
+                                                                (profile.display_name || '?').charAt(0).toUpperCase()
+                                                            )}
+                                                        </div>
+                                                        <div style={{ flex: 1 }}>
+                                                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                                                <span style={{ fontWeight: 700 }}>{profile.display_name}</span>
+                                                                <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>@{profile.username}</span>
+                                                                <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>• {formatTimeAgo(item.created_at)}</span>
+                                                            </div>
+                                                            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
+                                                                Replying to <span style={{ color: 'var(--primary)' }}>"{item.needs?.title}"</span>
+                                                            </p>
+                                                            <p style={{ fontSize: '0.95rem', whiteSpace: 'pre-wrap' }}>{item.content}</p>
+                                                        </div>
+                                                    </div>
+                                                ) : null}
+
+                                                {isOwnItem && (
+                                                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', marginBottom: '1.5rem', paddingLeft: '6rem' }}>
+                                                        {item.status !== 'met' && (
+                                                            <button onClick={() => { setSelectedNeed(item); setIsNeedEditModalOpen(true); }} className="btn btn-secondary" style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem', borderRadius: '9999px' }}>Edit</button>
+                                                        )}
+                                                        {item.status === 'open' && (
+                                                            <button onClick={() => handleMarkMet(item)} className="btn btn-secondary" style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem', color: '#10b981', borderRadius: '9999px' }}>Mark Met</button>
+                                                        )}
+                                                        {item.status === 'open' && (
+                                                            <button onClick={() => handleArchive(item.id)} className="btn btn-secondary" style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem', color: '#ef4444', borderRadius: '9999px', marginLeft: 'auto', marginRight: '1.5rem' }}>Archive</button>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </motion.div>
+                                        );
+                                    })}
                                     <div ref={lastNeedRef} style={{ height: '20px' }} />
                                     {loadingMoreNeeds && (
                                         <div style={{ display: 'flex', justifyContent: 'center', padding: '1rem', color: 'var(--primary)' }}>
@@ -700,12 +767,7 @@ export const UserProfilePage = () => {
                                             animate={{ opacity: 1 }}
                                             transition={{ delay: idx * 0.05 }}
                                         >
-                                            {/* Broadcaster attribution label */}
-                                            <div style={{ padding: '0.75rem 1.5rem 0 1.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 600 }}>
-                                                <Repeat2 size={14} />
-                                                {profile.display_name} broadcasted
-                                            </div>
-                                            <NeedCard need={need} />
+                                            <NeedCard need={need} broadcastedBy={profile} />
                                         </motion.div>
                                     ))}
                                 </div>
