@@ -1,6 +1,35 @@
 import { supabase } from './supabase';
+import { createNotification } from './notificationService';
 
-/** Insert a new reply onto a need. */
+/** Fetch all replies for a specific need, ordered by oldest to newest to form a readable thread. */
+export const fetchRepliesForNeed = async (needId: string): Promise<any[]> => {
+    if (!needId) return [];
+    const { data, error } = await supabase
+        .from('replies')
+        .select('*, profiles(display_name, avatar_url, username)')
+        .eq('need_id', needId)
+        .neq('status', 'archived')
+        .order('created_at', { ascending: true });
+
+    if (error) throw error;
+    return data;
+};
+
+/** Fetch all replies made by a specific user (for their Dashboard/Profile). */
+export const fetchRepliesByUser = async (userId: string): Promise<any[]> => {
+    if (!userId) return [];
+    const { data, error } = await supabase
+        .from('replies')
+        .select('*, needs(title), profiles(display_name, avatar_url, username)')
+        .eq('user_id', userId)
+        .neq('status', 'archived')
+        .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
+};
+
+/** Insert a new reply onto a need or as a nested reply. */
 export const createReply = async (
     needId: string,
     userId: string,
@@ -24,6 +53,7 @@ export const createReply = async (
 
     // Fire notifications asynchronously (don't block UI)
     try {
+        // 1. Notify the Author of the Need
         const { data: needData } = await supabase
             .from('needs')
             .select('user_id, title')
@@ -31,16 +61,35 @@ export const createReply = async (
             .single();
 
         if (needData && needData.user_id !== userId) {
-            await supabase.from('notifications').insert([{
-                recipient_id: needData.user_id,
-                type: 'reply',
-                actor_id: userId,
-                message: `replied to your need: ${needData.title}`,
-                need_id: needId,
-            }]);
+            await createNotification(
+                needData.user_id,
+                'reply',
+                userId,
+                `replied to your need: ${needData.title}`,
+                needId
+            );
+        }
+
+        // 2. If it's a nested reply, notify the Author of the parent comment
+        if (parentId) {
+            const { data: parentData } = await supabase
+                .from('replies')
+                .select('user_id')
+                .eq('id', parentId)
+                .single();
+
+            if (parentData && parentData.user_id !== userId && parentData.user_id !== needData?.user_id) {
+                await createNotification(
+                    parentData.user_id,
+                    'reply',
+                    userId,
+                    `replied to your comment in: ${needData?.title || 'a thread'}`,
+                    needId
+                );
+            }
         }
     } catch (notifyErr) {
-        console.error('Failed to send reply notification:', notifyErr);
+        console.error('Failed to send reply notifications:', notifyErr);
     }
 
     return data;
@@ -61,20 +110,7 @@ export const getReplyCount = async (needId: string): Promise<number> => {
     return count || 0;
 };
 
-/** Fetch all replies for a specific need, ordered by creation. */
-export const fetchRepliesForNeed = async (needId: string): Promise<any[]> => {
-    if (!needId) return [];
-    const { data, error } = await supabase
-        .from('replies')
-        .select('*, profiles(display_name, avatar_url, username)')
-        .eq('need_id', needId)
-        .neq('status', 'archived')
-        .order('created_at', { ascending: true });
-
-    if (error) throw error;
-    return data;
-};
-
+/** Update a reply's status (e.g. for archival). */
 export const updateReplyStatus = async (replyId: string, status: string) => {
     const { error } = await supabase
         .from('replies')

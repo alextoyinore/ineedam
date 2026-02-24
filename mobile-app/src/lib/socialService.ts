@@ -4,7 +4,7 @@ import { createNotification } from './notificationService';
 /**
  * Follow a user and notify them.
  */
-export const followUser = async (followerId: any, followingId: any) => {
+export const followUser = async (followerId: string, followingId: string) => {
     const { data, error } = await supabase
         .from('follows')
         .insert([{ follower_id: followerId, following_id: followingId }]);
@@ -32,7 +32,7 @@ export const followUser = async (followerId: any, followingId: any) => {
 /**
  * Unfollow a user.
  */
-export const unfollowUser = async (followerId: any, followingId: any) => {
+export const unfollowUser = async (followerId: string, followingId: string) => {
     const { data, error } = await supabase
         .from('follows')
         .delete()
@@ -45,7 +45,7 @@ export const unfollowUser = async (followerId: any, followingId: any) => {
 /**
  * Check if a user is following another user.
  */
-export const checkFollowStatus = async (followerId: any, followingId: any) => {
+export const checkFollowStatus = async (followerId: string, followingId: string) => {
     const { data, error } = await supabase
         .from('follows')
         .select('*')
@@ -59,7 +59,7 @@ export const checkFollowStatus = async (followerId: any, followingId: any) => {
 /**
  * Get follower counts.
  */
-export const getFollowStats = async (userId: any) => {
+export const getFollowStats = async (userId: string) => {
     const [followers, following] = await Promise.all([
         supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', userId),
         supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', userId)
@@ -74,7 +74,7 @@ export const getFollowStats = async (userId: any) => {
 /**
  * Get the list of profiles following a specific user.
  */
-export const getFollowers = async (userId: any) => {
+export const getFollowers = async (userId: string) => {
     const { data, error } = await supabase
         .from('follows')
         .select(`
@@ -90,13 +90,13 @@ export const getFollowers = async (userId: any) => {
         console.error("Error fetching followers:", error);
         return [];
     }
-    return data.map(row => row.profiles).filter(Boolean);
+    return (data || []).map((row: any) => row.profiles).filter(Boolean);
 };
 
 /**
  * Get the list of profiles a specific user is following.
  */
-export const getFollowing = async (userId: any) => {
+export const getFollowing = async (userId: string) => {
     const { data, error } = await supabase
         .from('follows')
         .select(`
@@ -112,5 +112,5 @@ export const getFollowing = async (userId: any) => {
         console.error("Error fetching following:", error);
         return [];
     }
-    return data.map(row => row.profiles).filter(Boolean);
+    return (data || []).map((row: any) => row.profiles).filter(Boolean);
 };
