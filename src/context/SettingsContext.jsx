@@ -1,8 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useTheme } from './ThemeContext';
 
 const SettingsContext = createContext();
 
 export const SettingsProvider = ({ children }) => {
+    const { setTheme } = useTheme();
     const [settings, setSettings] = useState(() => {
         const saved = localStorage.getItem('needam_settings');
         return saved ? JSON.parse(saved) : {
@@ -15,7 +17,10 @@ export const SettingsProvider = ({ children }) => {
 
     useEffect(() => {
         localStorage.setItem('needam_settings', JSON.stringify(settings));
-    }, [settings]);
+        if (settings.theme) {
+            setTheme(settings.theme);
+        }
+    }, [settings, setTheme]);
 
     const updateSetting = (key, value) => {
         setSettings(prev => ({ ...prev, [key]: value }));

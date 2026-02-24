@@ -147,40 +147,20 @@ export const EndorsementFeedCard = ({ endorsement, broadcastedBy = null }) => {
                 />
             )}
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--primary)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.25rem' }}>
-                <Award size={16} />
-                <span>Endorsement Received</span>
-            </div>
+            {!endorsedUser ? (
+                <div style={{ padding: '1rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                    Endorsement data unavailable
+                </div>
+            ) : (
+                <>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--primary)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.25rem' }}>
+                        <Award size={16} />
+                        <span>Endorsement Received</span>
+                    </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
-                {/* The Endorsed User Details (Main Focus) */}
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', minWidth: 0 }}>
-                    <ProfileHoverCard userData={{
-                        id: endorsedUser.id,
-                        author: endorsedUser.display_name,
-                        authorUsername: endorsedUser.username,
-                        authorAvatar: endorsedUser.avatar_url,
-                        authorBio: endorsedUser.bio
-                    }}>
-                        <div
-                            onClick={(e) => { e.stopPropagation(); navigate(`/${endorsedUser.username}`); }}
-                            className="avatar-md"
-                            style={{
-                                borderRadius: '50%', flexShrink: 0,
-                                background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                fontWeight: 'bold', color: 'white', overflow: 'hidden',
-                                cursor: 'pointer'
-                            }}>
-                            {endorsedUser.avatar_url ? (
-                                <img src={endorsedUser.avatar_url} alt={endorsedUser.display_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                            ) : (
-                                (endorsedUser.display_name || '?').charAt(0).toUpperCase()
-                            )}
-                        </div>
-                    </ProfileHoverCard>
-                    <div style={{ minWidth: 0 }}>
-                        <div className="need-meta-container" style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
+                        {/* The Endorsed User Details (Main Focus) */}
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', minWidth: 0 }}>
                             <ProfileHoverCard userData={{
                                 id: endorsedUser.id,
                                 author: endorsedUser.display_name,
@@ -188,22 +168,53 @@ export const EndorsementFeedCard = ({ endorsement, broadcastedBy = null }) => {
                                 authorAvatar: endorsedUser.avatar_url,
                                 authorBio: endorsedUser.bio
                             }}>
-                                <span
+                                <div
                                     onClick={(e) => { e.stopPropagation(); navigate(`/${endorsedUser.username}`); }}
-                                    style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', cursor: 'pointer' }}>
-                                    {endorsedUser.display_name}
-                                </span>
+                                    className="avatar-md"
+                                    style={{
+                                        borderRadius: '50%', flexShrink: 0,
+                                        background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        fontWeight: 'bold', color: 'white', overflow: 'hidden',
+                                        cursor: 'pointer'
+                                    }}>
+                                    {endorsedUser.avatar_url ? (
+                                        <img src={endorsedUser.avatar_url} alt={endorsedUser.display_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    ) : (
+                                        (endorsedUser.display_name || '?').charAt(0).toUpperCase()
+                                    )}
+                                </div>
                             </ProfileHoverCard>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                                {endorsedUser.username && (
-                                    <span>@{endorsedUser.username}</span>
-                                )}
-                                <span>• {formatTimeAgo(endorsement.created_at)}</span>
+                            <div style={{ minWidth: 0 }}>
+                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem', flexWrap: 'wrap' }}>
+                                    <ProfileHoverCard userData={{
+                                        id: endorsedUser.id,
+                                        author: endorsedUser.display_name,
+                                        authorUsername: endorsedUser.username,
+                                        authorAvatar: endorsedUser.avatar_url,
+                                        authorBio: endorsedUser.bio
+                                    }}>
+                                        <span
+                                            onClick={(e) => { e.stopPropagation(); navigate(`/${endorsedUser.username}`); }}
+                                            style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', cursor: 'pointer' }}>
+                                            {endorsedUser.display_name}
+                                        </span>
+                                    </ProfileHoverCard>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                                        {endorsedUser.username && (
+                                            <span>@{endorsedUser.username}</span>
+                                        )}
+                                        <span>• {formatTimeAgo(endorsement.created_at)}</span>
+                                    </div>
+                                </div>
+                                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                    <span>Verified Match Helper</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
+                </>
+            )}
 
             {/* Endorsement Message Content */}
             <div className="need-content-wrapper" style={{}}>

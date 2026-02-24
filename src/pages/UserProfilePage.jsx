@@ -123,7 +123,12 @@ export const UserProfilePage = () => {
 
                 const filteredReplies = (repliesData || []).filter(r => r.status !== 'archived');
                 const shapedBroadcasts = broadcastsData || [];
-                const shapedEndorsements = (endorsementsData || []).map(e => ({ ...e, type: 'endorsement' }));
+                const shapedEndorsements = (endorsementsData || []).map(e => ({
+                    ...e,
+                    type: 'endorsement',
+                    endorser: e.profiles, // The one who wrote it
+                    endorsed: profileData // The one being viewed/endorsed
+                }));
                 const shapedReplies = (filteredReplies || []).map(r => ({ ...r, type: 'reply' }));
 
                 const mixedFeed = [...shapedNeeds, ...shapedEndorsements, ...shapedReplies, ...shapedBroadcasts]
@@ -137,9 +142,9 @@ export const UserProfilePage = () => {
                 setUserNeeds(mixedFeed); // Now userNeeds holds the mixed feed
                 setNeedsPage(1);
                 setHasMoreNeeds(mixedFeed.length >= PAGE_SIZE); // Check based on mixed feed length
-                setUserReplies(filteredReplies);
+                setUserReplies(shapedReplies);
                 setUserBroadcasts(shapedBroadcasts); // Keep for the specific tab if still needed
-                setUserEndorsements(endorsementsData || []);
+                setUserEndorsements(shapedEndorsements);
                 setFollowersList(followersData || []);
                 setFollowingList(followingData || []);
                 setStats({ ...metStats, ...followStats });
@@ -831,25 +836,16 @@ export const UserProfilePage = () => {
                                 <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>No endorsements yet.</div>
                             ) : (
                                 <div style={{ padding: '1rem 0' }}>
-                                    {userEndorsements.map((endorsement, idx) => {
-                                        // Map the UserProfilePage's endorsement shape to the one expected by EndorsementFeedCard
-                                        const mappedEndorsement = {
-                                            ...endorsement,
-                                            endorser: endorsement.profiles,
-                                            endorsed: profile
-                                        };
-
-                                        return (
-                                            <motion.div
-                                                key={endorsement.id}
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                transition={{ delay: idx * 0.05 }}
-                                            >
-                                                <EndorsementFeedCard endorsement={mappedEndorsement} />
-                                            </motion.div>
-                                        );
-                                    })}
+                                    {userEndorsements.map((endorsement, idx) => (
+                                        <motion.div
+                                            key={endorsement.id}
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            transition={{ delay: idx * 0.05 }}
+                                        >
+                                            <EndorsementFeedCard endorsement={endorsement} />
+                                        </motion.div>
+                                    ))}
                                 </div>
                             )
                         )}
