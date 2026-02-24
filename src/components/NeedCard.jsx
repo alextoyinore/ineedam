@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Tag, MapPin, Banknote, Clock, MessageSquare, Bookmark, Heart, MessageCircle, Repeat2, Award, Trash2 } from 'lucide-react';
+import { Tag, MapPin, Banknote, Clock, MessageSquare, Bookmark, Heart, MessageCircle, Repeat2, Award, Trash2, MoreVertical, Archive, Flag, UserPlus, UserMinus, VolumeX, Share2 } from 'lucide-react';
 import { ReplyModal } from './ReplyModal';
 import { useBookmarks } from '../context/BookmarksContext';
 import { useLikes } from '../context/LikesContext';
@@ -30,6 +30,7 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null }) =
     const [hasLoadedCount, setHasLoadedCount] = useState(false);
     const [endorsementCount, setEndorsementCount] = useState(0);
     const [isArchived, setIsArchived] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const isBroadcast = broadcastedBy || need.type === 'broadcast';
     const targetId = isBroadcast ? (need.broadcast_id || need.id) : need.id;
@@ -98,6 +99,27 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null }) =
             setIsArchived(true);
         } catch (err) {
             console.error("Failed to archive need", err);
+        }
+    };
+
+    const handleShare = async (e) => {
+        e.stopPropagation();
+        setIsMenuOpen(false);
+        const shareData = {
+            title: need.title,
+            text: need.description,
+            url: window.location.origin + `/need/${need.id}`
+        };
+
+        try {
+            if (navigator.share) {
+                await navigator.share(shareData);
+            } else {
+                await navigator.clipboard.writeText(shareData.url);
+                alert("Link copied to clipboard!");
+            }
+        } catch (err) {
+            console.error("Error sharing", err);
         }
     };
 
@@ -219,8 +241,8 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null }) =
                     </div>
                 </div>
 
-                {/* Follow & Archive Buttons - Anchored to the right */}
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                {/* Follow & Menu Buttons - Anchored to the right */}
+                <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center', position: 'relative' }}>
                     {user && need.authorId !== user.id && (
                         <button
                             onClick={handleFollow}
@@ -229,27 +251,136 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null }) =
                                 borderRadius: '9999px', border: following ? '1px solid var(--border-glass)' : '1px solid var(--primary)',
                                 background: following ? 'transparent' : 'var(--primary)',
                                 color: following ? 'var(--text-primary)' : 'white',
-                                cursor: 'pointer', transition: 'all 0.2s', flexShrink: 0
+                                cursor: 'pointer', transition: 'all 0.2s', flexShrink: 0,
+                                marginRight: '0.5rem'
                             }}
                         >
                             {following ? 'Following' : 'Follow'}
                         </button>
                     )}
-                    {user && need.authorId === user.id && (
+
+                    <div style={{ position: 'relative' }}>
                         <button
-                            onClick={handleArchive}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setIsMenuOpen(!isMenuOpen);
+                            }}
                             className="nav-link-hover"
                             style={{
                                 padding: '0.4rem', borderRadius: '50%', color: 'var(--text-muted)',
                                 background: 'transparent', transition: 'all 0.2s'
                             }}
-                            title="Archive Post"
-                            onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'}
+                            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
                             onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
                         >
-                            <Trash2 size={18} />
+                            <MoreVertical size={20} />
                         </button>
-                    )}
+
+                        {isMenuOpen && (
+                            <>
+                                <div
+                                    onClick={(e) => { e.stopPropagation(); setIsMenuOpen(false); }}
+                                    style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 900 }}
+                                />
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '100%',
+                                    right: 0,
+                                    width: '180px',
+                                    background: 'transparent',
+                                    backdropFilter: 'blur(16px)',
+                                    WebkitBackdropFilter: 'blur(16px)',
+                                    border: '1px solid var(--border-glass)',
+                                    borderRadius: '12px',
+                                    padding: '0.4rem',
+                                    zIndex: 1000,
+                                    boxShadow: '0 10px 25px -5px rgba(0,0,0,0.2)',
+                                    marginTop: '0.25rem',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '2px'
+                                }}>
+                                    {/* Follow/Unfollow Action */}
+                                    {user && need.authorId !== user.id && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setIsMenuOpen(false);
+                                                handleFollow(e);
+                                            }}
+                                            style={{
+                                                width: '100%', textAlign: 'left', padding: '0.7rem',
+                                                borderRadius: '8px', display: 'flex', alignItems: 'center',
+                                                gap: '0.75rem', color: 'var(--text-primary)',
+                                                fontSize: '0.9rem', fontWeight: 500
+                                            }}
+                                            className="nav-link-hover"
+                                        >
+                                            {following ? <UserMinus size={18} /> : <UserPlus size={18} />}
+                                            {following ? 'Unfollow' : 'Follow'} @{need.authorUsername}
+                                        </button>
+                                    )}
+
+                                    {/* Mute Action */}
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setIsMenuOpen(false);
+                                            // Handle mute logic later
+                                        }}
+                                        style={{
+                                            width: '100%', textAlign: 'left', padding: '0.7rem',
+                                            borderRadius: '8px', display: 'flex', alignItems: 'center',
+                                            gap: '0.75rem', color: 'var(--text-primary)',
+                                            fontSize: '0.9rem', fontWeight: 500
+                                        }}
+                                        className="nav-link-hover"
+                                    >
+                                        <VolumeX size={18} />
+                                        Mute @{need.authorUsername}
+                                    </button>
+
+                                    {/* Share Action */}
+                                    <button
+                                        onClick={handleShare}
+                                        style={{
+                                            width: '100%', textAlign: 'left', padding: '0.7rem',
+                                            borderRadius: '8px', display: 'flex', alignItems: 'center',
+                                            gap: '0.75rem', color: 'var(--text-primary)',
+                                            fontSize: '0.9rem', fontWeight: 500
+                                        }}
+                                        className="nav-link-hover"
+                                    >
+                                        <Share2 size={18} />
+                                        Share Post
+                                    </button>
+
+                                    {/* Archive Action (Owner Only) */}
+                                    {user && need.authorId === user.id && (
+                                        <button
+                                            onClick={(e) => {
+                                                setIsMenuOpen(false);
+                                                handleArchive(e);
+                                            }}
+                                            style={{
+                                                width: '100%', textAlign: 'left', padding: '0.7rem',
+                                                borderRadius: '8px', display: 'flex', alignItems: 'center',
+                                                gap: '0.75rem', color: '#ef4444',
+                                                fontSize: '0.9rem', fontWeight: 500,
+                                                borderTop: '1px solid var(--border-glass)',
+                                                marginTop: '2px',
+                                                paddingTop: '0.75rem'
+                                            }}
+                                            className="nav-link-hover"
+                                        >
+                                            <Archive size={18} />
+                                            Archive Post
+                                        </button>
+                                    )}
+                                </div>
+                            </>
+                        )}
+                    </div>
                 </div>
             </div>
 

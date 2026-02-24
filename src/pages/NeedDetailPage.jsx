@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Send, Loader, Lock, Globe, MessageSquare, Trash2 } from 'lucide-react';
+import { ArrowLeft, Send, Loader, Lock, Globe, MessageSquare, Archive } from 'lucide-react';
 import { NeedCard } from '../components/NeedCard';
 import { getNeedById, shapeNeed } from '../lib/needsService';
 import { fetchRepliesForNeed, createReply, formatTimeAgo, updateReplyStatus } from '../lib/replyService';
@@ -90,7 +90,7 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive }) => {
                                 onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'}
                                 onMouseLeave={(e) => e.currentTarget.style.color = 'inherit'}
                             >
-                                <Trash2 size={14} /> Archive
+                                <Archive size={14} /> Archive
                             </button>
                         )}
                     </div>

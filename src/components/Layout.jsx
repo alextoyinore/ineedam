@@ -5,6 +5,7 @@ import { RightSidebar } from './RightSidebar';
 import { PostNeedModal } from './PostNeedModal';
 import { BottomNav } from './BottomNav';
 import { Plus } from 'lucide-react';
+import { MobileTopHeader } from './MobileTopHeader';
 
 export const Layout = ({ children }) => {
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
@@ -15,6 +16,7 @@ export const Layout = ({ children }) => {
 
   return (
     <div className="layout-container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <MobileTopHeader />
 
 
 

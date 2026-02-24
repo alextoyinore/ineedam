@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import {
     ArrowLeft, Calendar, MapPin, Users, Mail, UserPlus, UserMinus,
-    ShieldCheck, Edit3, CheckCircle, Trash2, Settings, Repeat2, Loader,
+    ShieldCheck, Edit3, CheckCircle, Trash2, Archive, Settings, Repeat2, Loader,
     MoreVertical, Flag, Ban
 } from 'lucide-react';
 
@@ -23,7 +23,7 @@ import {
     updateNeedStatus, updateNeed
 } from '../lib/needsService';
 import { getFollowStats, getFollowers, getFollowing } from '../lib/socialService';
-import { fetchRepliesByUser, formatTimeAgo } from '../lib/replyService';
+import { fetchRepliesByUser, formatTimeAgo, updateReplyStatus } from '../lib/replyService';
 import { getOrCreateThread } from '../lib/messageService';
 import { fetchBroadcastedNeeds } from '../lib/broadcastService';
 import { fetchEndorsementsForUser } from '../lib/endorsementService';
@@ -57,6 +57,12 @@ export const UserProfilePage = () => {
         followersCount: 0,
         followingCount: 0
     });
+
+    const { scrollY } = useScroll();
+    // Animate tabs background relative to typical scroll position for profile details
+    const tabsBackground = useTransform(scrollY, [200, 300], ['rgba(var(--bg-base-rgb), 0)', 'var(--bg-surface-glass)']);
+    const tabsBackdrop = useTransform(scrollY, [200, 300], ['blur(0px)', 'blur(16px)']);
+    const tabsBorder = useTransform(scrollY, [200, 300], ['rgba(0,0,0,0)', 'var(--border-glass)']);
 
     // Pagination for Needs
     const [needsPage, setNeedsPage] = useState(0);
@@ -233,6 +239,17 @@ export const UserProfilePage = () => {
         }
     };
 
+    const handleArchiveReply = async (replyId) => {
+        if (!window.confirm("Archive this reply? It will be hidden from your feed.")) return;
+        try {
+            await updateReplyStatus(replyId, 'archived');
+            setUserNeeds(prev => prev.filter(item => !(item.type === 'reply' && item.id === replyId)));
+        } catch (err) {
+            console.error("Failed to archive reply", err);
+            alert("Failed to archive reply");
+        }
+    };
+
     const handleEditUpdate = async (needId, updates) => {
         try {
             await updateNeed(needId, updates);
@@ -330,7 +347,8 @@ export const UserProfilePage = () => {
 
             {/* Header */}
             <header className="sticky-header" style={{
-                padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem'
+                height: 'var(--profile-header-height)',
+                padding: '0 1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem'
             }}>
                 <button onClick={() => navigate(-1)} style={{ padding: '0.5rem', borderRadius: '50%', color: 'var(--text-primary)' }} className="glass-panel-hover">
                     <ArrowLeft size={20} />
@@ -528,7 +546,19 @@ export const UserProfilePage = () => {
             ) : (
                 <>
                     {/* Tabs */}
-                    <div style={{ display: 'flex', borderBottom: '1px solid var(--border-glass)', overflowX: 'auto' }}>
+                    <motion.div
+                        className="sticky-header"
+                        style={{
+                            display: 'flex',
+                            overflowX: 'auto',
+                            top: 'var(--profile-header-height)',
+                            background: tabsBackground,
+                            backdropFilter: tabsBackdrop,
+                            WebkitBackdropFilter: tabsBackdrop,
+                            borderBottom: `1px solid ${tabsBorder}`,
+                            zIndex: 90 // Stay below FAB (150) and Header (100)
+                        }}
+                    >
                         {['needs', 'broadcasts', 'endorsements', 'replies', 'following', 'followers'].map(tab => (
                             <button
                                 key={tab}
@@ -547,7 +577,7 @@ export const UserProfilePage = () => {
                                 )}
                             </button>
                         ))}
-                    </div>
+                    </motion.div>
 
                     {/* Tab Content */}
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -600,7 +630,27 @@ export const UserProfilePage = () => {
                                                             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
                                                                 Replying to <span style={{ color: 'var(--primary)' }}>"{item.needs?.title}"</span>
                                                             </p>
-                                                            <p style={{ fontSize: '0.95rem', whiteSpace: 'pre-wrap' }}>{item.content}</p>
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
+                                                                <p style={{ fontSize: '0.95rem', whiteSpace: 'pre-wrap', flex: 1 }}>{item.content}</p>
+                                                                {isOwnProfile && (
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            handleArchiveReply(item.id);
+                                                                        }}
+                                                                        className="nav-link-hover"
+                                                                        style={{
+                                                                            padding: '0.4rem', borderRadius: '50%', color: 'var(--text-muted)',
+                                                                            background: 'transparent', border: 'none', cursor: 'pointer'
+                                                                        }}
+                                                                        title="Archive Reply"
+                                                                        onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'}
+                                                                        onMouseLeave={(e) => e.currentTarget.style.color = 'inherit'}
+                                                                    >
+                                                                        <Archive size={16} />
+                                                                    </button>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 ) : null}

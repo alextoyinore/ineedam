@@ -92,11 +92,8 @@ export const SearchPage = () => {
         <div style={{ display: 'flex', flexDirection: 'column' }}>
 
             {/* Header */}
-            <header style={{
-                position: 'sticky', top: 0, zIndex: 40,
-                padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem',
-                background: 'var(--bg-surface-glass)', backdropFilter: 'blur(16px)',
-                borderBottom: '1px solid var(--border-glass)'
+            <header className="sticky-header" style={{
+                padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem'
             }}>
                 <button onClick={() => window.history.back()} style={{ padding: '0.5rem', borderRadius: '50%', color: 'var(--text-primary)' }} className="glass-panel-hover">
                     <ArrowLeft size={20} />

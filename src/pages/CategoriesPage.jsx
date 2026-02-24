@@ -26,11 +26,8 @@ export const CategoriesPage = () => {
         <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: 'var(--bg-base)' }}>
 
             {/* Header */}
-            <header style={{
-                position: 'sticky', top: 0, zIndex: 40,
-                padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem',
-                background: 'var(--bg-surface-glass)', backdropFilter: 'blur(16px)',
-                borderBottom: '1px solid var(--border-glass)'
+            <header className="sticky-header" style={{
+                padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem'
             }}>
                 <button
                     onClick={() => navigate(-1)}

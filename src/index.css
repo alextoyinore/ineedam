@@ -24,6 +24,7 @@
   /* Layout Constants */
   --mobile-header-height: 56px;
   --mobile-nav-height: 4.5rem;
+  --profile-header-height: 53px;
 }
 
 html {
@@ -283,7 +284,7 @@ button {
 .sticky-header {
   position: sticky;
   top: 0;
-  z-index: 40;
+  z-index: 100;
   background: var(--bg-surface-glass);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -471,7 +472,7 @@ button {
   align-items: center;
   justify-content: center;
   box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4), 0 4px 6px -2px rgba(99, 102, 241, 0.1);
-  z-index: 60;
+  z-index: 150;
   border: none;
   cursor: pointer;
   transition: transform 0.2s, background 0.2s;
