@@ -120,7 +120,7 @@ export const EditNeedModal = ({ isOpen, onClose, need, onUpdate }) => {
                             display: 'flex',
                             flexDirection: 'column',
                             borderRadius: isMobile ? 0 : '16px',
-                            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+                            boxShadow: 'none' // Removed shadow
                         }}
                     >
                         <header style={{
@@ -166,7 +166,8 @@ export const EditNeedModal = ({ isOpen, onClose, need, onUpdate }) => {
                                                 position: 'absolute', top: '100%', left: 0, right: 0,
                                                 background: 'var(--bg-surface)', border: '1px solid var(--border-glass)',
                                                 borderRadius: '8px', marginTop: '4px', zIndex: 100,
-                                                boxShadow: '0 10px 25px rgba(0,0,0,0.2)', maxHeight: '300px',
+                                                boxShadow: 'none', // Removed shadow
+                                                maxHeight: '300px',
                                                 display: 'flex', flexDirection: 'column'
                                             }}>
                                                 <div style={{ padding: '0.5rem', borderBottom: '1px solid var(--border-glass)' }}>

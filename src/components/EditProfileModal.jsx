@@ -155,7 +155,7 @@ export const EditProfileModal = ({ isOpen, onClose, currentProfile, onProfileUpd
                                 display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', fontWeight: 'bold', color: 'var(--text-primary)', zIndex: 10
                             }}>
                                 {!formData.avatar_url && (formData.display_name?.charAt(0) || 'A')}
-                                <label style={{ position: 'absolute', bottom: '0', right: '-5px', background: 'var(--primary)', padding: '0.3rem', borderRadius: '50%', color: 'white', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
+                                <label style={{ position: 'absolute', bottom: '0', right: '-5px', background: 'var(--primary)', padding: '0.3rem', borderRadius: '50%', color: 'white', cursor: 'pointer', boxShadow: 'none' }}>
                                     <Camera size={12} />
                                     <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => handleImageUpload(e, 'avatar_url')} disabled={uploadingField === 'avatar_url'} />
                                 </label>

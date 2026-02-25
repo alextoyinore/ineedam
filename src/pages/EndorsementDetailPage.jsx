@@ -1,13 +1,14 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Send, Loader, Lock, Globe, MessageSquare, Archive } from 'lucide-react';
-import { NeedCard } from '../components/NeedCard';
-import { getNeedById, shapeNeed } from '../lib/needsService';
+import { motion } from 'framer-motion';
+import { ArrowLeft, Loader, Award } from 'lucide-react';
+import { getEndorsementById } from '../lib/endorsementService';
+import { EndorsementFeedCard } from '../components/EndorsementFeedCard';
 import { fetchRepliesForNeed, createReply, formatTimeAgo, updateReplyStatus } from '../lib/replyService';
 import { useAuth } from '../context/AuthContext';
 import { ProfileHoverCard } from '../components/ProfileHoverCard';
 import { ReplyModal } from '../components/ReplyModal';
+import { Lock, Globe, MessageSquare, Archive, Send } from 'lucide-react';
 
 const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive }) => {
     const { user } = useAuth();
@@ -103,18 +104,17 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive }) => {
     );
 };
 
-export const NeedDetailPage = () => {
+export const EndorsementDetailPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { user, profile } = useAuth();
+    const [endorsement, setEndorsement] = useState(null);
+    const [replies, setReplies] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     const [replyText, setReplyText] = useState('');
     const [isPrivateReply, setIsPrivateReply] = useState(false);
     const [submittingReply, setSubmittingReply] = useState(false);
-
-    const [need, setNeed] = useState(null);
-    const [replies, setReplies] = useState([]);
-    const [loading, setLoading] = useState(true);
 
     // For nested replies via modal
     const [isReplyModalOpen, setIsReplyModalOpen] = useState(false);
@@ -125,15 +125,13 @@ export const NeedDetailPage = () => {
         const load = async () => {
             setLoading(true);
             try {
-                const [needData, repliesData] = await Promise.all([
-                    getNeedById(id),
-                    fetchRepliesForNeed(id) // fetchRepliesForNeed(id) now implicitly filters for endorsement_id IS NULL
-                ]);
-                setNeed(shapeNeed(needData));
+                const data = await getEndorsementById(id);
+                setEndorsement(data);
+                // Fetch replies specifically for this endorsement (endorsement_id = id)
+                const repliesData = await fetchRepliesForNeed(null, id);
                 setReplies((repliesData || []).filter(r => r.status !== 'archived'));
             } catch (err) {
-                console.error("Failed to load need or replies:", err);
-                setNeed(null);
+                console.error("Failed to load endorsement or replies:", err);
             } finally {
                 setLoading(false);
             }
@@ -141,7 +139,7 @@ export const NeedDetailPage = () => {
         load();
     }, [id]);
 
-    const replyTree = useMemo(() => {
+    const replyTree = React.useMemo(() => {
         const map = {};
         const roots = [];
         replies.forEach(r => {
@@ -159,14 +157,14 @@ export const NeedDetailPage = () => {
 
     const handleSubmitReply = async (e) => {
         e.preventDefault();
-        if (!replyText.trim() || !user) return;
+        if (!replyText.trim() || !user || !endorsement?.need_id) return;
 
         setSubmittingReply(true);
         try {
-            const newReply = await createReply(need.id, user.id, replyText, isPrivateReply);
-            // Re-fetch to get profile joins and proper order since RT might be complex here
-            const repliesData = await fetchRepliesForNeed(id);
-            setReplies(repliesData || []);
+            // Pass endorsement.id as the endorsement context
+            await createReply(endorsement.need_id, user.id, replyText, isPrivateReply, null, endorsement.id);
+            const repliesData = await fetchRepliesForNeed(null, endorsement.id);
+            setReplies((repliesData || []).filter(r => r.status !== 'archived'));
             setReplyText('');
             setIsPrivateReply(false);
         } catch (err) {
@@ -184,8 +182,9 @@ export const NeedDetailPage = () => {
     const handleModalClose = () => {
         setIsReplyModalOpen(false);
         setActiveParentReply(null);
-        // Refresh replies
-        fetchRepliesForNeed(id).then(data => setReplies((data || []).filter(r => r.status !== 'archived')));
+        if (endorsement?.id) {
+            fetchRepliesForNeed(null, endorsement.id).then(data => setReplies((data || []).filter(r => r.status !== 'archived')));
+        }
     };
 
     const handleArchiveReply = async (replyId) => {
@@ -206,22 +205,38 @@ export const NeedDetailPage = () => {
         );
     }
 
-    if (!need) return null;
+    if (!endorsement) {
+        return (
+            <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                Endorsement not found or unavailable.
+            </div>
+        );
+    }
+
+    const need = endorsement?.needs ? {
+        id: endorsement.need_id,
+        title: endorsement.needs.title,
+        authorUsername: endorsement.endorser?.username,
+        authorId: endorsement.endorser_id
+    } : null;
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <ReplyModal
-                isOpen={isReplyModalOpen}
-                onClose={handleModalClose}
-                need={need}
-                parentId={activeParentReply?.id}
-                replyingTo={activeParentReply ? {
-                    author: activeParentReply.profiles?.display_name,
-                    authorUsername: activeParentReply.profiles?.username,
-                    authorAvatar: activeParentReply.profiles?.avatar_url,
-                    postedAt: formatTimeAgo(activeParentReply.created_at)
-                } : null}
-            />
+            {need && (
+                <ReplyModal
+                    isOpen={isReplyModalOpen}
+                    onClose={handleModalClose}
+                    need={need}
+                    parentId={activeParentReply?.id}
+                    endorsementId={id}
+                    replyingTo={activeParentReply ? {
+                        author: activeParentReply.profiles?.display_name,
+                        authorUsername: activeParentReply.profiles?.username,
+                        authorAvatar: activeParentReply.profiles?.avatar_url,
+                        postedAt: formatTimeAgo(activeParentReply.created_at)
+                    } : null}
+                />
+            )}
 
             <header style={{
                 position: 'sticky', top: 0, zIndex: 40,
@@ -229,14 +244,21 @@ export const NeedDetailPage = () => {
                 background: 'var(--bg-surface-glass)', backdropFilter: 'blur(16px)',
                 borderBottom: '1px solid var(--border-glass)'
             }}>
-                <button onClick={() => navigate(-1)} style={{ padding: '0.5rem', borderRadius: '50%', color: 'var(--text-primary)' }} className="glass-panel-hover">
+                <button
+                    onClick={() => navigate(-1)}
+                    style={{ padding: '0.5rem', borderRadius: '50%', color: 'var(--text-primary)' }}
+                    className="glass-panel-hover"
+                >
                     <ArrowLeft size={20} />
                 </button>
-                <h2 className="h2" style={{ fontSize: '1.25rem', margin: 0 }}>Thread</h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Award size={20} color="var(--primary)" />
+                    <h2 className="h2" style={{ fontSize: '1.25rem', margin: 0 }}>Endorsement</h2>
+                </div>
             </header>
 
-            <div style={{ padding: '', borderBottom: '1px solid var(--border-glass)' }}>
-                <NeedCard need={need} isFullDetail={true} />
+            <div style={{ borderBottom: '1px solid var(--border-glass)' }}>
+                <EndorsementFeedCard endorsement={endorsement} />
             </div>
 
             {/* Main Reply Box */}
@@ -255,7 +277,7 @@ export const NeedDetailPage = () => {
                     <textarea
                         value={replyText}
                         onChange={(e) => setReplyText(e.target.value)}
-                        placeholder={`Replying to @${need.authorUsername || 'author'}...`}
+                        placeholder={`Reply to this endorsement thread...`}
                         disabled={!user || submittingReply}
                         className="need-description"
                         style={{
@@ -292,8 +314,17 @@ export const NeedDetailPage = () => {
                 ))}
             </div>
 
-            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                End of thread
+            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', borderTop: '1px solid var(--border-glass)' }}>
+                <p style={{ fontSize: '0.95rem', marginBottom: '1.5rem' }}>
+                    This endorsement was given for helping with a specific need.
+                </p>
+                <button
+                    onClick={() => navigate(`/need/${endorsement.need_id}`)}
+                    className="btn btn-secondary"
+                    style={{ borderRadius: '9999px', padding: '0.6rem 1.5rem' }}
+                >
+                    View Original Need
+                </button>
             </div>
         </div>
     );

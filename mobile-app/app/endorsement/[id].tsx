@@ -1,18 +1,15 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { StyleSheet, View, FlatList, ActivityIndicator, TouchableOpacity, TextInput, Text, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, ScrollView, TouchableOpacity, ActivityIndicator, FlatList, TextInput, Text, Image } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { ArrowLeft, Send, Lock, Globe, MessageSquare } from 'lucide-react-native';
-import { getNeedById, shapeNeed } from '@/src/lib/needsService';
+import { getEndorsementById } from '@/src/lib/endorsementService';
+import { EndorsementCard } from '@/components/ui/endorsement-card';
 import { fetchRepliesForNeed, createReply } from '@/src/lib/replyService';
-import { fetchUserLikes } from '@/src/lib/likesService';
-import { fetchUserBroadcasts } from '@/src/lib/broadcastService';
-import { fetchBookmarks } from '@/src/lib/bookmarkService';
 import { useAuth } from '@/src/context/AuthContext';
-import { NeedCard } from '@/components/ui/need-card';
+import { ArrowLeft, Send, Lock, Globe, MessageSquare } from 'lucide-react-native';
 
 const ReplyItem = ({ reply, depth = 0, colors, onReplyPress }: any) => {
     const authorName = reply.profiles?.display_name || 'Anonymous';
@@ -63,63 +60,43 @@ const ReplyItem = ({ reply, depth = 0, colors, onReplyPress }: any) => {
     );
 };
 
-export default function NeedDetailScreen() {
+export default function EndorsementDetailScreen() {
     const { id } = useLocalSearchParams();
     const router = useRouter();
     const theme = useColorScheme() ?? 'light';
     const colors = Colors[theme];
     const { user } = useAuth();
+    const currentUserId = user?.id;
 
-    const [need, setNeed] = useState<any>(null);
+    const [endorsement, setEndorsement] = useState<any>(null);
     const [replies, setReplies] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
-    const [broadcastedIds, setBroadcastedIds] = useState<Set<string>>(new Set());
-    const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
-
-    // Reply Box State
     const [replyText, setReplyText] = useState('');
     const [isPrivateReply, setIsPrivateReply] = useState(false);
     const [submittingReply, setSubmittingReply] = useState(false);
     const [activeParentReply, setActiveParentReply] = useState<any>(null);
 
-    const loadUserState = useCallback(async () => {
-        if (!user?.id) return;
-        try {
-            const [likes, broadcasts, bookmarks] = await Promise.all([
-                fetchUserLikes(user.id),
-                fetchUserBroadcasts(user.id),
-                fetchBookmarks(user.id),
-            ]);
-            setLikedIds(new Set(likes));
-            setBroadcastedIds(new Set(broadcasts));
-            setBookmarkedIds(new Set(bookmarks.map((b: any) => b.id)));
-        } catch (err) {
-            console.error('Error loading user social state:', err);
-        }
-    }, [user?.id]);
-
     useEffect(() => {
+        if (!id) return;
         const load = async () => {
             setLoading(true);
             try {
-                const needData = await getNeedById(id as string);
-                if (needData) setNeed({ ...shapeNeed(needData), type: 'need' });
-                // fetchRepliesForNeed(id) now implicitly filters for endorsement_id IS NULL
-                const repliesData = await fetchRepliesForNeed(id as string);
+                const data = await getEndorsementById(id as string);
+                setEndorsement(data);
+                // Fetch replies specifically for this endorsement (endorsement_id = id)
+                const repliesData = await fetchRepliesForNeed(null, id as string);
                 setReplies(repliesData || []);
-                await loadUserState();
-            } catch (error) {
-                console.error("Error loading need details", error);
+            } catch (err) {
+                console.error("Failed to load endorsement or replies:", err);
             } finally {
                 setLoading(false);
             }
         };
-        if (id) load();
-    }, [id, loadUserState]);
+        load();
+    }, [id]);
 
-    const replyTree = useMemo(() => {
+    const replyTree = React.useMemo(() => {
         const map: any = {};
         const roots: any[] = [];
         replies.forEach(r => {
@@ -137,15 +114,15 @@ export default function NeedDetailScreen() {
 
     const handleReplyPress = (parentReply: any) => {
         setActiveParentReply(parentReply);
-        // We could focus the input here or open a modal
     };
 
     const submitReply = async () => {
-        if (!replyText.trim() || !user || !need) return;
+        if (!replyText.trim() || !user || !endorsement?.need_id) return;
         setSubmittingReply(true);
         try {
-            await createReply(need.id, user.id, replyText, isPrivateReply);
-            const repliesData = await fetchRepliesForNeed(id as string);
+            // Pass endorsement.id as the endorsement context
+            await createReply(endorsement.need_id, user.id, replyText, isPrivateReply, activeParentReply?.id, endorsement.id);
+            const repliesData = await fetchRepliesForNeed(null, endorsement.id);
             setReplies(repliesData || []);
             setReplyText('');
             setIsPrivateReply(false);
@@ -165,41 +142,37 @@ export default function NeedDetailScreen() {
         );
     }
 
-    if (!need) {
+    if (!endorsement) {
         return (
             <ThemedView style={styles.centered}>
-                <ThemedText>Need not found.</ThemedText>
+                <ThemedText style={styles.mutedText}>Endorsement not found or unavailable.</ThemedText>
             </ThemedView>
         );
     }
 
-    const headerBorder = { borderBottomColor: colors.tabIconDefault + '30' };
-
     return (
         <ThemedView style={styles.container}>
-            <Stack.Screen options={{ title: 'Thread' }} />
-
+            <Stack.Screen
+                options={{
+                    headerTitle: "Endorsement",
+                    headerLeft: () => (
+                        <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 16 }}>
+                            <ArrowLeft size={24} color={colors.text} />
+                        </TouchableOpacity>
+                    ),
+                }}
+            />
             <FlatList
                 data={replyTree}
                 keyExtractor={(item) => item.id}
                 ListHeaderComponent={
                     <View>
-                        <NeedCard
-                            need={need}
-                            currentUserId={user?.id}
-                            initialLiked={likedIds.has(need.id)}
-                            initialBroadcasted={broadcastedIds.has(need.id)}
-                            initialBookmarked={bookmarkedIds.has(need.id)}
+                        <EndorsementCard
+                            endorsement={endorsement}
+                            currentUserId={currentUserId}
                             disablePress={true}
-                            hideViewThread={true}
-                            onBookmarkChange={(needId, isBookmarked) => {
-                                setBookmarkedIds(prev => {
-                                    const next = new Set(prev);
-                                    isBookmarked ? next.add(needId) : next.delete(needId);
-                                    return next;
-                                });
-                            }}
                         />
+
                         {/* Inline Reply Composer */}
                         {user && (
                             <View style={[styles.replyComposer, { borderBottomColor: colors.tabIconDefault + '30' }]}>
@@ -255,6 +228,19 @@ export default function NeedDetailScreen() {
                 renderItem={({ item }) => (
                     <ReplyItem reply={item} colors={colors} onReplyPress={(reply: any) => handleReplyPress(reply)} />
                 )}
+                ListFooterComponent={
+                    <View style={styles.footer}>
+                        <ThemedText style={styles.footerText}>
+                            This endorsement was given for helping with a specific need.
+                        </ThemedText>
+                        <TouchableOpacity
+                            onPress={() => router.push(`/need/${endorsement.need_id}` as any)}
+                            style={[styles.button, { backgroundColor: colors.tabIconDefault + '20' }]}
+                        >
+                            <ThemedText style={styles.buttonText}>View Associated Need</ThemedText>
+                        </TouchableOpacity>
+                    </View>
+                }
                 contentContainerStyle={{ paddingBottom: 40 }}
             />
         </ThemedView>
@@ -262,14 +248,17 @@ export default function NeedDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1 },
-    centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    header: {
-        flexDirection: 'row',
+    container: {
+        flex: 1,
+    },
+    centered: {
+        flex: 1,
+        justifyContent: 'center',
         alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingTop: 60, // approximate status bar
-        borderBottomWidth: 1,
+    },
+    mutedText: {
+        fontSize: 16,
+        opacity: 0.6,
     },
     replyComposer: {
         borderTopWidth: 1,
@@ -310,7 +299,7 @@ const styles = StyleSheet.create({
         borderColor: 'transparent',
     },
     sendBtn: {
-        backgroundColor: '#0d9488', // using primary color
+        backgroundColor: '#0d9488',
         flexDirection: 'row',
         alignItems: 'center',
         gap: 6,
@@ -381,4 +370,23 @@ const styles = StyleSheet.create({
         gap: 6,
     },
     replyActionText: { fontSize: 12, fontWeight: '500' },
+    footer: {
+        padding: 32,
+        alignItems: 'center',
+    },
+    footerText: {
+        fontSize: 14,
+        textAlign: 'center',
+        opacity: 0.6,
+        marginBottom: 20,
+    },
+    button: {
+        paddingVertical: 12,
+        paddingHorizontal: 24,
+        borderRadius: 25,
+    },
+    buttonText: {
+        fontSize: 15,
+        fontWeight: '600',
+    },
 });

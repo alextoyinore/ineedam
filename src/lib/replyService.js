@@ -3,15 +3,21 @@ import { createNotification } from './notificationService';
 import { timeAgo } from './needsService';
 
 /**
- * Fetch all replies for a specific need, ordered by oldest to newest to form a readable thread.
+ * Fetch all replies for a specific need or endorsement.
  */
-export const fetchRepliesForNeed = async (needId) => {
-    const { data, error } = await supabase
+export const fetchRepliesForNeed = async (needId, endorsementId = null) => {
+    let query = supabase
         .from('replies')
         .select('*, profiles(display_name, avatar_url, username)')
-        .eq('need_id', needId)
         .order('created_at', { ascending: true });
 
+    if (endorsementId) {
+        query = query.eq('endorsement_id', endorsementId);
+    } else {
+        query = query.eq('need_id', needId).is('endorsement_id', null);
+    }
+
+    const { data, error } = await query;
     if (error) throw error;
     return data;
 };
@@ -32,9 +38,9 @@ export const fetchRepliesByUser = async (userId) => {
 };
 
 /**
- * Insert a new reply onto a need or as a nested reply.
+ * Insert a new reply onto a need or endorsement.
  */
-export const createReply = async (needId, userId, content, isPrivate = false, parentId = null) => {
+export const createReply = async (needId, userId, content, isPrivate = false, parentId = null, endorsementId = null) => {
     const { data, error } = await supabase
         .from('replies')
         .insert([{
@@ -42,7 +48,8 @@ export const createReply = async (needId, userId, content, isPrivate = false, pa
             user_id: userId,
             content: content,
             is_private: isPrivate,
-            parent_id: parentId
+            parent_id: parentId,
+            endorsement_id: endorsementId
         }])
         .select('*, profiles(display_name, avatar_url, username)')
         .single();
@@ -108,12 +115,19 @@ export const formatTimeAgo = (dateStr) => {
 /**
  * Fetch total reply count for a specific need
  */
-export const getReplyCount = async (needId) => {
-    if (!needId) return 0;
-    const { count, error } = await supabase
+export const getReplyCount = async (needId, endorsementId = null) => {
+    if (!needId && !endorsementId) return 0;
+    let query = supabase
         .from('replies')
-        .select('*', { count: 'exact', head: true })
-        .eq('need_id', needId);
+        .select('*', { count: 'exact', head: true });
+
+    if (endorsementId) {
+        query = query.eq('endorsement_id', endorsementId);
+    } else {
+        query = query.eq('need_id', needId).is('endorsement_id', null);
+    }
+
+    const { count, error } = await query;
 
     if (error) {
         console.error('Error fetching reply count:', error);

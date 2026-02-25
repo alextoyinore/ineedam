@@ -87,7 +87,8 @@ export const Sidebar = ({ onPostClick }) => {
                             background: 'var(--bg-surface)', border: '1px solid var(--border-glass)',
                             borderRadius: '16px', padding: '0.5rem',
                             zIndex: 10,
-                            backdropFilter: 'blur(10px)'
+                            backdropFilter: 'blur(10px)',
+                            boxShadow: 'none' // Ensure no shadow
                         }}>
                             <Link
                                 to="/settings"

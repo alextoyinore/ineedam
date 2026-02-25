@@ -217,3 +217,36 @@ export const getCategoryPreviews = async () => {
 
     return Object.values(grouped).sort((a: any, b: any) => b.count - a.count);
 };
+
+export const createNeed = async (needData: any) => {
+    const { data, error } = await supabase
+        .from('needs')
+        .insert([needData])
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data;
+};
+
+export const updateNeed = async (id: string, updates: any) => {
+    const { data, error } = await supabase
+        .from('needs')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data;
+};
+
+export const deleteNeed = async (id: string) => {
+    const { error } = await supabase
+        .from('needs')
+        .delete()
+        .eq('id', id);
+
+    if (error) throw error;
+    return true;
+};

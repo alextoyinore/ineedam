@@ -74,7 +74,7 @@ export const PremiumPage = () => {
                             fontWeight: 700,
                             padding: '0.2rem 0.6rem',
                             borderRadius: '9999px',
-                            boxShadow: '0 4px 10px rgba(236, 72, 153, 0.3)'
+                            boxShadow: 'none'
                         }}>
                             COMING SOON
                         </div>
@@ -103,7 +103,7 @@ export const PremiumPage = () => {
                                 background: 'var(--bg-surface)',
                                 borderRadius: '20px',
                                 border: '1px solid var(--border-glass)',
-                                boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
+                                boxShadow: 'none',
                                 alignItems: 'flex-start'
                             }}
                         >

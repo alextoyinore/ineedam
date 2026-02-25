@@ -1,16 +1,23 @@
 import { supabase } from './supabase';
 import { createNotification } from './notificationService';
 
-/** Fetch all replies for a specific need, ordered by oldest to newest to form a readable thread. */
-export const fetchRepliesForNeed = async (needId: string): Promise<any[]> => {
-    if (!needId) return [];
-    const { data, error } = await supabase
+/** Fetch all replies for a specific need or endorsement. */
+export const fetchRepliesForNeed = async (needId: string | null, endorsementId: string | null = null): Promise<any[]> => {
+    if (!needId && !endorsementId) return [];
+
+    let query = supabase
         .from('replies')
         .select('*, profiles(display_name, avatar_url, username)')
-        .eq('need_id', needId)
         .neq('status', 'archived')
         .order('created_at', { ascending: true });
 
+    if (endorsementId) {
+        query = query.eq('endorsement_id', endorsementId);
+    } else {
+        query = query.eq('need_id', needId).is('endorsement_id', null);
+    }
+
+    const { data, error } = await query;
     if (error) throw error;
     return data;
 };
@@ -35,7 +42,8 @@ export const createReply = async (
     userId: string,
     content: string,
     isPrivate: boolean = false,
-    parentId: string | null = null
+    parentId: string | null = null,
+    endorsementId: string | null = null
 ) => {
     const { data, error } = await supabase
         .from('replies')
@@ -45,6 +53,7 @@ export const createReply = async (
             content,
             is_private: isPrivate,
             parent_id: parentId,
+            endorsement_id: endorsementId
         }])
         .select('*, profiles(display_name, avatar_url, username)')
         .single();
@@ -95,13 +104,21 @@ export const createReply = async (
     return data;
 };
 
-/** Fetch total reply count for a specific need. */
-export const getReplyCount = async (needId: string): Promise<number> => {
-    if (!needId) return 0;
-    const { count, error } = await supabase
+/** Fetch total reply count for a specific need or endorsement. */
+export const getReplyCount = async (needId: string | null, endorsementId: string | null = null): Promise<number> => {
+    if (!needId && !endorsementId) return 0;
+
+    let query = supabase
         .from('replies')
-        .select('*', { count: 'exact', head: true })
-        .eq('need_id', needId);
+        .select('*', { count: 'exact', head: true });
+
+    if (endorsementId) {
+        query = query.eq('endorsement_id', endorsementId);
+    } else {
+        query = query.eq('need_id', needId).is('endorsement_id', null);
+    }
+
+    const { count, error } = await query;
 
     if (error) {
         console.error('Error fetching reply count:', error);

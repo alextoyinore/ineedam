@@ -130,7 +130,7 @@ export const AuthModal = ({ isOpen, onClose, defaultTab = 'signin' }) => {
                     width: '100%',
                     maxWidth: '420px',
                     position: 'relative',
-                    boxShadow: '0 24px 80px rgba(0,0,0,0.4)',
+                    boxShadow: 'none', // Removed shadow
                 }}
             >
                 {/* Close button */}
@@ -170,7 +170,7 @@ export const AuthModal = ({ isOpen, onClose, defaultTab = 'signin' }) => {
                                     fontSize: '0.9rem',
                                     cursor: 'pointer',
                                     transition: 'all 0.2s',
-                                    boxShadow: tab === t ? '0 1px 4px rgba(0,0,0,0.15)' : 'none',
+                                    boxShadow: 'none', // Removed shadow
                                 }}
                             >
                                 {t === 'signin' ? 'Sign In' : 'Sign Up'}

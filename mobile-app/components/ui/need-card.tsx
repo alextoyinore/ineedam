@@ -1,16 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, View, TouchableOpacity, Image, Text } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Image, Text, Share, Alert } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { getLikeCount } from '@/src/lib/likesService';
-import { toggleLike } from '@/src/lib/likesService';
+import { getLikeCount, toggleLike } from '@/src/lib/likesService';
 import { getBroadcastCount, toggleBroadcast } from '@/src/lib/broadcastService';
 import { getReplyCount } from '@/src/lib/replyService';
 import { toggleBookmarkInDb } from '@/src/lib/bookmarkService';
 import { ReplySheet } from '@/components/ui/reply-sheet';
-import { Banknote, MapPin, Clock, MessageSquare, Bookmark, Heart, Repeat2, MessageCircle } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { Banknote, MapPin, Clock, MessageSquare, Bookmark, Heart, Repeat2, MessageCircle, Share2, Edit2 } from 'lucide-react-native';
 
 interface NeedCardProps {
     need: {
@@ -55,6 +54,7 @@ export function NeedCard({
     const router = useRouter();
 
     const isEndorsement = need.type === 'endorsement';
+    const isOwner = currentUserId === need.authorId;
 
     // Counts
     const [likeCount, setLikeCount] = useState(0);
@@ -137,6 +137,27 @@ export function NeedCard({
             setBookmarked(prevBookmarked);
         }
     }, [bookmarked, currentUserId, need.id]);
+
+    const handleShare = useCallback(async () => {
+        try {
+            const result = await Share.share({
+                message: `Check out this need: ${need.title}\n${need.description}\n\nhttps://your-app-url.com/need/${need.id}`,
+                url: `https://your-app-url.com/need/${need.id}`, // For iOS
+                title: need.title, // For Android
+            });
+            if (result.action === Share.sharedAction) {
+                if (result.activityType) {
+                    // shared with activity type of result.activityType
+                } else {
+                    // shared
+                }
+            } else if (result.action === Share.dismissedAction) {
+                // dismissed
+            }
+        } catch (error: any) {
+            Alert.alert(error.message);
+        }
+    }, [need.id, need.title, need.description]);
 
     const handleCardPress = () => {
         if (disablePress) return;

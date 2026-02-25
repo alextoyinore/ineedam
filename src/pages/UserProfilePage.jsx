@@ -380,7 +380,7 @@ export const UserProfilePage = () => {
                             position: 'absolute', bottom: '1rem', right: '1rem',
                             background: 'var(--bg-surface-glass)', backdropFilter: 'blur(10px)',
                             padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border-glass)',
-                            maxWidth: '240px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                            maxWidth: '240px', boxShadow: 'none'
                         }}
                     >
                         <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', fontWeight: 700 }}>Complete your Profile</h4>
@@ -462,7 +462,7 @@ export const UserProfilePage = () => {
                                                         position: 'absolute', top: 'calc(100% + 0.5rem)', right: 0, zIndex: 100,
                                                         background: 'var(--bg-surface-glass)', backdropFilter: 'blur(16px)',
                                                         border: '1px solid var(--border-glass)', borderRadius: '12px',
-                                                        padding: '0.5rem', minWidth: '160px', boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
+                                                        padding: '0.5rem', minWidth: '160px', boxShadow: 'none'
                                                     }}
                                                 >
                                                     <button

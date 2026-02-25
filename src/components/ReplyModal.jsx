@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { createReply } from '../lib/replyService';
 import { useNavigate } from 'react-router-dom';
 
-export const ReplyModal = ({ isOpen, onClose, need, parentId = null, replyingTo = null, onReply }) => {
+export const ReplyModal = ({ isOpen, onClose, need, parentId = null, replyingTo = null, onReply, endorsementId = null }) => {
     const navigate = useNavigate();
     const { user } = useAuth();
     const [replyText, setReplyText] = useState('');
@@ -39,7 +39,7 @@ export const ReplyModal = ({ isOpen, onClose, need, parentId = null, replyingTo 
         setSubmitting(true);
         try {
             const isPrivate = visibility === 'private';
-            const newReply = await createReply(need.id, user.id, replyText, isPrivate, parentId);
+            const newReply = await createReply(need.id, user.id, replyText, isPrivate, parentId, endorsementId);
 
             if (onReply) {
                 onReply(newReply);

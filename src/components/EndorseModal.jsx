@@ -81,7 +81,7 @@ export const EndorseModal = ({ isOpen, onClose, need, onSuccess }) => {
                         style={{
                             background: 'var(--bg-surface)', border: '1px solid var(--border-glass)',
                             borderRadius: '20px', width: '100%', maxWidth: '480px',
-                            boxShadow: '0 25px 60px -12px rgba(0,0,0,0.5)',
+                            boxShadow: 'none', // Removed shadow
                             overflow: 'hidden'
                         }}
                     >

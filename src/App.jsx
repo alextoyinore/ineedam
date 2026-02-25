@@ -32,6 +32,9 @@ import { NotFoundPage } from './pages/NotFoundPage';
 import { ServerErrorPage } from './pages/ServerErrorPage';
 import { BlockedAccountsPage } from './pages/BlockedAccountsPage';
 import { ArchivedContentPage } from './pages/ArchivedContentPage';
+import { EndorsementDetailPage } from './pages/EndorsementDetailPage';
+import { HelpPage } from './pages/HelpPage';
+
 
 
 // Full-screen spinner while the session is being determined
@@ -90,6 +93,8 @@ function App() {
                 <Route path="/blocked-accounts" element={<BlockedAccountsPage />} />
                 <Route path="/settings/archived" element={<ArchivedContentPage />} />
                 <Route path="/need/:id" element={<NeedDetailPage />} />
+                <Route path="/endorsement/:id" element={<EndorsementDetailPage />} />
+                <Route path="/help" element={<HelpPage />} />
                 <Route path="/dashboard" element={<Navigate to={`/${useAuth().profile?.username || ''}`} replace />} />
                 <Route path="/:username" element={<UserProfilePage />} />
                 <Route path="*" element={<NotFoundPage />} />

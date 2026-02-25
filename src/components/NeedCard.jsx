@@ -294,7 +294,7 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null }) =
                                     borderRadius: '12px',
                                     padding: '0.4rem',
                                     zIndex: 1000,
-                                    boxShadow: '0 10px 25px -5px rgba(0,0,0,0.2)',
+                                    boxShadow: 'none', // Removed shadow
                                     marginTop: '0.25rem',
                                     display: 'flex',
                                     flexDirection: 'column',

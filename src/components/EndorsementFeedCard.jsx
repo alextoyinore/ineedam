@@ -102,13 +102,13 @@ export const EndorsementFeedCard = ({ endorsement, broadcastedBy = null }) => {
 
     return (
         <div
-            onClick={() => hasNeed && navigate(`/need/${need.id}`)}
+            onClick={() => navigate(`/endorsement/${endorsement.id}`)}
             style={{
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '0.75rem',
                 position: 'relative',
-                cursor: hasNeed ? 'pointer' : 'default',
+                cursor: 'pointer',
                 padding: '1.5rem',
                 borderBottom: '1px solid var(--border-glass)'
             }}>

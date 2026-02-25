@@ -85,7 +85,7 @@ export const ResetPasswordPage = () => {
                 style={{
                     background: 'var(--bg-surface)', border: '1px solid var(--border-glass)',
                     borderRadius: '24px', padding: '2.5rem', width: '100%', maxWidth: '420px',
-                    boxShadow: '0 24px 80px rgba(0,0,0,0.4)'
+                    boxShadow: 'none'
                 }}
             >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '2rem' }}>

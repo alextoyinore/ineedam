@@ -72,7 +72,7 @@ export const MarkMetModal = ({ isOpen, onClose, need, onConfirm }) => {
                             background: 'var(--bg-surface)', border: '1px solid var(--border-glass)',
                             borderRadius: '20px', width: '100%', maxWidth: '400px',
                             position: 'relative', overflow: 'hidden',
-                            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)'
+                            boxShadow: 'none' // Removed shadow
                         }}
                     >
                         {success ? (

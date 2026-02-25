@@ -176,7 +176,7 @@ export const SettingsPage = () => {
                                                 background: 'white', position: 'absolute', top: '2px',
                                                 left: item.value ? 'calc(100% - 22px)' : '2px',
                                                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                                boxShadow: 'none'
                                             }} />
                                         </button>
                                     ) : (
@@ -225,7 +225,7 @@ export const SettingsPage = () => {
                                 width: '38px', height: '38px', borderRadius: '10px',
                                 background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                                boxShadow: '0 4px 10px rgba(236, 72, 153, 0.2)'
+                                boxShadow: 'none'
                             }}>
                                 <Star size={20} color="white" fill="white" />
                             </div>

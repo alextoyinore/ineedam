@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { StyleSheet, FlatList, ActivityIndicator, RefreshControl, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, FlatList, ActivityIndicator, RefreshControl, View, TouchableOpacity, Platform } from 'react-native';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
+import { Plus } from 'lucide-react-native';
 import { fetchMixedFeed } from '../../src/lib/feedService';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useRouter } from 'expo-router';
 import { NeedCard } from '@/components/ui/need-card';
 import { EndorsementCard } from '@/components/ui/endorsement-card';
 import { useAuth } from '@/src/context/AuthContext';
@@ -15,6 +17,7 @@ import { fetchBookmarks } from '@/src/lib/bookmarkService';
 type FeedType = 'global' | 'following';
 
 export default function HomeScreen() {
+  const router = useRouter();
   const theme = useColorScheme() ?? 'light';
   const { user } = useAuth();
   const [items, setItems] = useState<any[]>([]);
@@ -138,7 +141,7 @@ export default function HomeScreen() {
         <FlatList
           data={items}
           renderItem={renderItem}
-          keyExtractor={(item) => `${item.type}-${item.id}`}
+          keyExtractor={(item) => item.broadcast_id ? `broadcast-${item.broadcast_id}` : `${item.type}-${item.id}`}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -153,6 +156,14 @@ export default function HomeScreen() {
           }
         />
       )}
+
+      {/* FAB */}
+      <TouchableOpacity
+        style={[styles.fab, { backgroundColor: Colors[theme].tint }]}
+        onPress={() => router.push('/need/post' as any)}
+      >
+        <Plus size={24} color="#fff" />
+      </TouchableOpacity>
     </ThemedView>
   );
 }
@@ -169,4 +180,19 @@ const styles = StyleSheet.create({
   },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyText: { textAlign: 'center', marginTop: 50, color: '#71717a', paddingHorizontal: 20 },
+  fab: {
+    position: 'absolute',
+    right: 20,
+    bottom: Platform.OS === 'ios' ? 20 : 20,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+  },
 });

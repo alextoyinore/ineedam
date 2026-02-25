@@ -41,6 +41,8 @@ function RootLayoutNav() {
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="(info)" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+        <Stack.Screen name="need/post" options={{ presentation: 'modal', title: 'Post Need' }} />
+        <Stack.Screen name="need/edit/[id]" options={{ presentation: 'modal', title: 'Edit Need' }} />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>

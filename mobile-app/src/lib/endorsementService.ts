@@ -62,3 +62,36 @@ export const getEndorsementForNeed = async (needId: any) => {
     if (error) return null;
     return data;
 };
+
+/**
+ * Fetch a single endorsement by ID with full details.
+ * @param {string} id
+ */
+export const getEndorsementById = async (id: string) => {
+    if (!id) return null;
+    const { data, error } = await supabase
+        .from('endorsements')
+        .select(`
+            id, message, created_at,
+            endorser_id,
+            endorsed_id,
+            need_id,
+            endorser:profiles!endorsements_endorser_id_fkey (
+                id, display_name, username, avatar_url, bio
+            ),
+            endorsed:profiles!endorsements_endorsed_id_fkey (
+                id, display_name, username, avatar_url, bio
+            ),
+            needs (
+                id, title, description, category, status
+            )
+        `)
+        .eq('id', id)
+        .single();
+
+    if (error) {
+        console.error('Error fetching endorsement by id:', error);
+        return null;
+    }
+    return data;
+};

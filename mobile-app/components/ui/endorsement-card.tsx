@@ -144,7 +144,7 @@ export function EndorsementCard({
     const handleCardPress = () => {
         if (disablePress) return;
         if (onPress) onPress();
-        else handleThreadPress();
+        else router.push(`/endorsement/${endorsement.id}` as any);
     };
 
     const cardBorder = { borderBottomColor: colors.tabIconDefault + '20' };

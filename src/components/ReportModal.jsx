@@ -50,7 +50,7 @@ export const ReportModal = ({ isOpen, onClose, reportedProfile, onSuccess }) => 
                     style={{
                         background: 'var(--bg-surface)', width: '100%', maxWidth: '400px',
                         borderRadius: '24px', border: '1px solid var(--border-glass)',
-                        overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.3)'
+                        overflow: 'hidden', boxShadow: 'none' // Removed shadow
                     }}
                 >
                     <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border-glass)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

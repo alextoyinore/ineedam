@@ -90,7 +90,7 @@ export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false }) => {
                             background: 'var(--bg-surface)',
                             borderLeft: '1px solid var(--border-glass)',
                             display: 'flex', flexDirection: 'column',
-                            boxShadow: '-10px 0 30px rgba(0,0,0,0.2)'
+                            boxShadow: 'none' // Removed shadow
                         }}
                     >
                         {/* Drawer Header */}

@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { StyleSheet, View, FlatList, TextInput, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
+import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useMessages } from '@/src/context/MessagesContext';
@@ -8,6 +9,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 
 export default function MessagesScreen() {
+    const router = useRouter();
     const { threads, loadingThreads, markThreadAsRead } = useMessages();
     const theme = useColorScheme() ?? 'light';
     const [searchQuery, setSearchQuery] = useState('');
@@ -23,8 +25,7 @@ export default function MessagesScreen() {
 
     const handleThreadPress = (thread: any) => {
         markThreadAsRead(thread.id);
-        // router.push(`/(tabs)/messages/${thread.id}`);
-        console.log('Navigate to thread:', thread.id);
+        router.push(`/messages/${thread.id}` as any);
     };
 
     if (loadingThreads && threads.length === 0) {
