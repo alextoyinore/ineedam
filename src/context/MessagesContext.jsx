@@ -83,8 +83,24 @@ export const MessagesProvider = ({ children }) => {
         }
     };
 
-    const sendMessage = async (otherUserId, text) => {
+    const sendMessage = async (otherUserId, text, file = null) => {
         if (!user) return;
+
+        let fileUrl = null;
+        let fileType = null;
+
+        // If a file was provided, upload it first
+        if (file) {
+            try {
+                const { uploadFileToCloudinary } = await import('../lib/needsService');
+                const result = await uploadFileToCloudinary(file);
+                fileUrl = result.url;
+                fileType = result.fileType;
+            } catch (err) {
+                console.error("File upload failed:", err);
+                return;
+            }
+        }
 
         // 1. Create a temporary optimistic message
         const optimisticMsg = {
@@ -92,6 +108,8 @@ export const MessagesProvider = ({ children }) => {
             senderId: user.id,
             sender: 'Me',
             text: text,
+            fileUrl,
+            fileType,
             timestamp: new Date().toISOString()
         };
 
@@ -100,7 +118,7 @@ export const MessagesProvider = ({ children }) => {
             if (t.withUserId === otherUserId) {
                 return {
                     ...t,
-                    lastMessage: text,
+                    lastMessage: text || (fileUrl ? '📎 Attachment' : ''),
                     timestamp: new Date().toISOString(),
                     messages: [...t.messages, optimisticMsg]
                 };
@@ -110,16 +128,12 @@ export const MessagesProvider = ({ children }) => {
 
         try {
             const threadId = await startChat(otherUserId);
-            await createMessage(threadId, user.id, text);
-            // Also mark as read for us since we just sent a message here
+            await createMessage(threadId, user.id, text, fileUrl, fileType);
             await markThreadAsReadInDb(threadId, user.id);
             soundService.playMessageSent();
-            // Real-time listener will eventually sync, but we reload to be sure.
-            // We don't await this to keep the UI snappy.
             loadThreads();
         } catch (err) {
             console.error("Failed to send message", err);
-            // On error, the next loadThreads will naturally revert the UI
             loadThreads();
         }
     };

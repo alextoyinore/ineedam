@@ -254,6 +254,27 @@ button {
   width: 100%;
 }
 
+/* Chat Layout Constraint */
+.is-chat-detail {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  min-height: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* Ensures inner flex areas do the scrolling */
+}
+
+@media (max-width: 768px) {
+  .is-chat-detail {
+    top: var(--mobile-header-height);
+    /* Exact height between mobile top header and bottom nav */
+    height: calc(100vh - var(--mobile-header-height) - var(--mobile-nav-height));
+  }
+}
+
+
 /* Navigation Links */
 .nav-link {
   display: flex;
@@ -561,6 +582,11 @@ button {
   }
 
   /* Center items in iconic mode */
+  .social-sidebar-left .nav-link {
+    width: 100% !important;
+    padding-right: 0 !important;
+  }
+
   .social-sidebar-left .nav-link,
   .social-sidebar-left a:not(.sidebar-logo-container),
   .social-sidebar-left .btn-primary,
@@ -577,8 +603,14 @@ button {
     display: none !important;
   }
 
+  /* Don't shrink the profile pic in iconic mode */
+  .social-sidebar-left .nav-link-hover>div:first-child {
+    margin: 0 auto;
+  }
+
   .icon-only-logo {
     display: block !important;
+    margin: 0 auto;
   }
 
   .social-sidebar-right {

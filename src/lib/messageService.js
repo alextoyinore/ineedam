@@ -24,7 +24,7 @@ export const fetchUserThreads = async (userId) => {
             id,
             updated_at,
             thread_participants(user_id, last_read_at, profiles!inner(display_name, avatar_url, username)),
-            messages(id, text, created_at, sender_id)
+            messages(id, text, file_url, file_type, created_at, sender_id)
         `)
         .in('id', threadIds)
         .order('updated_at', { ascending: false });
@@ -64,6 +64,8 @@ export const fetchUserThreads = async (userId) => {
                 senderId: m.sender_id,
                 sender: m.sender_id === userId ? 'Me' : (otherParticipant?.profiles?.display_name || 'Them'),
                 text: m.text,
+                fileUrl: m.file_url || null,
+                fileType: m.file_type || null,
                 timestamp: m.created_at
             }))
         };
@@ -107,12 +109,16 @@ export const getOrCreateThread = async (userId1, userId2) => {
 };
 
 /**
- * Insert a message into a thread.
+ * Insert a message into a thread, with an optional file attachment.
  */
-export const createMessage = async (threadId, senderId, text) => {
+export const createMessage = async (threadId, senderId, text, fileUrl = null, fileType = null) => {
+    const payload = { thread_id: threadId, sender_id: senderId, text: text || '' };
+    if (fileUrl) payload.file_url = fileUrl;
+    if (fileType) payload.file_type = fileType;
+
     const { data, error } = await supabase
         .from('messages')
-        .insert([{ thread_id: threadId, sender_id: senderId, text: text }])
+        .insert([payload])
         .select()
         .single();
 

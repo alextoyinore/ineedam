@@ -20,6 +20,27 @@ export const uploadImageToCloudinary = async (file) => {
 };
 
 /**
+ * Upload any file (image, PDF, doc, etc.) to Cloudinary for chat messages.
+ * Returns { url, fileType } or throws on failure.
+ */
+export const uploadFileToCloudinary = async (file) => {
+    const isImage = file.type.startsWith('image/');
+    // For non-image files Cloudinary requires the 'raw' resource type in the URL
+    const resourceType = isImage ? 'image' : 'raw';
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`;
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', UPLOAD_PRESET);
+    formData.append('folder', 'ineedam/messages');
+
+    const res = await fetch(uploadUrl, { method: 'POST', body: formData });
+    if (!res.ok) throw new Error('File upload failed');
+    const data = await res.json();
+    return { url: data.secure_url, fileType: file.type };
+};
+
+/**
  * Insert a new need into Supabase.
  * @param {object} needData - form fields
  * @param {string} userId   - auth user id
