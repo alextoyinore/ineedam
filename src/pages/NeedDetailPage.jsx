@@ -19,7 +19,7 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive }) => {
     return (
         <div style={{ marginLeft: depth > 0 ? '1.5rem' : 0, borderLeft: depth > 0 ? '2px solid var(--border-glass)' : 'none' }}>
             <div
-                className="card-hover"
+                className="feed-item-hover"
                 style={{
                     padding: '1rem 1.5rem',
                     borderBottom: '1px solid var(--border-glass)',

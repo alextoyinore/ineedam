@@ -103,6 +103,7 @@ export const EndorsementFeedCard = ({ endorsement, broadcastedBy = null }) => {
     return (
         <div
             onClick={() => navigate(`/endorsement/${endorsement.id}`)}
+            className="feed-item-hover"
             style={{
                 display: 'flex',
                 flexDirection: 'column',

@@ -127,6 +127,7 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null }) =
     return (
         <div
             onClick={() => !isFullDetail && navigate(`/need/${need.id}`)}
+            className="feed-item-hover"
             style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -287,14 +288,12 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null }) =
                                     top: '100%',
                                     right: 0,
                                     width: '180px',
-                                    background: 'transparent',
-                                    backdropFilter: 'blur(16px)',
-                                    WebkitBackdropFilter: 'blur(16px)',
+                                    background: 'var(--bg-surface)',
                                     border: '1px solid var(--border-glass)',
                                     borderRadius: '12px',
                                     padding: '0.4rem',
                                     zIndex: 1000,
-                                    boxShadow: 'none', // Removed shadow
+                                    boxShadow: 'none',
                                     marginTop: '0.25rem',
                                     display: 'flex',
                                     flexDirection: 'column',

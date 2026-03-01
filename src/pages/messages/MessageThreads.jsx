@@ -136,6 +136,7 @@ export const MessageThreads = () => {
                                 <div
                                     key={profile.id}
                                     onClick={() => handleStartChat(profile.id)}
+                                    className="feed-item-hover"
                                     style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', borderRadius: '12px' }}
                                 >
                                     <div className="avatar-md" style={{
@@ -164,6 +165,7 @@ export const MessageThreads = () => {
                         <div
                             key={thread.id}
                             onClick={() => navigate(`/messages/${thread.id}`)}
+                            className="feed-item-hover"
                             style={{
                                 padding: '1rem 1.5rem', display: 'flex', gap: '1rem', alignItems: 'center',
                                 cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.05)',

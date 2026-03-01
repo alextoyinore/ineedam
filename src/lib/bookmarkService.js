@@ -9,7 +9,7 @@ export const fetchBookmarks = async (userId) => {
 
     const { data, error } = await supabase
         .from('bookmarks')
-        .select('need_id, endorsement_id, broadcast_id')
+        .select('need_id, endorsement_id')
         .eq('user_id', userId);
 
     if (error) {
@@ -20,7 +20,6 @@ export const fetchBookmarks = async (userId) => {
     return data.map(b => {
         if (b.need_id) return { id: b.need_id, type: 'need' };
         if (b.endorsement_id) return { id: b.endorsement_id, type: 'endorsement' };
-        if (b.broadcast_id) return { id: b.broadcast_id, type: 'broadcast' };
         return null;
     }).filter(Boolean);
 };
@@ -36,7 +35,6 @@ export const fetchBookmarkedItems = async (userId) => {
         .select(`
             need_id,
             endorsement_id,
-            broadcast_id,
             created_at,
             needs (
                 *,
@@ -62,16 +60,6 @@ export const fetchBookmarkedItems = async (userId) => {
                 needs (
                     id, title, description, category, status
                 )
-            ),
-            broadcasts (
-                id, created_at, need_id,
-                profiles (id, display_name, username, avatar_url),
-                needs (
-                    *,
-                    profiles!needs_user_id_fkey (
-                        id, display_name, username, avatar_url
-                    )
-                )
             )
         `)
         .eq('user_id', userId)
@@ -82,25 +70,18 @@ export const fetchBookmarkedItems = async (userId) => {
         return [];
     }
 
-    // Flatten and tag with type
+    // Flatten and tag with type — check the id column, not the joined object
+    // (the joined object can be null even if the FK is set, e.g. due to RLS)
     return data.map(b => {
-        if (b.needs) {
+        if (b.need_id && b.needs) {
             return { ...b.needs, type: 'need', bookmark_created_at: b.created_at };
         }
-        if (b.endorsements) {
-            return { ...b.endorsements, type: 'endorsement', bookmark_created_at: b.created_at };
+        if (b.need_id && !b.needs) {
+            // Joined need is null (possibly deleted or RLS-hidden) — skip it
+            return null;
         }
-        if (b.broadcasts) {
-            // Shape the broadcasted need for consistent rendering
-            const { shapeNeed } = require('./needsService');
-            return {
-                ...shapeNeed(b.broadcasts.needs),
-                type: 'broadcast',
-                broadcast_created_at: b.broadcasts.created_at,
-                broadcasted_by: b.broadcasts.profiles,
-                bookmark_created_at: b.created_at,
-                broadcast_id: b.broadcasts.id
-            };
+        if (b.endorsement_id && b.endorsements) {
+            return { ...b.endorsements, type: 'endorsement', bookmark_created_at: b.created_at };
         }
         return null;
     }).filter(Boolean);

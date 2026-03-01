@@ -1,8 +1,9 @@
 :root,
 [data-theme='light'] {
   /* Color Palette - Vibrant Light Mode */
-  --bg-base: #f8fafc;
-  --bg-base-rgb: 248, 250, 252;
+  --bg-base: #ffffff;
+  /* Was #f8fafc, making it white for the performance test */
+  --bg-base-rgb: 255, 255, 255;
   --bg-surface: #ffffff;
   --bg-surface-glass: rgba(255, 255, 255, 0.7);
   --bg-surface-glass-hover: rgba(255, 255, 255, 0.9);
@@ -106,12 +107,12 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
-  /* Subtle Background gradient based on theme variables */
-  background-image:
+  /* Subtle Background gradient based on theme variables - DISABLED FOR PERFORMANCE TEST */
+  /* background-image:
     radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.05) 0%, transparent 40%),
     radial-gradient(circle at 85% 30%, rgba(236, 72, 153, 0.05) 0%, transparent 40%);
-  background-attachment: fixed;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  background-attachment: fixed; */
+  /* transition: background-color 0.3s ease, color 0.3s ease; */
 }
 
 a {
@@ -128,9 +129,10 @@ button {
 
 /* Glassmorphism Utilities */
 .glass-panel {
-  background: var(--bg-surface-glass);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: var(--bg-surface);
+  /* var(--bg-surface-glass) */
+  /* backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px); */
   border: 1px solid var(--border-glass);
   border-radius: 16px;
 }
@@ -143,6 +145,18 @@ button {
   background: var(--bg-surface-glass-hover);
   border-color: rgba(255, 255, 255, 0.15);
   transform: translateY(-2px);
+}
+
+.feed-item-hover {
+  transition: background-color 0.2s ease;
+}
+
+.feed-item-hover:hover {
+  background-color: rgba(0, 0, 0, 0.02) !important;
+}
+
+[data-theme='dark'] .feed-item-hover:hover {
+  background-color: rgba(255, 255, 255, 0.03) !important;
 }
 
 .nav-link-hover {
@@ -170,11 +184,11 @@ button {
 .btn-primary {
   background: linear-gradient(135deg, var(--primary), var(--secondary));
   color: white;
-  box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.39);
+  /* box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.39); */
 }
 
 .btn-primary:hover {
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+  /* box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5); */
   transform: translateY(-1px);
   filter: brightness(1.1);
 }
@@ -218,10 +232,9 @@ button {
 }
 
 .social-sidebar-right {
-  position: fixed;
+  position: sticky;
   top: 0;
-  height: 100vh;
-  overflow-y: auto;
+  align-self: start;
   width: 300px;
 }
 
@@ -251,7 +264,7 @@ button {
   color: var(--text-primary);
   text-decoration: none;
   transition: background-color 0.2s;
-  font-size: 1.15rem;
+  font-size: 1.25rem;
 }
 
 .nav-link:hover {
@@ -285,9 +298,10 @@ button {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: var(--bg-surface-glass);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: var(--bg-surface);
+  /* var(--bg-surface-glass) */
+  /* backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px); */
   border-bottom: 1px solid var(--border-glass);
   width: 100%;
 }
@@ -490,9 +504,10 @@ button {
   left: 0;
   right: 0;
   height: 4.5rem;
-  background: var(--bg-surface-glass);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: var(--bg-surface);
+  /* var(--bg-surface-glass) */
+  /* backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px); */
   border-top: 1px solid var(--border-glass);
   display: flex;
   justify-content: space-between;

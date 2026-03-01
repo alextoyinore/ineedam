@@ -44,8 +44,10 @@ export const fetchUserThreads = async (userId) => {
         const sortedMessages = thread.messages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
         const lastMessage = sortedMessages[sortedMessages.length - 1];
 
-        // Is it unread? If the last message is newer than the user's last_read_at
-        const isUnread = lastMessage && (!myParticipant.last_read_at || new Date(lastMessage.created_at) > new Date(myParticipant.last_read_at));
+        // Is it unread? If the last message is from someone else AND it's newer than the user's last_read_at
+        const isUnread = lastMessage &&
+            lastMessage.sender_id !== userId &&
+            (!myParticipant.last_read_at || new Date(lastMessage.created_at) > new Date(myParticipant.last_read_at));
 
         return {
             id: thread.id,

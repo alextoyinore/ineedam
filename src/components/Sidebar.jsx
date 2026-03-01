@@ -24,47 +24,38 @@ export const Sidebar = ({ onPostClick }) => {
                 </Link>
 
                 {/* Navigation Links */}
-                <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>
-                        <Home size={24} />
-                        <span className="nav-text">Home</span>
-                    </Link>
-                    <Link to="/bookmarks" className={`nav-link ${location.pathname === '/bookmarks' ? 'active' : ''}`}>
-                        <Bookmark size={24} />
-                        <span className="nav-text">Bookmarks</span>
-                    </Link>
-                    <Link to="/notifications" className={`nav-link ${location.pathname === '/notifications' ? 'active' : ''}`} style={{ position: 'relative' }}>
-                        <Bell size={24} />
-                        <span className="nav-text">Notifications</span>
-                        {unreadCount > 0 && (
-                            <span className="nav-badge" style={{
-                                position: 'absolute', top: '0.4rem', left: '1.8rem',
-                                background: '#ef4444', color: 'white', fontSize: '0.65rem',
-                                fontWeight: 700, padding: '0.1rem 0.35rem', borderRadius: '999px',
-                                border: '2px solid var(--bg-base)'
-                            }}>
-                                {unreadCount}
-                            </span>
-                        )}
-                    </Link>
-                    <Link to="/messages" className={`nav-link ${location.pathname === '/messages' ? 'active' : ''}`} style={{ position: 'relative' }}>
-                        <Mail size={24} />
-                        <span className="nav-text">Messages</span>
-                        {unreadThreadsCount > 0 && (
-                            <span className="nav-badge" style={{
-                                position: 'absolute', top: '0.4rem', left: '1.8rem',
-                                background: '#ef4444', color: 'white', fontSize: '0.65rem',
-                                fontWeight: 700, padding: '0.1rem 0.35rem', borderRadius: '999px',
-                                border: '2px solid var(--bg-base)'
-                            }}>
-                                {unreadThreadsCount}
-                            </span>
-                        )}
-                    </Link>
-                    <Link to={profile?.username ? `/${profile.username}` : '#'} className={`nav-link ${profile?.username && location.pathname === `/${profile.username}` ? 'active' : ''}`}>
-                        <User size={24} />
-                        <span className="nav-text">Profile</span>
-                    </Link>
+                <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    {[
+                        { to: '/', label: 'Home', Icon: Home, isActive: location.pathname === '/', fillable: false },
+                        { to: '/bookmarks', label: 'Bookmarks', Icon: Bookmark, isActive: location.pathname === '/bookmarks', fillable: true },
+                        { to: '/notifications', label: 'Notifications', Icon: Bell, isActive: location.pathname === '/notifications', badge: unreadCount, fillable: true },
+                        { to: '/messages', label: 'Messages', Icon: Mail, isActive: location.pathname === '/messages', badge: unreadThreadsCount, fillable: false },
+                        { to: profile?.username ? `/${profile.username}` : '#', label: 'Profile', Icon: User, isActive: !!(profile?.username && location.pathname === `/${profile.username}`), fillable: true },
+                    ].map(({ to, label, Icon, isActive, badge, fillable }) => (
+                        <Link
+                            key={label}
+                            to={to}
+                            className={`nav-link ${isActive ? 'active' : ''}`}
+                            style={{ position: 'relative', width: 'fit-content', paddingRight: '1.5rem' }}
+                        >
+                            <Icon
+                                size={24}
+                                fill={isActive && fillable ? 'currentColor' : 'none'}
+                                strokeWidth={isActive ? (fillable ? 1.5 : 2.5) : 2}
+                            />
+                            <span className="nav-text">{label}</span>
+                            {badge > 0 && (
+                                <span style={{
+                                    position: 'absolute', top: '0.4rem', left: '1.8rem',
+                                    background: '#ef4444', color: 'white', fontSize: '0.65rem',
+                                    fontWeight: 700, padding: '0.1rem 0.35rem', borderRadius: '999px',
+                                    border: '2px solid var(--bg-base)'
+                                }}>
+                                    {badge}
+                                </span>
+                            )}
+                        </Link>
+                    ))}
                 </nav>
 
                 {/* Post Button */}

@@ -111,6 +111,8 @@ export const MessagesProvider = ({ children }) => {
         try {
             const threadId = await startChat(otherUserId);
             await createMessage(threadId, user.id, text);
+            // Also mark as read for us since we just sent a message here
+            await markThreadAsReadInDb(threadId, user.id);
             soundService.playMessageSent();
             // Real-time listener will eventually sync, but we reload to be sure.
             // We don't await this to keep the UI snappy.
