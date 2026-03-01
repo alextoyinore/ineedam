@@ -397,7 +397,7 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null }) =
 
                 {/* Rich Media */}
                 {need.imageUrl && (
-                    <div style={{ marginTop: '0.75rem', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-glass)' }}>
+                    <div style={{ marginTop: '0.75rem', marginBottom: '0.75rem', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-glass)' }}>
                         <img
                             src={need.imageUrl}
                             alt={need.title}
