@@ -302,21 +302,32 @@ export const ChatDetail = () => {
                                 fontSize: '0.92rem',
                                 overflow: 'hidden',
                             }}>
-                                {isMissedCall ? (
+                                {msg.text?.startsWith('[CALL_') || msg.text?.startsWith('[MISSED_CALL]') ? (
                                     <div
-                                        onClick={() => initiateCall(activeThread.withUserId, activeThread.withUser, activeThread.withUserAvatar, missedCallText.toLowerCase().includes('video'))}
+                                        onClick={() => {
+                                            const isVideo = msg.text.toLowerCase().includes('video');
+                                            initiateCall(activeThread.withUserId, activeThread.withUser, activeThread.withUserAvatar, isVideo);
+                                        }}
                                         style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}
                                     >
                                         <div style={{
                                             width: '32px', height: '32px', borderRadius: '50%',
-                                            background: isMe ? 'rgba(255,255,255,0.2)' : 'rgba(239, 68, 68, 0.1)',
+                                            background: isMe ? 'rgba(255,255,255,0.2)' : (msg.text.includes('MISSED') ? 'rgba(239, 68, 68, 0.1)' : 'rgba(99, 102, 241, 0.1)'),
                                             display: 'flex', alignItems: 'center', justifyContent: 'center'
                                         }}>
-                                            <PhoneOff size={16} color={isMe ? 'white' : '#ef4444'} />
+                                            {msg.text.includes('SUCCESS') ? (
+                                                msg.text.includes('Video') ? <Video size={16} color={isMe ? 'white' : 'var(--primary)'} /> : <Phone size={16} color={isMe ? 'white' : 'var(--primary)'} />
+                                            ) : (
+                                                <PhoneOff size={16} color={isMe ? 'white' : (msg.text.includes('MISSED') ? '#ef4444' : 'var(--text-muted)')} />
+                                            )}
                                         </div>
                                         <div style={{ flex: 1 }}>
-                                            <div style={{ fontWeight: 600 }}>{missedCallText}</div>
-                                            <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>Tap to call back</div>
+                                            <div style={{ fontWeight: 600 }}>
+                                                {msg.text.replace(/\[CALL_(SUCCESS|MISSED|CANCELLED)\]/, '').replace('[MISSED_CALL]', '')}
+                                            </div>
+                                            <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>
+                                                {msg.text.includes('SUCCESS') ? 'Call ended' : 'Tap to call back'}
+                                            </div>
                                         </div>
                                     </div>
                                 ) : (

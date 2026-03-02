@@ -178,6 +178,8 @@ export const MessagesProvider = ({ children }) => {
                 try {
                     await pcRef.current.setRemoteDescription(new RTCSessionDescription(answer));
 
+                    setCall(prev => ({ ...prev, status: 'connected', startTime: Date.now() }));
+
                     // Process queued candidates
                     if (iceCandidateQueueRef.current.length > 0) {
                         console.log(`Processing ${iceCandidateQueueRef.current.length} queued candidates`);
@@ -286,7 +288,7 @@ export const MessagesProvider = ({ children }) => {
                 iceCandidateQueueRef.current = [];
             }
 
-            setCall(prev => ({ ...prev, status: 'connected' }));
+            setCall(prev => ({ ...prev, status: 'connected', startTime: Date.now() }));
 
             sendCallSignal(call.partner.id, {
                 type: 'answer',
@@ -340,8 +342,11 @@ export const MessagesProvider = ({ children }) => {
         }
     };
 
-    const endCall = () => {
+    const endCall = async () => {
         soundService.stopRinging();
+
+        const currentCall = callRef.current;
+
         if (callTimeoutRef.current) {
             clearTimeout(callTimeoutRef.current);
             callTimeoutRef.current = null;
@@ -354,9 +359,31 @@ export const MessagesProvider = ({ children }) => {
             streamRef.current.getTracks().forEach(track => track.stop());
             streamRef.current = null;
         }
-        if (call?.partner) {
-            sendCallSignal(call.partner.id, { type: 'hangup' });
+
+        if (currentCall) {
+            try {
+                const threadId = await getOrCreateThread(user.id, currentCall.partner.id);
+
+                if (currentCall.status === 'connected' && currentCall.startTime) {
+                    const duration = Math.floor((Date.now() - currentCall.startTime) / 1000);
+                    const minutes = Math.floor(duration / 60);
+                    const seconds = duration % 60;
+                    const durationText = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                    await createMessage(threadId, user.id, `[CALL_SUCCESS]${currentCall.isVideo ? 'Video' : 'Voice'} call • ${durationText}`, null, null);
+                } else if (currentCall.status === 'incoming') {
+                    await createMessage(threadId, user.id, `[CALL_MISSED]Missed ${currentCall.isVideo ? 'video' : 'voice'} call`, null, null);
+                } else if (currentCall.status === 'calling') {
+                    await createMessage(threadId, user.id, `[CALL_CANCELLED]Cancelled ${currentCall.isVideo ? 'video' : 'voice'} call`, null, null);
+                }
+            } catch (err) {
+                console.error("Failed to record call status message:", err);
+            }
+
+            if (currentCall.partner) {
+                sendCallSignal(currentCall.partner.id, { type: 'hangup' });
+            }
         }
+
         setCall(null);
         setLocalStream(null);
         setRemoteStream(null);
