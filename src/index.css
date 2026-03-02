@@ -679,7 +679,7 @@ button {
 .sticky-header {
   position: sticky !important;
   top: 0 !important;
-  z-index: 100 !important;
+  z-index: 100;
   background: var(--bg-base) !important;
   backdrop-filter: blur(12px) !important;
   -webkit-backdrop-filter: blur(12px) !important;

@@ -53,7 +53,7 @@ export const MobileTopHeader = () => {
                     justifyContent: 'space-between',
                     borderBottom: 'none',
                     position: 'relative',
-                    zIndex: 1100, // Increased to be above timeline headers
+                    zIndex: 1100, // Ensure it's above page headers
                     paddingTop: 'env(safe-area-inset-top)',
                     overflow: 'visible'
                 }}
@@ -94,7 +94,7 @@ export const MobileTopHeader = () => {
                                     background: 'var(--bg-surface-glass)', backdropFilter: 'blur(16px)',
                                     border: '1px solid var(--border-glass)', borderRadius: '12px',
                                     padding: '0.5rem', width: '160px', zIndex: 1200,
-                                    boxShadow: 'none' // Explicitly removed shadow
+                                    boxShadow: 'none'
                                 }}
                             >
                                 <button
