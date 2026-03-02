@@ -5,7 +5,7 @@ import { SymbolWeight, SymbolViewProps } from 'expo-symbols';
 import { ComponentProps } from 'react';
 import { OpaqueColorValue, type StyleProp, type TextStyle } from 'react-native';
 
-type IconMapping = Record<string, ComponentProps<typeof MaterialIcons>['name']>;
+type IconMapping = Record<SymbolViewProps['name'], ComponentProps<typeof MaterialIcons>['name']>;
 type IconSymbolName = keyof typeof MAPPING;
 
 /**
@@ -15,29 +15,9 @@ type IconSymbolName = keyof typeof MAPPING;
  */
 const MAPPING = {
   'house.fill': 'home',
-  'house.outline': 'home',
-  'bookmark.fill': 'bookmark',
-  'bookmark.outline': 'bookmark-border',
-  'bell.fill': 'notifications',
-  'bell.outline': 'notifications-none',
-  'mail.fill': 'mail',
-  'mail.outline': 'mail-outline',
-  'person.fill': 'person',
-  'person.outline': 'person-outline',
   'paperplane.fill': 'send',
-  'paperplane.outline': 'send',
-  'tag.outline': 'tag',
-  'money.outline': 'attach-money',
-  'map.outline': 'place',
-  'clock.outline': 'access-time',
-  'message.outline': 'chat-bubble-outline',
-  'repeat.outline': 'repeat',
-  'heart.outline': 'favorite-border',
-  'heart.fill': 'favorite',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
-  'phone.fill': 'phone',
-  'video.fill': 'videocam',
 } as IconMapping;
 
 /**

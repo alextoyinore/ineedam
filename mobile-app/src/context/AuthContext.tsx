@@ -1,28 +1,24 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Session, User } from '@supabase/supabase-js';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
+import { Session, User } from '@supabase/supabase-js';
 
 interface AuthContextType {
     session: Session | null | undefined;
     user: User | null;
     profile: any | null;
     loading: boolean;
-    hasSeenOnboarding: boolean | null;
-    signIn: (email: string, password: string) => Promise<{ data: any; error: any }>;
-    signUp: (email: string, password: string, metaData?: any) => Promise<{ data: any; error: any }>;
+    signIn: (email: string, password: string) => Promise<any>;
+    signUp: (email: string, password: string, metaData: any) => Promise<any>;
     signOut: () => Promise<void>;
     fetchProfile: (userId: string) => Promise<void>;
-    completeOnboarding: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [session, setSession] = useState<Session | null | undefined>(undefined);
     const [user, setUser] = useState<User | null>(null);
     const [profile, setProfile] = useState<any | null>(null);
-    const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | null>(null);
 
     const fetchProfile = async (userId: string) => {
         try {
@@ -34,29 +30,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             if (error) throw error;
             setProfile(data);
         } catch (err) {
-            console.error('Error fetching profile in AuthContext:', err);
+            console.error("Error fetching profile in AuthContext:", err);
             setProfile(null);
         }
     };
 
     useEffect(() => {
-        // Check onboarding status
-        AsyncStorage.getItem('hasSeenOnboarding').then((value) => {
-            setHasSeenOnboarding(value === 'true');
-        });
-
         // Get initial session
-        supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
-            setSession(initialSession);
-            const authUser = initialSession?.user ?? null;
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setSession(session);
+            const authUser = session?.user ?? null;
             setUser(authUser);
             if (authUser) fetchProfile(authUser.id);
         });
 
         // Listen for auth state changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
-            setSession(newSession);
-            const authUser = newSession?.user ?? null;
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            setSession(session);
+            const authUser = session?.user ?? null;
             setUser(authUser);
             if (authUser) {
                 fetchProfile(authUser.id);
@@ -65,56 +56,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             }
         });
 
-        return () => {
-            subscription.unsubscribe();
-        };
+        return () => subscription.unsubscribe();
     }, []);
 
-    const signUp = async (email: string, password: string, metaData?: any) => {
-        const { data, error } = await supabase.auth.signUp({
+    const signIn = async (email: string, password: string) => {
+        return await supabase.auth.signInWithPassword({ email, password });
+    };
+
+    const signUp = async (email: string, password: string, metaData: any) => {
+        return await supabase.auth.signUp({
             email,
             password,
             options: {
-                data: metaData,
-            },
+                data: metaData
+            }
         });
-        return { data, error };
-    };
-
-    const signIn = async (email: string, password: string) => {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        return { data, error };
     };
 
     const signOut = async () => {
         await supabase.auth.signOut();
     };
 
-    const completeOnboarding = async () => {
-        try {
-            await AsyncStorage.setItem('hasSeenOnboarding', 'true');
-            setHasSeenOnboarding(true);
-        } catch (e) {
-            console.error('Error saving onboarding state:', e);
-        }
-    };
-
     const loading = session === undefined;
 
     return (
-        <AuthContext.Provider
-            value={{
-                session,
-                user,
-                profile,
-                loading,
-                hasSeenOnboarding,
-                signUp,
-                signIn,
-                signOut,
-                fetchProfile,
-                completeOnboarding,
-            }}>
+        <AuthContext.Provider value={{
+            session, user, profile, loading,
+            signIn, signUp, signOut, fetchProfile
+        }}>
             {children}
         </AuthContext.Provider>
     );

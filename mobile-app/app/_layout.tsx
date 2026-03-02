@@ -1,65 +1,37 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack, useRouter, useSegments } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
+import { Stack } from 'expo-router';
 import 'react-native-reanimated';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { AuthProvider, useAuth } from '@/src/context/AuthContext';
+import { AppLayout } from '@/src/components/layout/AppLayout';
+import { SettingsProvider } from '@/src/context/SettingsContext';
+import { MessagesProvider } from '@/src/context/MessagesContext';
+import { AuthProvider } from '@/src/context/AuthContext';
+import { MessageSecurityProvider } from '@/src/context/MessageSecurityContext';
 
 export const unstable_settings = {
   anchor: '(tabs)',
 };
 
-function RootLayoutNav() {
-  const colorScheme = useColorScheme();
-  const { session, loading, hasSeenOnboarding } = useAuth();
-  const segments = useSegments();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (loading || hasSeenOnboarding === null) return;
-
-    const inAuthGroup = segments[0] === '(auth)';
-    const inOnboarding = segments[0] === 'onboarding';
-
-    if (!hasSeenOnboarding && !inOnboarding) {
-      router.replace('/onboarding');
-    } else if (hasSeenOnboarding && !session && !inAuthGroup) {
-      router.replace('/(auth)/login');
-    } else if (session && (inAuthGroup || inOnboarding)) {
-      router.replace('/(tabs)');
-    }
-  }, [session, loading, segments, hasSeenOnboarding]);
-
-  return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-        <Stack.Screen name="(info)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-        <Stack.Screen name="need/post" options={{ presentation: 'modal', title: 'Post Need' }} />
-        <Stack.Screen name="need/edit/[id]" options={{ presentation: 'modal', title: 'Edit Need' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
-  );
-}
-
-import { NotificationsProvider } from '@/src/context/NotificationsContext';
-import { MessagesProvider } from '@/src/context/MessagesContext';
-
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <NotificationsProvider>
-        <MessagesProvider>
-          <RootLayoutNav />
-        </MessagesProvider>
-      </NotificationsProvider>
+      <SettingsProvider>
+        <MessageSecurityProvider>
+          <MessagesProvider>
+            <AppLayout>
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="(tabs)" />
+                <Stack.Screen name="settings/index" />
+                <Stack.Screen name="chat/[id]" />
+                <Stack.Screen name="who-to-follow" />
+                <Stack.Screen name="categories" />
+                <Stack.Screen name="bookmarks" />
+                <Stack.Screen name="post-need" />
+                <Stack.Screen name="need/[id]" />
+                <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+              </Stack>
+            </AppLayout>
+          </MessagesProvider>
+        </MessageSecurityProvider>
+      </SettingsProvider>
     </AuthProvider>
   );
 }

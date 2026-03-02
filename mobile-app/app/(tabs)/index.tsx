@@ -1,198 +1,303 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { StyleSheet, FlatList, ActivityIndicator, RefreshControl, View, TouchableOpacity, Platform } from 'react-native';
-import { ThemedView } from '@/components/themed-view';
-import { ThemedText } from '@/components/themed-text';
-import { Plus } from 'lucide-react-native';
-import { fetchMixedFeed } from '../../src/lib/feedService';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import React, { useRef, useState, useEffect } from 'react';
+import {
+  StyleSheet,
+  View,
+  Animated,
+  TouchableOpacity,
+  Dimensions,
+  RefreshControl,
+  ActivityIndicator,
+  Platform,
+  Image,
+  ScrollView
+} from 'react-native';
+import { Plus, HelpCircle, Layers, Users } from 'lucide-react-native';
+import { Colors, Spacing } from '@/src/theme/Theme';
+import { H1, BodyBold, Muted } from '@/src/components/ui/Typography';
+import { NeedCard } from '@/src/components/feed/NeedCard';
+import { EndorsementCard } from '@/src/components/profile/EndorsementCard';
+import { LinearGradient } from 'expo-linear-gradient';
+import { fetchMixedFeed, fetchFollowingFeed } from '@/src/services/feedService';
+import { useAuth } from '@/src/context/AuthContext'; // Assume we have this for Following feed
 import { useRouter } from 'expo-router';
-import { NeedCard } from '@/components/ui/need-card';
-import { EndorsementCard } from '@/components/ui/endorsement-card';
-import { useAuth } from '@/src/context/AuthContext';
-import { fetchUserLikes } from '@/src/lib/likesService';
-import { fetchUserBroadcasts } from '@/src/lib/broadcastService';
-import { fetchBookmarks } from '@/src/lib/bookmarkService';
 
-type FeedType = 'global' | 'following';
+const { width } = Dimensions.get('window');
+
+type FeedItem = any;
 
 export default function HomeScreen() {
   const router = useRouter();
-  const theme = useColorScheme() ?? 'light';
   const { user } = useAuth();
-  const [items, setItems] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState<FeedItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState<FeedType>('global');
+  const [activeTab, setActiveTab] = useState<'foryou' | 'following'>('foryou');
+  const scrollY = useRef(new Animated.Value(0)).current;
 
-  // User social state sets
-  const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
-  const [broadcastedIds, setBroadcastedIds] = useState<Set<string>>(new Set());
-  const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
-
-  const loadUserState = useCallback(async () => {
-    if (!user?.id) return;
+  const loadFeed = async (isRefreshing = false) => {
+    if (!isRefreshing) setIsLoading(true);
     try {
-      const [likes, broadcasts, bookmarks] = await Promise.all([
-        fetchUserLikes(user.id),
-        fetchUserBroadcasts(user.id),
-        fetchBookmarks(user.id),
-      ]);
-      setLikedIds(new Set(likes));
-      setBroadcastedIds(new Set(broadcasts));
-      setBookmarkedIds(new Set(bookmarks.map((b: any) => b.id)));
-    } catch (err) {
-      console.error('Error loading user social state:', err);
-    }
-  }, [user?.id]);
-
-  const loadFeed = useCallback(async (isRefresh = false, type: FeedType = activeTab) => {
-    if (!isRefresh) setLoading(true);
-    try {
-      const data = await fetchMixedFeed(0, 19, type, user?.id);
+      let data: FeedItem[] = [];
+      if (activeTab === 'foryou') {
+        data = await fetchMixedFeed(0, 15);
+      } else if (user) {
+        data = await fetchFollowingFeed(user.id, 0, 15);
+      }
       setItems(data);
-    } catch (error) {
-      console.error('Error loading mobile feed:', error);
+    } catch (err) {
+      console.error('Error loading feed:', err);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
       setRefreshing(false);
     }
-  }, [user, activeTab]);
+  };
 
   useEffect(() => {
-    loadFeed(false, activeTab);
-    loadUserState();
-  }, [activeTab, user?.id]);
+    loadFeed();
+  }, [activeTab]);
 
   const onRefresh = () => {
     setRefreshing(true);
-    loadFeed(true, activeTab);
-    loadUserState();
+    loadFeed(true);
   };
 
-  const renderItem = ({ item }: { item: any }) => {
-    if (item.type === 'endorsement') {
-      return (
-        <EndorsementCard
-          endorsement={item}
-          currentUserId={user?.id}
-          initialLiked={item.needs ? likedIds.has(item.needs.id) : false}
-          initialBroadcasted={item.needs ? broadcastedIds.has(item.needs.id) : false}
-          initialBookmarked={bookmarkedIds.has(item.id)}
-          onBookmarkChange={(id, isBookmarked) => {
-            setBookmarkedIds(prev => {
-              const next = new Set(prev);
-              isBookmarked ? next.add(id) : next.delete(id);
-              return next;
-            });
-          }}
-        />
-      );
-    }
+  // Branding Animation
+  const headerHeight = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [140, 100],
+    extrapolate: 'clamp',
+  });
 
-    return (
-      <NeedCard
-        need={item}
-        currentUserId={user?.id}
-        initialLiked={likedIds.has(item.id)}
-        initialBroadcasted={broadcastedIds.has(item.id)}
-        initialBookmarked={bookmarkedIds.has(item.id)}
-        onBookmarkChange={(needId, isBookmarked) => {
-          setBookmarkedIds(prev => {
-            const next = new Set(prev);
-            isBookmarked ? next.add(needId) : next.delete(needId);
-            return next;
-          });
-        }}
-      />
-    );
+  const brandingOpacity = scrollY.interpolate({
+    inputRange: [0, 60],
+    outputRange: [1, 0],
+    extrapolate: 'clamp',
+  });
+
+  const renderItem = ({ item }: { item: FeedItem }) => {
+    if (item.type === 'need' || item.type === 'broadcast') {
+      return <NeedCard need={item} broadcastedBy={item.broadcasted_by} onPress={(id) => router.push(`/need/${id}` as any)} />;
+    }
+    if (item.type === 'endorsement' || item.type === 'broadcast_endorsement') {
+      return <EndorsementCard endorsement={item} broadcastedBy={item.broadcasted_by} />;
+    }
+    return null;
   };
 
   return (
-    <ThemedView style={styles.container}>
-      {/* Tab Header */}
-      <View style={[styles.tabContainer, { borderBottomColor: Colors[theme].tabIconDefault + '30' }]}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'global' && styles.activeTab]}
-          onPress={() => setActiveTab('global')}
-        >
-          <ThemedText style={[styles.tabText, activeTab === 'global' && { color: Colors[theme].tint, fontWeight: '600' } as any]}>
-            For You
-          </ThemedText>
-          {activeTab === 'global' && <View style={[styles.activeIndicator, { backgroundColor: Colors[theme].tint }]} />}
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'following' && styles.activeTab]}
-          onPress={() => setActiveTab('following')}
-        >
-          <ThemedText style={[styles.tabText, activeTab === 'following' && { color: Colors[theme].tint, fontWeight: '600' } as any]}>
-            Following
-          </ThemedText>
-          {activeTab === 'following' && <View style={[styles.activeIndicator, { backgroundColor: Colors[theme].tint }]} />}
-        </TouchableOpacity>
-      </View>
-
-      {loading ? (
-        <ThemedView style={styles.centered}>
-          <ActivityIndicator size="large" color={Colors[theme].tint} />
-        </ThemedView>
-      ) : (
-        <FlatList
-          data={items}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.broadcast_id ? `broadcast-${item.broadcast_id}` : `${item.type}-${item.id}`}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={Colors[theme].tint}
+    <View style={styles.container}>
+      {/* Branding Header & Tabs */}
+      <Animated.View style={[
+        styles.brandingHeader,
+        { height: headerHeight }
+      ]}>
+        <Animated.View style={[styles.headerTop, { opacity: brandingOpacity }]}>
+          <View style={styles.logoContainer}>
+            <Image
+              source={require('@/assets/images/icon.png')}
+              style={styles.logo}
             />
-          }
-          ListEmptyComponent={
-            <ThemedText style={styles.emptyText}>
-              {activeTab === 'following' ? "You aren't following anyone with activity yet." : 'No items found in the feed.'}
-            </ThemedText>
-          }
-        />
-      )}
+            <H1 style={styles.logoText}>Ineedam</H1>
+          </View>
+          <View style={styles.headerActions}>
+            <TouchableOpacity style={styles.iconBtn} onPress={() => router.push('/categories')}>
+              <Layers size={20} color={Colors.dark.primary} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.iconBtn} onPress={() => router.push('/who-to-follow')}>
+              <Users size={20} color={Colors.dark.primary} />
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
 
-      {/* FAB */}
+        {/* Tab Switcher */}
+        <View style={styles.tabBar}>
+          {['foryou', 'following'].map((tab) => (
+            <TouchableOpacity
+              key={tab}
+              onPress={() => setActiveTab(tab as any)}
+              style={styles.tabItem}
+            >
+              <BodyBold style={{
+                ...styles.tabText,
+                ...(activeTab === tab ? { color: Colors.dark.textPrimary } : {})
+              } as any}>
+                {tab === 'foryou' ? 'For You' : 'Following'}
+              </BodyBold>
+              {activeTab === tab && (
+                <View style={styles.tabIndicator} />
+              )}
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <LinearGradient
+          colors={Colors.gradients.primary as [string, string, ...string[]]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.logoLine}
+        />
+      </Animated.View>
+
+      <Animated.FlatList
+        data={items}
+        keyExtractor={(item) => `${item.type}-${item.id}`}
+        renderItem={renderItem}
+        contentContainerStyle={[
+          styles.listContent,
+          { paddingTop: 140 } // Initial header space
+        ]}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
+        scrollEventThrottle={16}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={Colors.dark.primary}
+            colors={[Colors.dark.primary]}
+            progressViewOffset={140}
+          />
+        }
+        ListEmptyComponent={
+          !isLoading ? (
+            <View style={styles.emptyContainer}>
+              <Muted>{activeTab === 'following' ? 'Not following anyone yet or they haven\'t posted.' : 'No posts found.'}</Muted>
+            </View>
+          ) : null
+        }
+        ListFooterComponent={
+          isLoading ? (
+            <ActivityIndicator size="small" color={Colors.dark.primary} style={{ padding: 20 }} />
+          ) : null
+        }
+      />
+
+      {/* Mobile FAB */}
       <TouchableOpacity
-        style={[styles.fab, { backgroundColor: Colors[theme].tint }]}
-        onPress={() => router.push('/need/post' as any)}
+        style={styles.fab}
+        activeOpacity={0.8}
+        onPress={() => router.push('/post-need' as any)}
       >
-        <Plus size={24} color="#fff" />
+        <LinearGradient
+          colors={Colors.gradients.primary as [string, string, ...string[]]}
+          style={styles.fabGradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <Plus size={32} color="white" />
+        </LinearGradient>
       </TouchableOpacity>
-    </ThemedView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  tabContainer: { flexDirection: 'row', borderBottomWidth: 1 },
-  tab: { flex: 1, paddingVertical: 16, alignItems: 'center', position: 'relative' },
-  activeTab: {},
-  tabText: { fontSize: 16, color: '#71717a', fontWeight: '500' },
-  activeIndicator: {
-    position: 'absolute', bottom: -1, height: 3, width: '40%',
-    borderTopLeftRadius: 3, borderTopRightRadius: 3,
+  container: {
+    flex: 1,
+    backgroundColor: Colors.dark.bgBase,
   },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  emptyText: { textAlign: 'center', marginTop: 50, color: '#71717a', paddingHorizontal: 20 },
+  brandingHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 100,
+    backgroundColor: Colors.dark.bgBase,
+    overflow: 'hidden',
+    paddingTop: Platform.OS === 'ios' ? 40 : 20,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: 10,
+  },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  logo: {
+    width: 28,
+    height: 28,
+  },
+  logoText: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: Colors.dark.primary,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  iconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Colors.dark.bgSurfaceGlass,
+    borderWidth: 1,
+    borderColor: Colors.dark.borderGlass,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabBar: {
+    flexDirection: 'row',
+    height: 50,
+    borderBottomWidth: 1,
+    borderColor: Colors.dark.borderGlass,
+  },
+  tabItem: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
+  },
+  tabText: {
+    fontSize: 15,
+    color: Colors.dark.textMuted,
+  },
+  tabIndicator: {
+    position: 'absolute',
+    bottom: 0,
+    width: '40%',
+    height: 4,
+    backgroundColor: Colors.dark.primary,
+    borderTopLeftRadius: 4,
+    borderTopRightRadius: 4,
+  },
+  logoLine: {
+    height: 2,
+    width: '100%',
+    opacity: 0.5,
+  },
+  listContent: {
+    paddingBottom: 100,
+  },
+  emptyContainer: {
+    padding: 60,
+    alignItems: 'center',
+  },
   fab: {
     position: 'absolute',
+    bottom: Platform.OS === 'ios' ? 100 : 80,
     right: 20,
-    bottom: Platform.OS === 'ios' ? 20 : 20,
     width: 60,
     height: 60,
     borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
     elevation: 8,
-    shadowColor: '#000',
+    shadowColor: Colors.dark.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
-    shadowRadius: 4.65,
+    shadowRadius: 8,
   },
+  fabGradient: {
+    flex: 1,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  }
 });
+

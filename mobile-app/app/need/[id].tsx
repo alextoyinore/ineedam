@@ -1,384 +1,246 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { StyleSheet, View, FlatList, ActivityIndicator, TouchableOpacity, TextInput, Text, Image } from 'react-native';
-import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import { ThemedView } from '@/components/themed-view';
-import { ThemedText } from '@/components/themed-text';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { ArrowLeft, Send, Lock, Globe, MessageSquare } from 'lucide-react-native';
-import { getNeedById, shapeNeed } from '@/src/lib/needsService';
-import { fetchRepliesForNeed, createReply } from '@/src/lib/replyService';
-import { fetchUserLikes } from '@/src/lib/likesService';
-import { fetchUserBroadcasts } from '@/src/lib/broadcastService';
-import { fetchBookmarks } from '@/src/lib/bookmarkService';
+import React, { useState, useEffect, useRef } from 'react';
+import {
+    View, StyleSheet, ScrollView, TouchableOpacity, TextInput,
+    ActivityIndicator, KeyboardAvoidingView, Platform, SafeAreaView, Image
+} from 'react-native';
+import { ArrowLeft, MessageSquare, Send, Lock, Globe } from 'lucide-react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Colors, Spacing } from '@/src/theme/Theme';
+import { H3, Body, BodyBold, Muted } from '@/src/components/ui/Typography';
+import { NeedCard } from '@/src/components/feed/NeedCard';
+import { GlassPanel } from '@/src/components/ui/GlassPanel';
+import { LinearGradient } from 'expo-linear-gradient';
+import { supabase } from '@/src/lib/supabase';
+import { fetchRepliesForNeed } from '@/src/services/bookmarkService';
+import { createReply } from '@/src/services/replyService';
+import { shapeNeed } from '@/src/services/needsService';
+import { timeAgo } from '@/src/services/needsService';
 import { useAuth } from '@/src/context/AuthContext';
-import { NeedCard } from '@/components/ui/need-card';
-
-const ReplyItem = ({ reply, depth = 0, colors, onReplyPress }: any) => {
-    const authorName = reply.profiles?.display_name || 'Anonymous';
-    const authorUsername = reply.profiles?.username;
-
-    return (
-        <View style={[styles.replyItemContainer, { marginLeft: depth * 16, borderLeftWidth: depth > 0 ? 2 : 0, borderLeftColor: colors.tabIconDefault + '30', borderBottomColor: colors.tabIconDefault + '20' }]}>
-            <View style={styles.replyInner}>
-                {/* Left Column (Avatar) */}
-                <View style={styles.replyLeftColumn}>
-                    {reply.profiles?.avatar_url ? (
-                        <Image source={{ uri: reply.profiles.avatar_url }} style={styles.replyAvatar} />
-                    ) : (
-                        <View style={[styles.replyAvatarFallback, { backgroundColor: colors.tint }]}>
-                            <Text style={styles.replyAvatarText}>{authorName.charAt(0).toUpperCase()}</Text>
-                        </View>
-                    )}
-                </View>
-
-                {/* Right Column (Content) */}
-                <View style={styles.replyRightColumn}>
-                    <View style={styles.replyHeader}>
-                        <View style={styles.replyAuthorInfo}>
-                            <ThemedText style={styles.replyAuthor}>{authorName}</ThemedText>
-                            {authorUsername && <ThemedText style={styles.replyUsername}>@{authorUsername}</ThemedText>}
-                        </View>
-                        {reply.is_private && (
-                            <View style={styles.privateBadge}>
-                                <Lock size={10} color="#6366f1" />
-                                <Text style={styles.privateBadgeText}>Private</Text>
-                            </View>
-                        )}
-                    </View>
-
-                    <ThemedText style={styles.replyContent}>{reply.content}</ThemedText>
-
-                    <TouchableOpacity style={styles.replyAction} onPress={() => onReplyPress(reply)}>
-                        <MessageSquare size={14} color={colors.icon} />
-                        <ThemedText style={[styles.replyActionText, { color: colors.icon }]}>Reply</ThemedText>
-                    </TouchableOpacity>
-                </View>
-            </View>
-
-            {reply.children && reply.children.map((child: any) => (
-                <ReplyItem key={child.id} reply={child} depth={depth + 1} colors={colors} onReplyPress={onReplyPress} />
-            ))}
-        </View>
-    );
-};
 
 export default function NeedDetailScreen() {
-    const { id } = useLocalSearchParams();
+    const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
-    const theme = useColorScheme() ?? 'light';
-    const colors = Colors[theme];
     const { user } = useAuth();
-
     const [need, setNeed] = useState<any>(null);
     const [replies, setReplies] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-
-    const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
-    const [broadcastedIds, setBroadcastedIds] = useState<Set<string>>(new Set());
-    const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
-
-    // Reply Box State
     const [replyText, setReplyText] = useState('');
-    const [isPrivateReply, setIsPrivateReply] = useState(false);
-    const [submittingReply, setSubmittingReply] = useState(false);
-    const [activeParentReply, setActiveParentReply] = useState<any>(null);
+    const [isPrivate, setIsPrivate] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const scrollRef = useRef<ScrollView>(null);
 
-    const loadUserState = useCallback(async () => {
-        if (!user?.id) return;
+    const loadData = async () => {
+        setLoading(true);
         try {
-            const [likes, broadcasts, bookmarks] = await Promise.all([
-                fetchUserLikes(user.id),
-                fetchUserBroadcasts(user.id),
-                fetchBookmarks(user.id),
+            const [{ data: needData }, repliesData] = await Promise.all([
+                supabase
+                    .from('needs')
+                    .select('*, profiles!needs_user_id_fkey(display_name, avatar_url, username, banner_url, bio)')
+                    .eq('id', id)
+                    .single(),
+                fetchRepliesForNeed(id!)
             ]);
-            setLikedIds(new Set(likes));
-            setBroadcastedIds(new Set(broadcasts));
-            setBookmarkedIds(new Set(bookmarks.map((b: any) => b.id)));
+
+            if (needData) setNeed(shapeNeed(needData));
+            setReplies(repliesData);
         } catch (err) {
-            console.error('Error loading user social state:', err);
+            console.error('Error loading need detail:', err);
+        } finally {
+            setLoading(false);
         }
-    }, [user?.id]);
-
-    useEffect(() => {
-        const load = async () => {
-            setLoading(true);
-            try {
-                const needData = await getNeedById(id as string);
-                if (needData) setNeed({ ...shapeNeed(needData), type: 'need' });
-                // fetchRepliesForNeed(id) now implicitly filters for endorsement_id IS NULL
-                const repliesData = await fetchRepliesForNeed(id as string);
-                setReplies(repliesData || []);
-                await loadUserState();
-            } catch (error) {
-                console.error("Error loading need details", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        if (id) load();
-    }, [id, loadUserState]);
-
-    const replyTree = useMemo(() => {
-        const map: any = {};
-        const roots: any[] = [];
-        replies.forEach(r => {
-            map[r.id] = { ...r, children: [] };
-        });
-        replies.forEach(r => {
-            if (r.parent_id && map[r.parent_id]) {
-                map[r.parent_id].children.push(map[r.id]);
-            } else {
-                roots.push(map[r.id]);
-            }
-        });
-        return roots;
-    }, [replies]);
-
-    const handleReplyPress = (parentReply: any) => {
-        setActiveParentReply(parentReply);
-        // We could focus the input here or open a modal
     };
 
-    const submitReply = async () => {
-        if (!replyText.trim() || !user || !need) return;
-        setSubmittingReply(true);
+    useEffect(() => { loadData(); }, [id]);
+
+    const handleSendReply = async () => {
+        if (!replyText.trim() || !user || !id) return;
+        setSubmitting(true);
         try {
-            await createReply(need.id, user.id, replyText, isPrivateReply);
-            const repliesData = await fetchRepliesForNeed(id as string);
-            setReplies(repliesData || []);
+            const newReply = await createReply(id!, user.id, replyText.trim(), isPrivate);
+            setReplies(prev => [...prev, newReply]);
             setReplyText('');
-            setIsPrivateReply(false);
-            setActiveParentReply(null);
+            scrollRef.current?.scrollToEnd({ animated: true });
         } catch (err) {
-            console.error("Failed to submit reply:", err);
+            console.error('Error sending reply:', err);
         } finally {
-            setSubmittingReply(false);
+            setSubmitting(false);
         }
     };
 
     if (loading) {
         return (
-            <ThemedView style={styles.centered}>
-                <ActivityIndicator size="large" color={colors.tint} />
-            </ThemedView>
+            <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+                <ActivityIndicator size="large" color={Colors.dark.primary} />
+            </View>
         );
     }
-
-    if (!need) {
-        return (
-            <ThemedView style={styles.centered}>
-                <ThemedText>Need not found.</ThemedText>
-            </ThemedView>
-        );
-    }
-
-    const headerBorder = { borderBottomColor: colors.tabIconDefault + '30' };
 
     return (
-        <ThemedView style={styles.container}>
-            <Stack.Screen options={{ title: 'Thread' }} />
+        <SafeAreaView style={styles.container}>
+            {/* Header */}
+            <View style={styles.header}>
+                <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+                    <ArrowLeft size={22} color={Colors.dark.textPrimary} />
+                </TouchableOpacity>
+                <View style={styles.headerCenter}>
+                    <MessageSquare size={18} color={Colors.dark.primary} />
+                    <H3 style={styles.headerTitle}>Thread</H3>
+                </View>
+            </View>
 
-            <FlatList
-                data={replyTree}
-                keyExtractor={(item) => item.id}
-                ListHeaderComponent={
-                    <View>
-                        <NeedCard
-                            need={need}
-                            currentUserId={user?.id}
-                            initialLiked={likedIds.has(need.id)}
-                            initialBroadcasted={broadcastedIds.has(need.id)}
-                            initialBookmarked={bookmarkedIds.has(need.id)}
-                            disablePress={true}
-                            hideViewThread={true}
-                            onBookmarkChange={(needId, isBookmarked) => {
-                                setBookmarkedIds(prev => {
-                                    const next = new Set(prev);
-                                    isBookmarked ? next.add(needId) : next.delete(needId);
-                                    return next;
-                                });
-                            }}
-                        />
-                        {/* Inline Reply Composer */}
-                        {user && (
-                            <View style={[styles.replyComposer, { borderBottomColor: colors.tabIconDefault + '30' }]}>
-                                {activeParentReply && (
-                                    <View style={styles.replyingToLabel}>
-                                        <ThemedText style={{ fontSize: 12, color: colors.tint }}>
-                                            Replying to @{activeParentReply.profiles?.username || 'user'}
-                                        </ThemedText>
-                                        <TouchableOpacity onPress={() => setActiveParentReply(null)}>
-                                            <ThemedText style={{ fontSize: 12, color: colors.icon }}>Cancel</ThemedText>
-                                        </TouchableOpacity>
-                                    </View>
-                                )}
-                                <TextInput
-                                    style={[styles.replyInput, { color: colors.text, borderColor: colors.tabIconDefault + '30' }]}
-                                    placeholder="Write a reply..."
-                                    placeholderTextColor={colors.icon}
-                                    multiline
-                                    value={replyText}
-                                    onChangeText={setReplyText}
-                                    editable={!submittingReply}
-                                />
-                                <View style={styles.composerActions}>
-                                    <TouchableOpacity
-                                        style={[styles.privacyBtn, isPrivateReply && { borderColor: '#6366f1', backgroundColor: '#6366f120' }]}
-                                        onPress={() => setIsPrivateReply(!isPrivateReply)}
-                                    >
-                                        {isPrivateReply ? <Lock size={14} color="#6366f1" /> : <Globe size={14} color={colors.icon} />}
-                                        <ThemedText style={{ fontSize: 12, color: isPrivateReply ? '#6366f1' : colors.icon }}>
-                                            {isPrivateReply ? 'Private' : 'Public'}
-                                        </ThemedText>
-                                    </TouchableOpacity>
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+            >
+                <ScrollView
+                    ref={scrollRef}
+                    style={styles.scroll}
+                    contentContainerStyle={styles.scrollContent}
+                    showsVerticalScrollIndicator={false}
+                >
+                    {/* Original Need */}
+                    {need && <NeedCard need={need} isFullDetail />}
 
-                                    <TouchableOpacity
-                                        style={[styles.sendBtn, (!replyText.trim() || submittingReply) && { opacity: 0.5 }]}
-                                        onPress={submitReply}
-                                        disabled={!replyText.trim() || submittingReply}
-                                    >
-                                        {submittingReply ? (
-                                            <ActivityIndicator size="small" color="#fff" />
-                                        ) : (
-                                            <>
-                                                <Send size={14} color="#fff" />
-                                                <Text style={styles.sendBtnText}>Reply</Text>
-                                            </>
-                                        )}
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        )}
+                    {/* Replies count */}
+                    <View style={styles.repliesHeader}>
+                        <BodyBold style={styles.repliesCount}>
+                            {replies.length} {replies.length === 1 ? 'Reply' : 'Replies'}
+                        </BodyBold>
                     </View>
-                }
-                renderItem={({ item }) => (
-                    <ReplyItem reply={item} colors={colors} onReplyPress={(reply: any) => handleReplyPress(reply)} />
+
+                    {/* Replies */}
+                    {replies.length === 0 ? (
+                        <View style={styles.emptyReplies}>
+                            <Muted>No replies yet. Be the first to reply!</Muted>
+                        </View>
+                    ) : (
+                        replies.map((reply) => (
+                            <View key={reply.id} style={styles.replyItem}>
+                                {/* Author row */}
+                                <View style={styles.replyHeader}>
+                                    <View style={styles.replyAvatar}>
+                                        {reply.profiles?.avatar_url ? (
+                                            <Image source={{ uri: reply.profiles.avatar_url }} style={styles.replyAvatarImg} />
+                                        ) : (
+                                            <View style={styles.replyAvatarPlaceholder}>
+                                                <BodyBold style={{ color: '#fff' }}>
+                                                    {reply.profiles?.display_name?.charAt(0) || '?'}
+                                                </BodyBold>
+                                            </View>
+                                        )}
+                                    </View>
+                                    <View style={{ flex: 1 }}>
+                                        <BodyBold style={{ fontSize: 14 }}>{reply.profiles?.display_name || 'Anonymous'}</BodyBold>
+                                        <Muted style={{ fontSize: 12 }}>@{reply.profiles?.username} · {timeAgo(reply.created_at)}</Muted>
+                                    </View>
+                                    {reply.is_private && (
+                                        <View style={styles.privateBadge}>
+                                            <Lock size={12} color={Colors.dark.textMuted} />
+                                            <Muted style={{ fontSize: 10 }}>Private</Muted>
+                                        </View>
+                                    )}
+                                </View>
+                                <Body style={styles.replyContent}>{reply.content}</Body>
+                            </View>
+                        ))
+                    )}
+
+                    <View style={{ height: 20 }} />
+                </ScrollView>
+
+                {/* Reply Input */}
+                {user && (
+                    <GlassPanel intensity={20} style={styles.replyBar}>
+                        <TouchableOpacity
+                            onPress={() => setIsPrivate(!isPrivate)}
+                            style={styles.privacyBtn}
+                        >
+                            {isPrivate
+                                ? <Lock size={18} color={Colors.dark.primary} />
+                                : <Globe size={18} color={Colors.dark.textMuted} />
+                            }
+                        </TouchableOpacity>
+                        <TextInput
+                            style={styles.replyInput}
+                            placeholder={isPrivate ? 'Private reply...' : 'Add a reply...'}
+                            placeholderTextColor={Colors.dark.textMuted}
+                            value={replyText}
+                            onChangeText={setReplyText}
+                            multiline
+                        />
+                        <TouchableOpacity
+                            onPress={handleSendReply}
+                            disabled={!replyText.trim() || submitting}
+                            style={[styles.sendBtn, { opacity: (!replyText.trim() || submitting) ? 0.4 : 1 }]}
+                        >
+                            <LinearGradient
+                                colors={Colors.gradients.primary as [string, string, ...string[]]}
+                                style={styles.sendBtnGradient}
+                            >
+                                {submitting
+                                    ? <ActivityIndicator size="small" color="#fff" />
+                                    : <Send size={16} color="#fff" />
+                                }
+                            </LinearGradient>
+                        </TouchableOpacity>
+                    </GlassPanel>
                 )}
-                contentContainerStyle={{ paddingBottom: 40 }}
-            />
-        </ThemedView>
+            </KeyboardAvoidingView>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1 },
-    centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    container: { flex: 1, backgroundColor: Colors.dark.bgBase },
     header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingTop: 60, // approximate status bar
-        borderBottomWidth: 1,
+        flexDirection: 'row', alignItems: 'center',
+        paddingHorizontal: Spacing.lg, paddingVertical: Spacing.md,
+        borderBottomWidth: 1, borderColor: Colors.dark.borderGlass, gap: 12,
     },
-    replyComposer: {
+    backBtn: { padding: 4 },
+    headerCenter: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    headerTitle: { fontSize: 17, fontWeight: '700' },
+    scroll: { flex: 1 },
+    scrollContent: { paddingBottom: 20 },
+    repliesHeader: {
+        paddingHorizontal: Spacing.lg,
+        paddingVertical: Spacing.md,
         borderTopWidth: 1,
+        borderColor: Colors.dark.borderGlass,
+    },
+    repliesCount: { fontSize: 15, color: Colors.dark.textMuted },
+    emptyReplies: { padding: Spacing.xl, alignItems: 'center' },
+    replyItem: {
+        paddingHorizontal: Spacing.lg,
+        paddingVertical: Spacing.md,
         borderBottomWidth: 1,
-        paddingVertical: 16,
-        paddingHorizontal: 0,
+        borderColor: Colors.dark.borderGlass,
     },
-    replyingToLabel: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 8,
-        paddingHorizontal: 16,
+    replyHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },
+    replyAvatar: { width: 36, height: 36, borderRadius: 18, overflow: 'hidden' },
+    replyAvatarImg: { width: '100%', height: '100%' },
+    replyAvatarPlaceholder: {
+        width: '100%', height: '100%',
+        backgroundColor: Colors.dark.primary,
+        alignItems: 'center', justifyContent: 'center',
     },
-    replyInput: {
-        borderTopWidth: 1,
-        borderBottomWidth: 1,
-        padding: 16,
-        minHeight: 80,
-        textAlignVertical: 'top',
-        fontSize: 15,
-        marginBottom: 12,
-        width: '100%',
-    },
-    composerActions: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 16,
-    },
-    privacyBtn: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-        paddingVertical: 6,
-        paddingHorizontal: 12,
-        borderRadius: 16,
-        borderWidth: 1,
-        borderColor: 'transparent',
-    },
-    sendBtn: {
-        backgroundColor: '#0d9488', // using primary color
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-        paddingVertical: 8,
-        paddingHorizontal: 16,
-        borderRadius: 20,
-    },
-    sendBtnText: { color: '#fff', fontWeight: 'bold' },
-    replyItemContainer: {
-        padding: 16,
-        borderBottomWidth: 1,
-    },
-    replyInner: {
-        flexDirection: 'row',
-    },
-    replyLeftColumn: {
-        marginRight: 10,
-        alignItems: 'center',
-    },
-    replyRightColumn: {
-        flex: 1,
-    },
-    replyHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: 4,
-        flexWrap: 'wrap',
-    },
-    replyAvatar: {
-        width: 32,
-        height: 32,
-        borderRadius: 16,
-    },
-    replyAvatarFallback: {
-        width: 32,
-        height: 32,
-        borderRadius: 16,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    replyAvatarText: {
-        color: '#fff',
-        fontWeight: 'bold',
-        fontSize: 14,
-    },
-    replyAuthorInfo: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-    },
-    replyAuthor: { fontWeight: 'bold' },
-    replyUsername: { fontSize: 12, opacity: 0.6 },
     privateBadge: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-        backgroundColor: '#6366f120',
-        paddingHorizontal: 6,
-        paddingVertical: 2,
-        borderRadius: 8,
+        flexDirection: 'row', alignItems: 'center', gap: 4,
+        backgroundColor: Colors.dark.bgSurfaceGlass, borderRadius: 8,
+        paddingHorizontal: 8, paddingVertical: 4,
     },
-    privateBadgeText: { fontSize: 10, color: '#6366f1', fontWeight: 'bold' },
-    replyContent: { fontSize: 14, lineHeight: 20, marginBottom: 12 },
-    replyAction: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
+    replyContent: { fontSize: 15, lineHeight: 22, paddingLeft: 46 },
+    replyBar: {
+        flexDirection: 'row', alignItems: 'center',
+        padding: Spacing.md, gap: 10,
+        borderTopWidth: 1, borderColor: Colors.dark.borderGlass,
     },
-    replyActionText: { fontSize: 12, fontWeight: '500' },
+    privacyBtn: { padding: 6 },
+    replyInput: {
+        flex: 1, color: Colors.dark.textPrimary, fontSize: 14,
+        maxHeight: 80, paddingVertical: 8,
+    },
+    sendBtn: { width: 38, height: 38, borderRadius: 19, overflow: 'hidden' },
+    sendBtnGradient: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 });

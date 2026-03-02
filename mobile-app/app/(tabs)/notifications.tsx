@@ -1,172 +1,199 @@
-import React, { useEffect } from 'react';
-import { StyleSheet, View, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { useNotifications } from '@/src/context/NotificationsContext';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { useRouter } from 'expo-router';
+import React, { useState, useEffect } from 'react';
+import {
+    StyleSheet,
+    View,
+    FlatList,
+    TouchableOpacity,
+    RefreshControl,
+    ActivityIndicator
+} from 'react-native';
+import { Heart, MessageSquare, Repeat2, UserPlus, Bell, Zap } from 'lucide-react-native';
+import { Colors, Spacing } from '@/src/theme/Theme';
+import { H1, Body, BodyBold, Muted } from '@/src/components/ui/Typography';
+import { GlassPanel } from '@/src/components/ui/GlassPanel';
+import { Image } from 'expo-image';
+import { supabase } from '@/src/lib/supabase';
+import { fetchNotifications, markNotificationAsRead, Notification } from '@/src/services/notificationService';
+
+const getIconForType = (type: string) => {
+    switch (type) {
+        case 'like': return { icon: Heart, color: '#ef4444' };
+        case 'reply': return { icon: MessageSquare, color: Colors.dark.primary };
+        case 'follow': return { icon: UserPlus, color: Colors.dark.secondary };
+        case 'broadcast': return { icon: Zap, color: '#f59e0b' };
+        default: return { icon: Bell, color: Colors.dark.textMuted };
+    }
+};
+
+const timeAgo = (dateStr: string) => {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 60) return `${mins}m`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h`;
+    const days = Math.floor(hrs / 24);
+    return `${days}d`;
+};
 
 export default function NotificationsScreen() {
-    const { notifications, loading, markAsRead, markAllAsRead, clearNotifications } = useNotifications();
-    const theme = useColorScheme() ?? 'light';
-    const router = useRouter();
+    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
 
-    const getIcon = (type: string) => {
-        switch (type) {
-            case 'follow': return { name: 'person.outline', color: '#3b82f6' };
-            case 'reply': return { name: 'message.outline', color: '#10b981' };
-            case 'like': return { name: 'heart.outline', color: '#ef4444' };
-            default: return { name: 'bell.outline', color: Colors[theme].tabIconDefault };
+    const loadNotifications = async () => {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const data = await fetchNotifications(user.id);
+                setNotifications(data);
+            }
+        } catch (err) {
+            console.error('Error loading notifications:', err);
+        } finally {
+            setIsLoading(false);
+            setRefreshing(false);
         }
     };
 
-    const handleNotificationPress = (notif: any) => {
-        markAsRead(notif.id);
-        if (notif.type === 'follow' && notif.actorProfile?.username) {
-            // router.push(`/(tabs)/profile?username=${notif.actorProfile.username}`);
-            console.log('Navigate to profile:', notif.actorProfile.username);
-        } else if ((notif.type === 'reply' || notif.type === 'like') && notif.reference_id) {
-            console.log('Navigate to need:', notif.reference_id);
-        }
+    useEffect(() => {
+        loadNotifications();
+    }, []);
+
+    const onRefresh = () => {
+        setRefreshing(true);
+        loadNotifications();
     };
 
-    if (loading) {
-        return (
-            <ThemedView style={styles.centered}>
-                <ActivityIndicator size="large" color={Colors[theme].tint} />
-            </ThemedView>
-        );
-    }
+    const handlePress = async (id: string, read: boolean) => {
+        if (!read) {
+            try {
+                await markNotificationAsRead(id);
+                setNotifications(prev =>
+                    prev.map(n => n.id === id ? { ...n, read: true } : n)
+                );
+            } catch (err) {
+                console.error('Error marking as read:', err);
+            }
+        }
+        // Navigate to post/profile logic here
+    };
 
     return (
-        <ThemedView style={styles.container}>
+        <View style={styles.container}>
             <View style={styles.header}>
-                <ThemedText type="subtitle">Notifications</ThemedText>
-                <View style={styles.headerActions}>
-                    <TouchableOpacity onPress={markAllAsRead} style={styles.headerButton}>
-                        <IconSymbol name="chevron.right" size={20} color={Colors[theme].tint} />
-                        {/* Using chevron as placeholder for "Check" if not mapped, wait I added mappings */}
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={clearNotifications} style={[styles.headerButton, { marginLeft: 10 }]}>
-                        <IconSymbol name="tag.outline" size={20} color="#ef4444" />
-                    </TouchableOpacity>
-                </View>
+                <H1>Notifications</H1>
             </View>
 
             <FlatList
                 data={notifications}
-                keyExtractor={(item) => item.id}
-                renderItem={({ item, index }) => {
-                    const icon = getIcon(item.type);
+                keyExtractor={item => item.id}
+                renderItem={({ item }) => {
+                    const { icon: Icon, color } = getIconForType(item.type);
                     return (
                         <TouchableOpacity
-                            onPress={() => handleNotificationPress(item)}
                             style={[
                                 styles.notificationItem,
-                                !item.read && { backgroundColor: Colors[theme].tint + '08' },
-                                { borderBottomColor: Colors[theme].tabIconDefault + '20' }
+                                !item.read && styles.unreadItem
                             ]}
+                            onPress={() => handlePress(item.id, item.read)}
                         >
+                            <View style={styles.avatarContainer}>
+                                <Image
+                                    source={{ uri: item.actorProfile?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop' }}
+                                    style={styles.avatar}
+                                />
+                                <View style={[styles.iconBadge, { backgroundColor: color }]}>
+                                    <Icon size={10} color="#fff" />
+                                </View>
+                            </View>
+                            <View style={styles.content}>
+                                <Body>
+                                    <BodyBold>{item.actorProfile?.display_name || 'Someone'}</BodyBold> {item.message}
+                                </Body>
+                                <Muted>{timeAgo(item.created_at)}</Muted>
+                            </View>
                             {!item.read && <View style={styles.unreadDot} />}
-                            <View style={[styles.iconContainer, { backgroundColor: icon.color + '15' }]}>
-                                <IconSymbol name={icon.name as any} size={20} color={icon.color} />
-                            </View>
-                            <View style={styles.notifContent}>
-                                <ThemedText style={styles.notifMessage}>
-                                    <ThemedText type="defaultSemiBold">{item.actorProfile?.display_name || 'System'}</ThemedText> {item.message}
-                                </ThemedText>
-                                <ThemedText style={styles.notifTime}>
-                                    {new Date(item.created_at).toLocaleDateString()} {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                </ThemedText>
-                            </View>
                         </TouchableOpacity>
                     );
                 }}
+                contentContainerStyle={styles.listContent}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.dark.primary} />
+                }
                 ListEmptyComponent={
-                    <View style={styles.emptyContainer}>
-                        <IconSymbol name="bell.outline" size={64} color={Colors[theme].tabIconDefault} style={{ opacity: 0.2 }} />
-                        <ThemedText type="subtitle" style={styles.emptyTitle}>No notifications yet</ThemedText>
-                        <ThemedText style={styles.emptyText}>
-                            When people follow you or reply to your needs, you'll see them here.
-                        </ThemedText>
-                    </View>
+                    isLoading ? (
+                        <ActivityIndicator size="large" color={Colors.dark.primary} style={{ marginTop: 50 }} />
+                    ) : (
+                        <View style={styles.emptyContainer}>
+                            <Bell size={48} color={Colors.dark.textMuted} strokeWidth={1} />
+                            <Muted style={{ marginTop: Spacing.md }}>No notifications yet</Muted>
+                        </View>
+                    )
                 }
             />
-        </ThemedView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-    },
-    centered: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
+        backgroundColor: Colors.dark.bgBase,
     },
     header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: 16,
+        padding: Spacing.lg,
+        paddingTop: 60,
         borderBottomWidth: 1,
-        borderBottomColor: '#35363620',
+        borderColor: Colors.dark.borderGlass,
     },
-    headerActions: {
-        flexDirection: 'row',
-    },
-    headerButton: {
-        padding: 8,
+    listContent: {
+        paddingBottom: 100,
     },
     notificationItem: {
         flexDirection: 'row',
-        padding: 16,
+        padding: Spacing.lg,
         borderBottomWidth: 1,
+        borderColor: Colors.dark.borderGlass,
+        gap: Spacing.md,
         alignItems: 'center',
+    },
+    unreadItem: {
+        backgroundColor: 'rgba(255,255,255,0.03)',
+    },
+    avatarContainer: {
+        position: 'relative',
+    },
+    avatar: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+    },
+    iconBadge: {
+        position: 'absolute',
+        bottom: -2,
+        right: -2,
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 2,
+        borderColor: Colors.dark.bgBase,
+    },
+    content: {
+        flex: 1,
+        gap: 4,
     },
     unreadDot: {
-        position: 'absolute',
-        left: 6,
-        width: 6,
-        height: 6,
-        borderRadius: 3,
-        backgroundColor: '#3b82f6',
-    },
-    iconContainer: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 12,
-    },
-    notifContent: {
-        flex: 1,
-    },
-    notifMessage: {
-        fontSize: 15,
-        lineHeight: 20,
-    },
-    notifTime: {
-        fontSize: 12,
-        opacity: 0.5,
-        marginTop: 4,
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: Colors.dark.primary,
     },
     emptyContainer: {
-        padding: 40,
+        flex: 1,
         alignItems: 'center',
-        marginTop: 60,
-    },
-    emptyTitle: {
-        marginTop: 20,
-        marginBottom: 8,
-    },
-    emptyText: {
-        textAlign: 'center',
-        opacity: 0.6,
-        lineHeight: 20,
-    },
+        justifyContent: 'center',
+        paddingTop: 100,
+    }
 });
