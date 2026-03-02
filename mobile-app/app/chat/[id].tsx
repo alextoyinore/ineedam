@@ -88,7 +88,11 @@ export default function ChatScreen() {
                     <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
                         <ArrowLeft size={20} color={Colors.dark.textPrimary} />
                     </TouchableOpacity>
-                    <Image source={{ uri: activeThread.withUserAvatar }} style={styles.avatar} contentFit="cover" />
+                    <Image
+                        source={activeThread.withUserAvatar ? { uri: activeThread.withUserAvatar } : undefined}
+                        style={styles.avatar}
+                        contentFit="cover"
+                    />
                     <View>
                         <BodyBold>{activeThread.withUser}</BodyBold>
                         <Muted style={{ fontSize: 10 }}>Online</Muted>
