@@ -220,7 +220,7 @@ export const ChatDetail = () => {
             initial={{ opacity: 0, x: isMobile ? 20 : 0 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: isMobile ? 20 : 0 }}
-            style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--bg-surface)', height: '100%', width: '100%', maxWidth: '100vw', overflow: 'hidden' }}
+            style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--bg-base)', height: '100%', width: '100%', maxWidth: '100vw', overflow: 'hidden' }}
         >
             {/* Header */}
             <header style={{
@@ -294,7 +294,8 @@ export const ChatDetail = () => {
                                 borderRadius: '18px',
                                 borderBottomRightRadius: isMe ? '4px' : '18px',
                                 borderBottomLeftRadius: isMe ? '18px' : '4px',
-                                background: msg.fileUrl && !msg.text && !isAudio ? 'transparent' : (isMe ? 'var(--primary)' : 'var(--bg-base)'),
+                                background: msg.fileUrl && !msg.text && !isAudio ? 'transparent' : (isMe ? 'var(--primary)' : 'var(--bg-surface)'),
+                                border: isMe ? 'none' : '1px solid var(--border-glass)',
                                 color: isMe ? 'white' : 'var(--text-primary)',
                                 fontSize: '0.92rem',
                                 overflow: 'hidden',

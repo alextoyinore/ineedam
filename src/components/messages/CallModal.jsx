@@ -205,14 +205,13 @@ export const CallModal = ({
                                 <button
                                     onClick={onReject || onClose}
                                     style={{
-                                        width: '60px', height: '60px', borderRadius: '30px',
+                                        width: '60px', height: '60px', borderRadius: '50%',
                                         background: '#ef4444', border: 'none', color: 'white',
                                         cursor: 'pointer', display: 'flex', alignItems: 'center',
-                                        justifyContent: 'center', padding: '0 1.5rem', gap: '0.5rem'
+                                        justifyContent: 'center'
                                     }}
                                 >
-                                    <PhoneOff size={24} />
-                                    <span style={{ fontWeight: 600 }}>End Call</span>
+                                    <Phone size={28} style={{ transform: 'rotate(135deg)' }} />
                                 </button>
 
                                 <button
