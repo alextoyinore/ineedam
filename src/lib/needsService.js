@@ -25,8 +25,9 @@ export const uploadImageToCloudinary = async (file) => {
  */
 export const uploadFileToCloudinary = async (file) => {
     const isImage = file.type.startsWith('image/');
-    // For non-image files Cloudinary requires the 'raw' resource type in the URL
-    const resourceType = isImage ? 'image' : 'raw';
+    // For audio and video files Cloudinary works best with 'auto' or 'video' resource types.
+    // 'raw' is only for files that Cloudinary shouldn't attempt to process (e.g. PDF, DOCX).
+    const resourceType = isImage ? 'image' : (file.type.startsWith('audio/') ? 'video' : 'raw');
     const uploadUrl = `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`;
 
     const formData = new FormData();

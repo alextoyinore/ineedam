@@ -2,8 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Phone, Video, MoreVertical, Send, Paperclip, X, FileText, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Phone, Video, MoreVertical, Send, Paperclip, X, FileText, Image as ImageIcon, Mic } from 'lucide-react';
 import { useMessages } from '../../context/MessagesContext';
+import { VoiceRecorder } from '../../components/messages/VoiceRecorder';
+import { AudioBubble } from '../../components/messages/AudioBubble';
 
 const MAX_FILE_SIZE_MB = 10;
 
@@ -135,11 +137,12 @@ const FileViewerModal = ({ file, onClose }) => {
 export const ChatDetail = () => {
     const { threadId } = useParams();
     const navigate = useNavigate();
-    const { threads, sendMessage, markThreadAsRead, loadingThreads, setActiveThreadId } = useMessages();
+    const { threads, sendMessage, markThreadAsRead, loadingThreads, setActiveThreadId, initiateCall } = useMessages();
     const [messageText, setMessageText] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
     const [viewingFile, setViewingFile] = useState(null);
+    const [isRecording, setIsRecording] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const fileInputRef = useRef(null);
 
@@ -201,6 +204,15 @@ export const ChatDetail = () => {
         setIsUploading(false);
     };
 
+    const handleSendVoiceNote = async (blob, duration) => {
+        setIsUploading(true);
+        // Create a File object from the blob for Cloudinary
+        const file = new File([blob], `voice-note-${Date.now()}.webm`, { type: 'audio/webm' });
+        await sendMessage(activeThread.withUserId, '', file);
+        setIsUploading(false);
+        setIsRecording(false);
+    };
+
     const canSend = (messageText.trim() || selectedFile) && !isUploading;
 
     return (
@@ -239,8 +251,16 @@ export const ChatDetail = () => {
                     </div>
                 </div>
                 <div style={{ display: 'flex', gap: '1rem', color: 'var(--text-muted)' }}>
-                    <Phone size={20} style={{ cursor: 'pointer' }} />
-                    <Video size={20} style={{ cursor: 'pointer' }} />
+                    <Phone
+                        size={20}
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => initiateCall(activeThread.withUserId, activeThread.withUser, activeThread.withUserAvatar, false)}
+                    />
+                    <Video
+                        size={20}
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => initiateCall(activeThread.withUserId, activeThread.withUser, activeThread.withUserAvatar, true)}
+                    />
                     <MoreVertical size={20} style={{ cursor: 'pointer' }} />
                 </div>
             </header>
@@ -254,6 +274,8 @@ export const ChatDetail = () => {
             }}>
                 {[...activeThread.messages].reverse().map(msg => {
                     const isMe = msg.sender === 'Me';
+                    const isAudio = msg.fileType?.startsWith('audio/') || msg.fileUrl?.toLowerCase().endsWith('.webm') || msg.fileUrl?.toLowerCase().endsWith('.mp3') || msg.fileUrl?.toLowerCase().endsWith('.wav');
+
                     return (
                         <div
                             key={msg.id}
@@ -268,16 +290,22 @@ export const ChatDetail = () => {
                                 {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
                             <div style={{
-                                padding: msg.fileUrl && !msg.text ? '0' : '0.6rem 1rem',
+                                padding: msg.fileUrl && !msg.text && !isAudio ? '0' : '0.6rem 1rem',
                                 borderRadius: '18px',
                                 borderBottomRightRadius: isMe ? '4px' : '18px',
                                 borderBottomLeftRadius: isMe ? '18px' : '4px',
-                                background: msg.fileUrl && !msg.text ? 'transparent' : (isMe ? 'var(--primary)' : 'var(--bg-base)'),
+                                background: msg.fileUrl && !msg.text && !isAudio ? 'transparent' : (isMe ? 'var(--primary)' : 'var(--bg-base)'),
                                 color: isMe ? 'white' : 'var(--text-primary)',
                                 fontSize: '0.92rem',
                                 overflow: 'hidden',
                             }}>
-                                {msg.fileUrl && <MessageAttachment fileUrl={msg.fileUrl} fileType={msg.fileType} onView={setViewingFile} />}
+                                {msg.fileUrl && (
+                                    isAudio ? (
+                                        <AudioBubble url={msg.fileUrl} isMe={isMe} />
+                                    ) : (
+                                        <MessageAttachment fileUrl={msg.fileUrl} fileType={msg.fileType} onView={setViewingFile} />
+                                    )
+                                )}
                                 {msg.text && <span>{msg.text}</span>}
                             </div>
                         </div>
@@ -290,59 +318,88 @@ export const ChatDetail = () => {
                 {selectedFile && (
                     <FilePreviewBubble file={selectedFile} onRemove={() => setSelectedFile(null)} />
                 )}
-                <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                    {/* Hidden file input */}
-                    <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip"
-                        onChange={handleFileSelect}
-                        style={{ display: 'none' }}
-                    />
-                    {/* Attachment button */}
-                    <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        style={{
-                            width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
-                            background: 'var(--bg-base)', border: '1px solid var(--border-glass)',
-                            color: selectedFile ? 'var(--primary)' : 'var(--text-muted)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                            transition: 'color 0.2s'
-                        }}
-                    >
-                        <Paperclip size={18} />
-                    </button>
 
-                    <input
-                        type="text"
-                        value={messageText}
-                        onChange={(e) => setMessageText(e.target.value)}
-                        placeholder={selectedFile ? 'Add a caption...' : 'Start a new message'}
-                        style={{
-                            flex: 1, padding: '0.75rem 1.25rem', borderRadius: '9999px',
-                            background: 'var(--bg-base)', border: '1px solid var(--border-glass)',
-                            color: 'var(--text-primary)', outline: 'none'
-                        }}
-                    />
-                    <button
-                        type="submit"
-                        disabled={!canSend}
-                        style={{
-                            width: '45px', height: '45px', borderRadius: '50%', flexShrink: 0,
-                            background: 'var(--primary)', color: 'white', border: 'none',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            cursor: canSend ? 'pointer' : 'default',
-                            opacity: canSend ? 1 : 0.5, transition: 'all 0.2s'
-                        }}
-                    >
-                        {isUploading ? (
-                            <div style={{ width: '18px', height: '18px', border: '2px solid rgba(255,255,255,0.4)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                <AnimatePresence>
+                    {isRecording && (
+                        <VoiceRecorder
+                            onSend={handleSendVoiceNote}
+                            onCancel={() => setIsRecording(false)}
+                        />
+                    )}
+                </AnimatePresence>
+
+                {!isRecording && (
+                    <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        {/* Hidden file input */}
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip"
+                            onChange={handleFileSelect}
+                            style={{ display: 'none' }}
+                        />
+                        {/* Attachment button */}
+                        <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            style={{
+                                width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
+                                background: 'var(--bg-base)', border: '1px solid var(--border-glass)',
+                                color: selectedFile ? 'var(--primary)' : 'var(--text-muted)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                                transition: 'color 0.2s'
+                            }}
+                        >
+                            <Paperclip size={18} />
+                        </button>
+
+                        <input
+                            type="text"
+                            value={messageText}
+                            onChange={(e) => setMessageText(e.target.value)}
+                            placeholder={selectedFile ? 'Add a caption...' : 'Start a new message'}
+                            style={{
+                                flex: 1, padding: '0.75rem 1.25rem', borderRadius: '9999px',
+                                background: 'var(--bg-base)', border: '1px solid var(--border-glass)',
+                                color: 'var(--text-primary)', outline: 'none'
+                            }}
+                        />
+
+                        {/* Voice Note button - only if no text/file */}
+                        {!messageText.trim() && !selectedFile ? (
+                            <button
+                                type="button"
+                                onClick={() => setIsRecording(true)}
+                                style={{
+                                    width: '45px', height: '45px', borderRadius: '50%', flexShrink: 0,
+                                    background: 'var(--bg-base)', color: 'var(--primary)', border: '1px solid var(--border-glass)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    cursor: 'pointer', transition: 'all 0.2s'
+                                }}
+                            >
+                                <Mic size={18} />
+                            </button>
                         ) : (
-                            <Send size={18} />
+                            <button
+                                type="submit"
+                                disabled={!canSend}
+                                style={{
+                                    width: '45px', height: '45px', borderRadius: '50%', flexShrink: 0,
+                                    background: 'var(--primary)', color: 'white', border: 'none',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    cursor: canSend ? 'pointer' : 'default',
+                                    opacity: canSend ? 1 : 0.5, transition: 'all 0.2s'
+                                }}
+                            >
+                                {isUploading ? (
+                                    <div style={{ width: '18px', height: '18px', border: '2px solid rgba(255,255,255,0.4)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                                ) : (
+                                    <Send size={18} />
+                                )}
+                            </button>
                         )}
-                    </button>
-                </form>
+                    </form>
+                )}
             </footer>
 
             {/* File Viewer Modal */}

@@ -6,9 +6,12 @@ import { PostNeedModal } from './PostNeedModal';
 import { BottomNav } from './BottomNav';
 import { Plus } from 'lucide-react';
 import { MobileTopHeader } from './MobileTopHeader';
+import { CallModal } from './messages/CallModal';
+import { useMessages } from '../context/MessagesContext';
 
 export const Layout = ({ children }) => {
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+  const { call, endCall, acceptCall, localStream, remoteStream } = useMessages();
   const location = useLocation();
 
   // Hide FAB and potentially other logic for chat detail view
@@ -55,6 +58,22 @@ export const Layout = ({ children }) => {
 
       {/* Modals */}
       {isPostModalOpen && <PostNeedModal isOpen={isPostModalOpen} onClose={() => setIsPostModalOpen(false)} />}
+
+      {/* Global Call Modal */}
+      {call && (
+        <CallModal
+          isOpen={!!call}
+          onClose={endCall}
+          isIncoming={call.status === 'incoming'}
+          callerName={call.partner.name}
+          callerAvatar={call.partner.avatar}
+          isVideoCall={call.isVideo}
+          localStream={localStream}
+          remoteStream={remoteStream}
+          onAccept={acceptCall}
+          onReject={endCall}
+        />
+      )}
     </div>
   );
 };

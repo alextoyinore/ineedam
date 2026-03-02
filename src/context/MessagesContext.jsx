@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { useAuth } from './AuthContext';
 import { supabase } from '../lib/supabase';
 import { fetchUserThreads, getOrCreateThread, createMessage, markThreadAsReadInDb } from '../lib/messageService';
@@ -8,11 +8,19 @@ import { soundService } from '../lib/soundService';
 const MessagesContext = createContext();
 
 export const MessagesProvider = ({ children }) => {
-    const { user } = useAuth();
+    const { user, profile } = useAuth();
     const [threads, setThreads] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeThreadId, setActiveThreadId] = useState(null);
     const activeThreadIdRef = React.useRef(null);
+
+    // Call State
+    const [call, setCall] = useState(null); // { status: 'idle'|'calling'|'incoming'|'connected', isVideo, partner: { id, name, avatar }, stream: null }
+    const [localStream, setLocalStream] = useState(null);
+    const [remoteStream, setRemoteStream] = useState(null);
+    const pcRef = useRef(null);
+    const streamRef = useRef(null);
+    const pendingOfferRef = useRef(null);
 
     // Keep ref in sync with state for real-time listener closure
     useEffect(() => {
@@ -65,11 +73,161 @@ export const MessagesProvider = ({ children }) => {
                 )
                 .subscribe();
 
+            // Subscribe to call signals
+            const callChannel = supabase.channel(`call-${user.id}`)
+                .on('broadcast', { event: 'call-signal' }, async ({ payload }) => {
+                    handleIncomingSignal(payload);
+                })
+                .subscribe();
+
             return () => {
                 supabase.removeChannel(channel);
+                supabase.removeChannel(callChannel);
+                if (pcRef.current) pcRef.current.close();
             };
         }
     }, [user]);
+
+    const createPeerConnection = (targetUserId, isVideo) => {
+        const pc = new RTCPeerConnection({
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+            ]
+        });
+
+        pc.onicecandidate = (event) => {
+            if (event.candidate) {
+                sendCallSignal(targetUserId, { candidate: event.candidate });
+            }
+        };
+
+        pc.ontrack = (event) => {
+            console.log("Got remote track", event.streams[0]);
+            setRemoteStream(event.streams[0]);
+        };
+
+        pc.onconnectionstatechange = () => {
+            if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed' || pc.connectionState === 'closed') {
+                endCall();
+            }
+        };
+
+        pcRef.current = pc;
+        return pc;
+    };
+
+    const handleIncomingSignal = async (payload) => {
+        const { from, type, offer, answer, candidate, isVideo, fromName, fromAvatar } = payload;
+
+        if (type === 'offer') {
+            pendingOfferRef.current = offer;
+            setCall({
+                status: 'incoming',
+                isVideo,
+                partner: { id: from, name: fromName, avatar: fromAvatar }
+            });
+        } else if (type === 'answer') {
+            if (pcRef.current) {
+                await pcRef.current.setRemoteDescription(new RTCSessionDescription(answer));
+            }
+        } else if (candidate) {
+            if (pcRef.current) {
+                await pcRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+            }
+        } else if (type === 'hangup') {
+            endCall();
+        }
+    };
+
+    const initiateCall = async (targetUserId, targetName, targetAvatar, isVideo = false) => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: isVideo });
+            setLocalStream(stream);
+            streamRef.current = stream;
+
+            const pc = createPeerConnection(targetUserId, isVideo);
+            stream.getTracks().forEach(track => pc.addTrack(track, stream));
+
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+
+            setCall({
+                status: 'calling',
+                isVideo,
+                partner: { id: targetUserId, name: targetName, avatar: targetAvatar }
+            });
+
+            sendCallSignal(targetUserId, {
+                type: 'offer',
+                offer,
+                isVideo,
+                fromName: profile?.display_name || user.email,
+                fromAvatar: profile?.avatar_url
+            });
+        } catch (err) {
+            console.error("Failed to initiate call", err);
+            alert("Could not start call: " + err.message);
+        }
+    };
+
+    const acceptCall = async () => {
+        if (!call || !call.partner || !pendingOfferRef.current) return;
+
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: call.isVideo });
+            setLocalStream(stream);
+            streamRef.current = stream;
+
+            const pc = createPeerConnection(call.partner.id, call.isVideo);
+            stream.getTracks().forEach(track => pc.addTrack(track, stream));
+
+            await pc.setRemoteDescription(new RTCSessionDescription(pendingOfferRef.current));
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+
+            setCall(prev => ({ ...prev, status: 'connected' }));
+
+            sendCallSignal(call.partner.id, {
+                type: 'answer',
+                answer,
+                fromName: profile?.display_name || user.email,
+                fromAvatar: profile?.avatar_url
+            });
+
+            pendingOfferRef.current = null;
+        } catch (err) {
+            console.error("Failed to accept call", err);
+            endCall();
+        }
+    };
+
+    const endCall = () => {
+        if (pcRef.current) {
+            pcRef.current.close();
+            pcRef.current = null;
+        }
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current = null;
+        }
+        if (call?.partner) {
+            sendCallSignal(call.partner.id, { type: 'hangup' });
+        }
+        setCall(null);
+        setLocalStream(null);
+        setRemoteStream(null);
+    };
+
+    const sendCallSignal = async (targetUserId, signalData) => {
+        if (!user) return;
+        console.log(`Sending signal to ${targetUserId}:`, signalData);
+        await supabase.channel(`call-${targetUserId}`).send({
+            type: 'broadcast',
+            event: 'call-signal',
+            payload: { from: user.id, ...signalData }
+        });
+    };
 
     const startChat = async (otherUserId) => {
         if (!user) return null;
@@ -82,14 +240,13 @@ export const MessagesProvider = ({ children }) => {
             throw err;
         }
     };
-
     const sendMessage = async (otherUserId, text, file = null) => {
         if (!user) return;
 
         let fileUrl = null;
         let fileType = null;
 
-        // If a file was provided, upload it first
+        // If a file or audio blob was provided, upload it first
         if (file) {
             try {
                 const { uploadFileToCloudinary } = await import('../lib/needsService');
@@ -164,7 +321,14 @@ export const MessagesProvider = ({ children }) => {
             setActiveThreadId,
             activeThreadId,
             refreshThreads: loadThreads,
-            loadingThreads: loading
+            loadingThreads: loading,
+            call,
+            localStream,
+            remoteStream,
+            initiateCall,
+            acceptCall,
+            endCall,
+            sendCallSignal
         }}>
             {children}
         </MessagesContext.Provider>
