@@ -674,3 +674,17 @@ button {
     z-index: 1000;
   }
 }
+
+/* Global Sticky Header Utility */
+.sticky-header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 100 !important;
+  background: var(--bg-base) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+[data-theme='dark'] .sticky-header {
+  background: rgba(15, 17, 21, 0.8) !important;
+}

@@ -63,7 +63,14 @@ export const MessageThreads = () => {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', background: 'var(--bg-base)', height: '100%', width: '100%' }}>
-            <header style={{ padding: '1.5rem', borderBottom: '1px solid var(--border-glass)' }}>
+            <header style={{
+                padding: '1.5rem',
+                borderBottom: '1px solid var(--border-glass)',
+                position: 'sticky',
+                top: 0,
+                background: 'var(--bg-base)',
+                zIndex: 10
+            }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                     <h2 className="h2" style={{ fontSize: '1.5rem', margin: 0 }}>Messages</h2>
                     <button

@@ -8,18 +8,21 @@ import { Plus } from 'lucide-react';
 import { MobileTopHeader } from './MobileTopHeader';
 import { CallModal } from './messages/CallModal';
 import { useMessages } from '../context/MessagesContext';
+import { useMessageSecurity } from '../context/MessageSecurityContext';
 
 export const Layout = ({ children }) => {
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
-  const { call, endCall, acceptCall, localStream, remoteStream } = useMessages();
+  const { isLocked } = useMessageSecurity();
+  const { call, endCall, acceptCall, localStream, remoteStream, toggleVideo } = useMessages();
   const location = useLocation();
 
   // Hide FAB and potentially other logic for chat detail view
-  const isChatDetail = location.pathname.startsWith('/messages/') && location.pathname.split('/').length > 2;
+  // Hide branding header and FAB for any deep messaging routes on mobile
+  const isChatDetail = location.pathname.includes('/messages/') && location.pathname.split('/').filter(Boolean).length >= 2;
 
   return (
     <div className="layout-container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <MobileTopHeader />
+      {(!isChatDetail || isLocked) && <MobileTopHeader />}
 
 
 
@@ -72,6 +75,7 @@ export const Layout = ({ children }) => {
           remoteStream={remoteStream}
           onAccept={acceptCall}
           onReject={endCall}
+          onToggleVideo={toggleVideo}
         />
       )}
     </div>

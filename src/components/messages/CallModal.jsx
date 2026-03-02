@@ -19,12 +19,20 @@ export const CallModal = ({
     onReject,
     remoteStream,
     localStream,
-    isVideoCall
+    isVideoCall,
+    onToggleVideo
 }) => {
     const [isMuted, setIsMuted] = useState(false);
     const [isVideoOff, setIsVideoOff] = useState(!isVideoCall);
     const [isFullScreen, setIsFullScreen] = useState(false);
     const [callStatus, setCallStatus] = useState(isIncoming ? 'incoming' : 'calling');
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const localVideoRef = useRef(null);
     const remoteVideoRef = useRef(null);
@@ -55,7 +63,9 @@ export const CallModal = ({
     };
 
     const handleToggleVideo = () => {
-        if (localStream) {
+        if (onToggleVideo) {
+            onToggleVideo();
+        } else if (localStream) {
             localStream.getVideoTracks().forEach(track => {
                 track.enabled = !track.enabled;
             });
@@ -79,10 +89,10 @@ export const CallModal = ({
                 }}
             >
                 <div style={{
-                    width: isFullScreen ? '100vw' : '90vw',
-                    height: isFullScreen ? '100vh' : '80vh',
-                    maxWidth: isFullScreen ? 'none' : '1000px',
-                    maxHeight: isFullScreen ? 'none' : '700px',
+                    width: isFullScreen || isMobile ? '100vw' : '90vw',
+                    height: isFullScreen || isMobile ? '100vh' : '80vh',
+                    maxWidth: isFullScreen || isMobile ? 'none' : '1000px',
+                    maxHeight: isFullScreen || isMobile ? 'none' : '700px',
                     background: '#1a1a1a', borderRadius: isFullScreen ? 0 : '24px',
                     position: 'relative', overflow: 'hidden',
                     display: 'flex', flexDirection: 'column'
@@ -120,19 +130,28 @@ export const CallModal = ({
                             </div>
                         )}
 
-                        {/* Local Video (PiP) */}
-                        {localStream && (
-                            <div style={{
-                                position: 'absolute', bottom: '2rem', right: '2rem',
-                                width: '150px', height: '200px', borderRadius: '12px',
-                                overflow: 'hidden', background: '#333', border: '2px solid rgba(255,255,255,0.2)',
-                                boxShadow: '0 8px 32px rgba(0,0,0,0.5)'
-                            }}>
-                                {isVideoOff ? (
-                                    <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.5)' }}>
-                                        <VideoOff size={24} />
-                                    </div>
-                                ) : (
+                        {/* Local Video (PiP) - Only show if video is ON */}
+                        <AnimatePresence>
+                            {localStream && !isVideoOff && (
+                                <motion.div
+                                    layout
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.8 }}
+                                    style={{
+                                        position: 'absolute',
+                                        bottom: isMobile ? '1rem' : '2rem',
+                                        right: isMobile ? '1rem' : '2rem',
+                                        width: isMobile ? '100px' : '150px',
+                                        height: isMobile ? '140px' : '200px',
+                                        borderRadius: '12px',
+                                        overflow: 'hidden',
+                                        background: '#333',
+                                        border: '2px solid rgba(255,255,255,0.2)',
+                                        boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                                        zIndex: 50
+                                    }}
+                                >
                                     <video
                                         ref={localVideoRef}
                                         autoPlay
@@ -140,16 +159,18 @@ export const CallModal = ({
                                         playsInline
                                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                     />
-                                )}
-                            </div>
-                        )}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
 
                     {/* Controls */}
                     <div style={{
-                        padding: '1.5rem 2rem', background: 'rgba(0,0,0,0.5)',
+                        padding: isMobile ? '1rem' : '1.5rem 2rem',
+                        background: 'rgba(0,0,0,0.5)',
                         backdropFilter: 'blur(10px)', display: 'flex',
-                        justifyContent: 'center', alignItems: 'center', gap: '1.5rem'
+                        justifyContent: 'center', alignItems: 'center',
+                        gap: isMobile ? '1rem' : '1.5rem'
                     }}>
                         {callStatus === 'incoming' ? (
                             <>

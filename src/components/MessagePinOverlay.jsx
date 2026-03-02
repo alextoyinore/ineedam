@@ -109,6 +109,15 @@ export const MessagePinOverlay = ({ children }) => {
     }, [pin, confirmPin, step]);
 
 
+    useEffect(() => {
+        if (isLocked) {
+            document.body.style.overflow = 'hidden';
+            return () => {
+                document.body.style.overflow = 'unset';
+            };
+        }
+    }, [isLocked]);
+
     if (loading) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%', background: 'var(--bg-base)' }}>
@@ -138,94 +147,90 @@ export const MessagePinOverlay = ({ children }) => {
 
             <div style={{
                 position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
-                alignItems: 'center', justifyContent: 'center', padding: '1.5rem', zIndex: 50,
-                background: 'rgba(var(--bg-base-rgb), 0.8)', backdropFilter: 'blur(8px)'
+                zIndex: 50, background: 'var(--bg-base)', backdropFilter: 'blur(12px)',
+                overflow: 'hidden'
             }}>
-                {/* Fixed Header Simulation */}
-                <header className="sticky-header" style={{
-                    position: 'absolute', top: 0, left: 0, right: 0,
-                    padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center',
-                    background: 'var(--bg-surface-glass)', backdropFilter: 'blur(16px)',
-                    zIndex: 60
+                <div style={{
+                    flex: 1, display: 'flex', flexDirection: 'column',
+                    alignItems: 'center', justifyContent: 'center', padding: '1.5rem'
                 }}>
-                    <h2 className="h2" style={{ fontSize: '1.25rem', margin: 0 }}>Messages</h2>
-                </header>
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    style={{
-                        background: 'var(--bg-surface)', border: '1px solid var(--border-glass)',
-                        borderRadius: '12px', padding: '2.5rem 2rem', width: '100%', maxWidth: '400px',
-                        display: 'flex', flexDirection: 'column', alignItems: 'center'
-                    }}
-                >
-                    <div style={{
-                        width: '64px', height: '64px', borderRadius: '50%',
-                        background: isSetup ? 'rgba(16, 185, 129, 0.1)' : 'rgba(99, 102, 241, 0.1)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem',
-                        color: isSetup ? '#10b981' : 'var(--primary)'
-                    }}>
-                        {isSetup ? <KeyRound size={32} /> : <Lock size={32} />}
-                    </div>
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        style={{
+                            background: 'var(--bg-surface)', border: '1px solid var(--border-glass)',
+                            borderRadius: '24px', padding: '2.5rem 2rem', width: '100%', maxWidth: '380px',
+                            display: 'flex', flexDirection: 'column', alignItems: 'center'
+                        }}
+                    >
+                        <div style={{
+                            width: '64px', height: '64px', borderRadius: '50%',
+                            background: isSetup ? 'rgba(16, 185, 129, 0.1)' : 'rgba(99, 102, 241, 0.1)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem',
+                            color: isSetup ? '#10b981' : 'var(--primary)'
+                        }}>
+                            {isSetup ? <KeyRound size={32} /> : <Lock size={32} />}
+                        </div>
 
-                    <h2 className="h2" style={{ fontSize: '1.5rem', marginBottom: '0.5rem', textAlign: 'center' }}>
-                        {step === 'verify' ? 'Unlock Messages' : step === 'setup-initial' ? 'Secure Your Messages' : 'Confirm Your PIN'}
-                    </h2>
-                    <p style={{ color: 'var(--text-muted)', textAlign: 'center', marginBottom: '2rem', fontSize: '0.95rem' }}>
-                        {step === 'verify' ? 'Enter your 4-digit PIN to access private chats.' :
-                            step === 'setup-initial' ? 'Set a 4-digit PIN to keep your conversations private.' :
-                                'Re-enter your 4-digit PIN to confirm.'}
-                    </p>
+                        <h2 className="h2" style={{ fontSize: '1.5rem', marginBottom: '0.5rem', textAlign: 'center' }}>
+                            {step === 'verify' ? 'Unlock Messages' : step === 'setup-initial' ? 'Secure Your Messages' : 'Confirm Your PIN'}
+                        </h2>
+                        <p style={{ color: 'var(--text-muted)', textAlign: 'center', marginBottom: '2rem', fontSize: '0.95rem' }}>
+                            {step === 'verify' ? 'Enter your 4-digit PIN to access private chats.' :
+                                step === 'setup-initial' ? 'Set a 4-digit PIN to keep your conversations private.' :
+                                    'Re-enter your 4-digit PIN to confirm.'}
+                        </p>
 
-                    <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem' }}>
-                        {displayPin.map((digit, idx) => (
-                            <input
-                                key={`${step}-${idx}`}
-                                id={`pin-${step === 'setup-confirm' ? 'confirm-' : ''}${idx}`}
-                                type="password"
-                                inputMode="numeric"
-                                pattern="[0-9]*"
-                                maxLength={1}
-                                value={digit}
-                                onChange={(e) => handlePinChange(idx, e.target.value, step === 'setup-confirm')}
-                                onKeyDown={(e) => handleKeyDown(idx, e, step === 'setup-confirm')}
+                        <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                            {displayPin.map((digit, idx) => (
+                                <input
+                                    key={`${step}-${idx}`}
+                                    id={`pin-${step === 'setup-confirm' ? 'confirm-' : ''}${idx}`}
+                                    type="password"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
+                                    maxLength={1}
+                                    value={digit}
+                                    onChange={(e) => handlePinChange(idx, e.target.value, step === 'setup-confirm')}
+                                    onKeyDown={(e) => handleKeyDown(idx, e, step === 'setup-confirm')}
+                                    style={{
+                                        width: '50px', height: '60px',
+                                        background: 'var(--bg-base)', border: '1px solid var(--border-glass)',
+                                        borderRadius: '8px', fontSize: '1.5rem', fontWeight: 700,
+                                        textAlign: 'center', color: 'var(--text-primary)', outline: 'none',
+                                        boxShadow: 'none',
+                                        transition: 'border-color 0.2s'
+                                    }}
+                                    onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
+                                    onBlur={(e) => e.target.style.borderColor = 'var(--border-glass)'}
+                                />
+                            ))}
+                        </div>
+
+                        {error && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
                                 style={{
-                                    width: '50px', height: '60px',
-                                    background: 'var(--bg-base)', border: '1px solid var(--border-glass)',
-                                    borderRadius: '8px', fontSize: '1.5rem', fontWeight: 700,
-                                    textAlign: 'center', color: 'var(--text-primary)', outline: 'none',
-                                    boxShadow: 'none',
-                                    transition: 'border-color 0.2s'
+                                    display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ef4444',
+                                    fontSize: '0.85rem', marginBottom: '1.5rem', background: 'rgba(239, 68, 68, 0.1)',
+                                    padding: '0.5rem 1rem', borderRadius: '8px'
                                 }}
-                                onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
-                                onBlur={(e) => e.target.style.borderColor = 'var(--border-glass)'}
-                            />
-                        ))}
-                    </div>
+                            >
+                                <ShieldAlert size={16} />
+                                <span>{error}</span>
+                            </motion.div>
+                        )}
 
-                    {error && (
-                        <motion.div
-                            initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-                            style={{
-                                display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ef4444',
-                                fontSize: '0.85rem', marginBottom: '1.5rem', background: 'rgba(239, 68, 68, 0.1)',
-                                padding: '0.5rem 1rem', borderRadius: '8px'
-                            }}
-                        >
-                            <ShieldAlert size={16} />
-                            <span>{error}</span>
-                        </motion.div>
-                    )}
-
-                    {step === 'setup-confirm' && (
-                        <button
-                            onClick={() => { setStep('setup-initial'); setConfirmPin(['', '', '', '']); document.getElementById('pin-0')?.focus(); }}
-                            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.85rem', cursor: 'pointer', textDecoration: 'underline' }}
-                        >
-                            Back to create PIN
-                        </button>
-                    )}
-                </motion.div>
+                        {step === 'setup-confirm' && (
+                            <button
+                                onClick={() => { setStep('setup-initial'); setConfirmPin(['', '', '', '']); document.getElementById('pin-0')?.focus(); }}
+                                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.85rem', cursor: 'pointer', textDecoration: 'underline' }}
+                            >
+                                Back to create PIN
+                            </button>
+                        )}
+                    </motion.div>
+                </div>
             </div>
         </div>
     );

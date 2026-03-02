@@ -126,6 +126,21 @@ export const MessagesProvider = ({ children }) => {
         const { from, type, offer, answer, candidate, isVideo, fromName, fromAvatar } = payload;
 
         if (type === 'offer') {
+            if (pcRef.current && callRef.current?.status === 'connected') {
+                // Re-negotiation (e.g. upgrade to video)
+                try {
+                    await pcRef.current.setRemoteDescription(new RTCSessionDescription(offer));
+                    const answer = await pcRef.current.createAnswer();
+                    await pcRef.current.setLocalDescription(answer);
+                    sendCallSignal(from, { type: 'answer', answer });
+                    if (isVideo) {
+                        setCall(prev => ({ ...prev, isVideo: true }));
+                    }
+                } catch (err) {
+                    console.error("Re-negotiation failed:", err);
+                }
+                return;
+            }
             soundService.startRinging();
             pendingOfferRef.current = offer;
             setCall({
@@ -139,7 +154,11 @@ export const MessagesProvider = ({ children }) => {
                 callTimeoutRef.current = null;
             }
             if (pcRef.current) {
-                await pcRef.current.setRemoteDescription(new RTCSessionDescription(answer));
+                try {
+                    await pcRef.current.setRemoteDescription(new RTCSessionDescription(answer));
+                } catch (err) {
+                    console.error("Setting answer failing:", err);
+                }
             }
         } else if (candidate) {
             if (pcRef.current) {
@@ -234,6 +253,44 @@ export const MessagesProvider = ({ children }) => {
         } catch (err) {
             console.error("Failed to accept call", err);
             endCall();
+        }
+    };
+
+    const toggleVideo = async () => {
+        if (!call || call.status !== 'connected') return;
+
+        const videoTrack = streamRef.current?.getVideoTracks()[0];
+
+        if (videoTrack) {
+            // Video already exists, just toggle it
+            videoTrack.enabled = !videoTrack.enabled;
+            setCall(prev => ({ ...prev, isVideo: videoTrack.enabled }));
+        } else {
+            // Need to upgrade to video
+            try {
+                const newStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const newVideoTrack = newStream.getVideoTracks()[0];
+
+                if (streamRef.current && pcRef.current) {
+                    streamRef.current.addTrack(newVideoTrack);
+                    pcRef.current.addTrack(newVideoTrack, streamRef.current);
+
+                    // Re-negotiate
+                    const offer = await pcRef.current.createOffer();
+                    await pcRef.current.setLocalDescription(offer);
+
+                    sendCallSignal(call.partner.id, {
+                        type: 'offer',
+                        offer,
+                        isVideo: true
+                    });
+
+                    setCall(prev => ({ ...prev, isVideo: true }));
+                }
+            } catch (err) {
+                console.error("Failed to upgrade to video", err);
+                alert("Could not enable video: " + err.message);
+            }
         }
     };
 
@@ -368,6 +425,7 @@ export const MessagesProvider = ({ children }) => {
             initiateCall,
             acceptCall,
             endCall,
+            toggleVideo,
             sendCallSignal
         }}>
             {children}
