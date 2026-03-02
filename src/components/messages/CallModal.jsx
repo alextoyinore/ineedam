@@ -27,6 +27,7 @@ export const CallModal = ({
     const [isFullScreen, setIsFullScreen] = useState(false);
     const [callStatus, setCallStatus] = useState(isIncoming ? 'incoming' : 'calling');
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    const [hasRemoteVideo, setHasRemoteVideo] = useState(false);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -45,10 +46,19 @@ export const CallModal = ({
 
     useEffect(() => {
         if (remoteStream && remoteVideoRef.current) {
-            remoteStream.getTracks().forEach(track => {
-                console.log('Remote track:', track.kind, track.enabled);
-            });
+            console.log("Setting remote stream to video element");
             remoteVideoRef.current.srcObject = remoteStream;
+
+            const updateTrackStatus = () => {
+                const videoTrack = remoteStream.getVideoTracks()[0];
+                setHasRemoteVideo(!!videoTrack && videoTrack.enabled && videoTrack.readyState === 'live');
+                console.log("Remote video track status:", videoTrack?.enabled, videoTrack?.readyState);
+            };
+
+            updateTrackStatus();
+            remoteStream.onaddtrack = updateTrackStatus;
+            remoteStream.onremovetrack = updateTrackStatus;
+
             setCallStatus('connected');
         }
     }, [remoteStream]);
@@ -99,156 +109,173 @@ export const CallModal = ({
                 }}>
 
                     {/* Remote Video (Main) */}
-                    <div style={{ flex: 1, position: 'relative', background: '#000' }}>
-                        {remoteStream ? (
-                            <video
-                                ref={remoteVideoRef}
-                                autoPlay
-                                playsInline
-                                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                            />
-                        ) : (
+                    <div style={{ flex: 1, position: 'relative', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {/* Always have video element for audio playback, but hide if no video track */}
+                        <video
+                            ref={remoteVideoRef}
+                            autoPlay
+                            playsInline
+                            style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'contain',
+                                display: hasRemoteVideo ? 'block' : 'none'
+                            }}
+                        />
+
+                        {!hasRemoteVideo && (
                             <div style={{
-                                height: '100%', display: 'flex', flexDirection: 'column',
-                                alignItems: 'center', justifyContent: 'center', gap: '1.5rem'
+                                position: 'absolute', inset: 0,
+                                display: 'flex', flexDirection: 'column',
+                                alignItems: 'center', justifyContent: 'center', gap: '1.5rem',
+                                background: 'radial-gradient(circle at center, #2d2d2d 0%, #1a1a1a 100%)'
                             }}>
-                                <div style={{
-                                    width: '120px', height: '120px', borderRadius: '50%',
-                                    background: callerAvatar ? `url(${callerAvatar}) center/cover` : 'var(--primary)',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    fontSize: '3rem', fontWeight: 'bold', border: '4px solid rgba(255,255,255,0.1)'
-                                }}>
+                                <motion.div
+                                    animate={callStatus !== 'connected' ? {
+                                        scale: [1, 1.1, 1],
+                                        opacity: [0.5, 1, 0.5]
+                                    } : {}}
+                                    transition={{ repeat: Infinity, duration: 2 }}
+                                    style={{
+                                        width: '120px', height: '120px', borderRadius: '50%',
+                                        background: callerAvatar ? `url(${callerAvatar}) center/cover` : 'var(--primary)',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        fontSize: '3rem', fontWeight: 'bold', border: '4px solid rgba(255,255,255,0.1)',
+                                        boxShadow: '0 0 40px rgba(0,0,0,0.5)'
+                                    }}
+                                >
                                     {!callerAvatar && callerName?.charAt(0)}
-                                </div>
+                                </motion.div>
                                 <div style={{ textAlign: 'center' }}>
-                                    <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>{callerName}</h2>
-                                    <p style={{ opacity: 0.7, textTransform: 'capitalize' }}>
+                                    <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', fontWeight: 600 }}>{callerName}</h2>
+                                    <p style={{ opacity: 0.7, textTransform: 'capitalize', letterSpacing: '0.05em', fontSize: '0.9rem' }}>
                                         {callStatus === 'incoming' ? 'Incoming call...' :
-                                            callStatus === 'calling' ? 'Calling...' : 'Connecting...'}
+                                            callStatus === 'calling' ? 'Calling...' :
+                                                callStatus === 'connected' ? 'Connected' : 'Connecting...'}
                                     </p>
                                 </div>
                             </div>
                         )}
-
-                        {/* Local Video (PiP) - Only show if video is ON */}
-                        <AnimatePresence>
-                            {localStream && !isVideoOff && (
-                                <motion.div
-                                    layout
-                                    initial={{ opacity: 0, scale: 0.8 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.8 }}
-                                    style={{
-                                        position: 'absolute',
-                                        bottom: isMobile ? '1rem' : '2rem',
-                                        right: isMobile ? '1rem' : '2rem',
-                                        width: isMobile ? '100px' : '150px',
-                                        height: isMobile ? '140px' : '200px',
-                                        borderRadius: '12px',
-                                        overflow: 'hidden',
-                                        background: '#333',
-                                        border: '2px solid rgba(255,255,255,0.2)',
-                                        boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-                                        zIndex: 50
-                                    }}
-                                >
-                                    <video
-                                        ref={localVideoRef}
-                                        autoPlay
-                                        muted
-                                        playsInline
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                    />
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
                     </div>
 
-                    {/* Controls */}
-                    <div style={{
-                        padding: isMobile ? '1rem' : '1.5rem 2rem',
-                        background: 'rgba(0,0,0,0.5)',
-                        backdropFilter: 'blur(10px)', display: 'flex',
-                        justifyContent: 'center', alignItems: 'center',
-                        gap: isMobile ? '1rem' : '1.5rem'
-                    }}>
-                        {callStatus === 'incoming' ? (
-                            <>
-                                <button
-                                    onClick={onReject}
-                                    style={{
-                                        width: '60px', height: '60px', borderRadius: '50%',
-                                        background: '#ef4444', border: 'none', color: 'white',
-                                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
-                                    }}
-                                >
-                                    <PhoneOff size={24} />
-                                </button>
-                                <button
-                                    onClick={onAccept}
-                                    style={{
-                                        width: '60px', height: '60px', borderRadius: '50%',
-                                        background: '#22c55e', border: 'none', color: 'white',
-                                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
-                                    }}
-                                >
-                                    {isVideoCall ? <Video size={24} /> : <Phone size={24} />}
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                <button
-                                    onClick={handleToggleMute}
-                                    style={{
-                                        width: '50px', height: '50px', borderRadius: '50%',
-                                        background: isMuted ? '#ef4444' : 'rgba(255,255,255,0.1)',
-                                        border: 'none', color: 'white', cursor: 'pointer',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center'
-                                    }}
-                                >
-                                    {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
-                                </button>
-
-                                {isVideoCall && (
-                                    <button
-                                        onClick={handleToggleVideo}
-                                        style={{
-                                            width: '50px', height: '50px', borderRadius: '50%',
-                                            background: isVideoOff ? '#ef4444' : 'rgba(255,255,255,0.1)',
-                                            border: 'none', color: 'white', cursor: 'pointer',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center'
-                                        }}
-                                    >
-                                        {isVideoOff ? <VideoOff size={20} /> : <Video size={20} />}
-                                    </button>
-                                )}
-
-                                <button
-                                    onClick={onReject || onClose}
-                                    style={{
-                                        width: '60px', height: '60px', borderRadius: '50%',
-                                        background: '#ef4444', border: 'none', color: 'white',
-                                        cursor: 'pointer', display: 'flex', alignItems: 'center',
-                                        justifyContent: 'center'
-                                    }}
-                                >
-                                    <Phone size={28} style={{ transform: 'rotate(135deg)' }} />
-                                </button>
-
-                                <button
-                                    onClick={() => setIsFullScreen(!isFullScreen)}
-                                    style={{
-                                        width: '50px', height: '50px', borderRadius: '50%',
-                                        background: 'rgba(255,255,255,0.1)',
-                                        border: 'none', color: 'white', cursor: 'pointer',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center'
-                                    }}
-                                >
-                                    {isFullScreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
-                                </button>
-                            </>
+                    {/* Local Video (PiP) - Only show if video is ON */}
+                    <AnimatePresence>
+                        {localStream && !isVideoOff && (
+                            <motion.div
+                                layout
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.8 }}
+                                style={{
+                                    position: 'absolute',
+                                    bottom: isMobile ? '1rem' : '2rem',
+                                    right: isMobile ? '1rem' : '2rem',
+                                    width: isMobile ? '100px' : '150px',
+                                    height: isMobile ? '140px' : '200px',
+                                    borderRadius: '12px',
+                                    overflow: 'hidden',
+                                    background: '#333',
+                                    border: '2px solid rgba(255,255,255,0.2)',
+                                    boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                                    zIndex: 50
+                                }}
+                            >
+                                <video
+                                    ref={localVideoRef}
+                                    autoPlay
+                                    muted
+                                    playsInline
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                />
+                            </motion.div>
                         )}
-                    </div>
+                    </AnimatePresence>
+                </div>
+
+                {/* Controls */}
+                <div style={{
+                    padding: isMobile ? '1rem' : '1.5rem 2rem',
+                    background: 'rgba(0,0,0,0.5)',
+                    backdropFilter: 'blur(10px)', display: 'flex',
+                    justifyContent: 'center', alignItems: 'center',
+                    gap: isMobile ? '1rem' : '1.5rem'
+                }}>
+                    {callStatus === 'incoming' ? (
+                        <>
+                            <button
+                                onClick={onReject}
+                                style={{
+                                    width: '60px', height: '60px', borderRadius: '50%',
+                                    background: '#ef4444', border: 'none', color: 'white',
+                                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                }}
+                            >
+                                <PhoneOff size={24} />
+                            </button>
+                            <button
+                                onClick={onAccept}
+                                style={{
+                                    width: '60px', height: '60px', borderRadius: '50%',
+                                    background: '#22c55e', border: 'none', color: 'white',
+                                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                }}
+                            >
+                                {isVideoCall ? <Video size={24} /> : <Phone size={24} />}
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <button
+                                onClick={handleToggleMute}
+                                style={{
+                                    width: '50px', height: '50px', borderRadius: '50%',
+                                    background: isMuted ? '#ef4444' : 'rgba(255,255,255,0.1)',
+                                    border: 'none', color: 'white', cursor: 'pointer',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                }}
+                            >
+                                {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
+                            </button>
+
+                            {isVideoCall && (
+                                <button
+                                    onClick={handleToggleVideo}
+                                    style={{
+                                        width: '50px', height: '50px', borderRadius: '50%',
+                                        background: isVideoOff ? '#ef4444' : 'rgba(255,255,255,0.1)',
+                                        border: 'none', color: 'white', cursor: 'pointer',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                    }}
+                                >
+                                    {isVideoOff ? <VideoOff size={20} /> : <Video size={20} />}
+                                </button>
+                            )}
+
+                            <button
+                                onClick={onReject || onClose}
+                                style={{
+                                    width: '60px', height: '60px', borderRadius: '50%',
+                                    background: '#ef4444', border: 'none', color: 'white',
+                                    cursor: 'pointer', display: 'flex', alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}
+                            >
+                                <Phone size={28} style={{ transform: 'rotate(135deg)' }} />
+                            </button>
+
+                            <button
+                                onClick={() => setIsFullScreen(!isFullScreen)}
+                                style={{
+                                    width: '50px', height: '50px', borderRadius: '50%',
+                                    background: 'rgba(255,255,255,0.1)',
+                                    border: 'none', color: 'white', cursor: 'pointer',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                }}
+                            >
+                                {isFullScreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+                            </button>
+                        </>
+                    )}
                 </div>
             </motion.div>
         </AnimatePresence>

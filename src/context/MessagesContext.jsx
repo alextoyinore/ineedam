@@ -21,6 +21,7 @@ export const MessagesProvider = ({ children }) => {
     const pcRef = useRef(null);
     const streamRef = useRef(null);
     const pendingOfferRef = useRef(null);
+    const iceCandidateQueueRef = useRef([]);
     const callTimeoutRef = useRef(null);
 
     // Keep refs in sync with state for real-time listener closures
@@ -103,16 +104,24 @@ export const MessagesProvider = ({ children }) => {
 
         pc.onicecandidate = (event) => {
             if (event.candidate) {
+                console.log("Local ICE candidate generated");
                 sendCallSignal(targetUserId, { candidate: event.candidate });
             }
         };
 
+        pc.onicegatheringstatechange = () => {
+            console.log("ICE gathering state:", pc.iceGatheringState);
+        };
+
         pc.ontrack = (event) => {
-            console.log("Got remote track", event.streams[0]);
-            setRemoteStream(event.streams[0]);
+            console.log("Got remote track:", event.track.kind, event.streams[0]?.id);
+            if (event.streams && event.streams[0]) {
+                setRemoteStream(event.streams[0]);
+            }
         };
 
         pc.onconnectionstatechange = () => {
+            console.log("Connection state changed:", pc.connectionState);
             if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed' || pc.connectionState === 'closed') {
                 endCall();
             }
@@ -133,6 +142,16 @@ export const MessagesProvider = ({ children }) => {
                     const answer = await pcRef.current.createAnswer();
                     await pcRef.current.setLocalDescription(answer);
                     sendCallSignal(from, { type: 'answer', answer });
+
+                    // Process queued candidates
+                    if (iceCandidateQueueRef.current.length > 0) {
+                        console.log(`Processing ${iceCandidateQueueRef.current.length} queued candidates`);
+                        iceCandidateQueueRef.current.forEach(async (cand) => {
+                            await pcRef.current.addIceCandidate(new RTCIceCandidate(cand));
+                        });
+                        iceCandidateQueueRef.current = [];
+                    }
+
                     if (isVideo) {
                         setCall(prev => ({ ...prev, isVideo: true }));
                     }
@@ -156,13 +175,30 @@ export const MessagesProvider = ({ children }) => {
             if (pcRef.current) {
                 try {
                     await pcRef.current.setRemoteDescription(new RTCSessionDescription(answer));
+
+                    // Process queued candidates
+                    if (iceCandidateQueueRef.current.length > 0) {
+                        console.log(`Processing ${iceCandidateQueueRef.current.length} queued candidates`);
+                        iceCandidateQueueRef.current.forEach(async (cand) => {
+                            await pcRef.current.addIceCandidate(new RTCIceCandidate(cand));
+                        });
+                        iceCandidateQueueRef.current = [];
+                    }
                 } catch (err) {
                     console.error("Setting answer failing:", err);
                 }
             }
         } else if (candidate) {
-            if (pcRef.current) {
-                await pcRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+            console.log("Received remote ICE candidate");
+            if (pcRef.current && pcRef.current.remoteDescription) {
+                try {
+                    await pcRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+                } catch (err) {
+                    console.error("Error adding ICE candidate:", err);
+                }
+            } else {
+                console.log("Queueing ICE candidate - remote description not set");
+                iceCandidateQueueRef.current.push(candidate);
             }
         } else if (type === 'hangup') {
             soundService.stopRinging();
@@ -240,6 +276,15 @@ export const MessagesProvider = ({ children }) => {
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
 
+            // Process queued candidates
+            if (iceCandidateQueueRef.current.length > 0) {
+                console.log(`Processing ${iceCandidateQueueRef.current.length} queued candidates`);
+                iceCandidateQueueRef.current.forEach(async (cand) => {
+                    await pcRef.current.addIceCandidate(new RTCIceCandidate(cand));
+                });
+                iceCandidateQueueRef.current = [];
+            }
+
             setCall(prev => ({ ...prev, status: 'connected' }));
 
             sendCallSignal(call.partner.id, {
@@ -314,6 +359,7 @@ export const MessagesProvider = ({ children }) => {
         setCall(null);
         setLocalStream(null);
         setRemoteStream(null);
+        iceCandidateQueueRef.current = [];
     };
 
     const sendCallSignal = async (targetUserId, signalData) => {
