@@ -49,4 +49,20 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            if (id.includes('supabase')) return 'vendor-db';
+            if (id.includes('framer-motion')) return 'vendor-ui';
+            if (id.includes('lucide-react')) return 'vendor-icons';
+            if (id.includes('react')) return 'vendor-core';
+            return 'vendor';
+          }
+        },
+      },
+    },
+    chunkSizeWarningLimit: 600,
+  },
 })

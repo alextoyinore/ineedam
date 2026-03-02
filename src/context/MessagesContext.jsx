@@ -3,6 +3,8 @@ import { useAuth } from './AuthContext';
 import { supabase } from '../lib/supabase';
 import { fetchUserThreads, getOrCreateThread, createMessage, markThreadAsReadInDb } from '../lib/messageService';
 import { soundService } from '../lib/soundService';
+import { createNotification } from '../lib/notificationService';
+import { uploadFileToCloudinary } from '../lib/needsService';
 
 
 const MessagesContext = createContext();
@@ -243,7 +245,6 @@ export const MessagesProvider = ({ children }) => {
                     const missedCallText = `Missed ${isVideo ? 'video' : 'voice'} call`;
                     await createMessage(threadId, user.id, `[MISSED_CALL]${missedCallText}`, null, null);
 
-                    const { createNotification } = await import('../lib/notificationService');
                     await createNotification(
                         targetUserId,
                         'missed_call',
@@ -392,7 +393,6 @@ export const MessagesProvider = ({ children }) => {
         // If a file or audio blob was provided, upload it first
         if (file) {
             try {
-                const { uploadFileToCloudinary } = await import('../lib/needsService');
                 const result = await uploadFileToCloudinary(file);
                 fileUrl = result.url;
                 fileType = result.fileType;

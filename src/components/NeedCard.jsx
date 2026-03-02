@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Tag, MapPin, Banknote, Clock, MessageSquare, Bookmark, Heart, MessageCircle, Repeat2, Award, Trash2, MoreVertical, Archive, Flag, UserPlus, UserMinus, VolumeX, Share2 } from 'lucide-react';
 import { ReplyModal } from './ReplyModal';
+import { supabase } from '../lib/supabase';
 import { useBookmarks } from '../context/BookmarksContext';
 import { useLikes } from '../context/LikesContext';
 import { useBroadcasts } from '../context/BroadcastsContext';
@@ -48,12 +49,10 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null }) =
                     getLikeCount(need.id),
                     getReplyCount(need.id),
                     getBroadcastCount(need.id),
-                    import('../lib/supabase').then(({ supabase }) =>
-                        supabase
-                            .from('endorsements')
-                            .select('*', { count: 'exact', head: true })
-                            .eq('endorsed_id', need.authorId)
-                    )
+                    supabase
+                        .from('endorsements')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('endorsed_id', need.authorId)
                 ]);
                 setLikeCount(likes);
                 setReplyCount(replies);

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Calendar, Users, Award } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 import { useSocial } from '../context/SocialContext';
 import { getFollowStats } from '../lib/socialService';
 
@@ -23,12 +24,10 @@ export const ProfileHoverCard = ({ userData, children }) => {
                 const [followStats, { count, error }] = await Promise.all([
                     getFollowStats(userData.id),
                     // Query directly since we don't have a count-only method in service yet
-                    import('../lib/supabase').then(({ supabase }) =>
-                        supabase
-                            .from('endorsements')
-                            .select('*', { count: 'exact', head: true })
-                            .eq('endorsed_id', userData.id)
-                    )
+                    supabase
+                        .from('endorsements')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('endorsed_id', userData.id)
                 ]);
 
                 setStats({
