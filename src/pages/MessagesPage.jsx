@@ -16,12 +16,12 @@ export const MessagesPage = () => {
 
     // On mobile, the thread list and chat detail are separate views.
     // On desktop, they could be side-by-side, but the user requested a list-to-detail flow.
-    // We'll use 100% width for both for now to match the user's preferred layout.
+    const isDetail = location.pathname.split('/').filter(Boolean).length >= 2;
 
     return (
         <div style={{
             display: 'flex',
-            height: isMobile ? 'calc(100dvh - var(--mobile-nav-height))' : 'calc(100vh - 2px)',
+            height: isMobile ? (isDetail ? '100dvh' : 'calc(100dvh - var(--mobile-nav-height))') : 'calc(100vh - 2px)',
             width: '100%',
             overflow: 'hidden',
             position: 'relative'

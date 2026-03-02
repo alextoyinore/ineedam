@@ -389,10 +389,10 @@ export const MessagesProvider = ({ children }) => {
             } catch (err) {
                 console.error("Failed to record call status message:", err);
             }
+        }
 
-            if (currentCall.partner) {
-                sendCallSignal(currentCall.partner.id, { type: 'hangup', reason });
-            }
+        if (currentCall?.partner && !isRemote) {
+            sendCallSignal(currentCall.partner.id, { type: 'hangup', reason });
         }
 
         setCall(null);

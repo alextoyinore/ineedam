@@ -57,7 +57,7 @@ export const Layout = ({ children }) => {
       )}
 
       {/* Mobile Bottom Navigation */}
-      <BottomNav />
+      {!isChatDetail && <BottomNav />}
 
       {/* Modals */}
       {isPostModalOpen && <PostNeedModal isOpen={isPostModalOpen} onClose={() => setIsPostModalOpen(false)} />}

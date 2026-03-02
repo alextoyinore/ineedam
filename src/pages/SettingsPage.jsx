@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSettings } from '../context/SettingsContext';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -6,11 +6,35 @@ import {
     ArrowLeft, Trash2, LogOut, Star, UserX
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useMessageSecurity } from '../context/MessageSecurityContext';
+import { MessagePinSetupModal } from '../components/MessagePinSetupModal';
+import { MessagePinVerifyModal } from '../components/MessagePinVerifyModal';
 
 export const SettingsPage = () => {
     const { settings, toggleSetting, updateSetting } = useSettings();
     const { signOut } = useAuth();
     const navigate = useNavigate();
+    const { hasPinSetup, clearPin } = useMessageSecurity();
+    const [isPinSetupModalOpen, setIsPinSetupModalOpen] = useState(false);
+    const [isPinVerifyModalOpen, setIsPinVerifyModalOpen] = useState(false);
+
+    // Sync state for toggle
+    const handlePinToggle = async () => {
+        if (hasPinSetup) {
+            setIsPinVerifyModalOpen(true);
+        } else {
+            setIsPinSetupModalOpen(true);
+        }
+    };
+
+    const handleConfirmDeactivation = async () => {
+        const success = await clearPin();
+        if (success) {
+            alert('Message PIN deactivated successfully.');
+        } else {
+            alert('Failed to deactivate message PIN.');
+        }
+    };
 
     const handleLogout = async () => {
         await signOut();
@@ -83,6 +107,15 @@ export const SettingsPage = () => {
                     type: 'link',
                     path: '/settings/archived',
                     icon: <Trash2 size={20} />
+                },
+                {
+                    id: 'messagePinLock',
+                    label: 'Message PIN Lock',
+                    description: 'Require a 4-digit PIN to access private chats',
+                    type: 'toggle',
+                    icon: <Shield size={20} />,
+                    value: hasPinSetup,
+                    customToggle: handlePinToggle
                 }
             ]
         }
@@ -90,6 +123,15 @@ export const SettingsPage = () => {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <MessagePinSetupModal
+                isOpen={isPinSetupModalOpen}
+                onClose={() => setIsPinSetupModalOpen(false)}
+            />
+            <MessagePinVerifyModal
+                isOpen={isPinVerifyModalOpen}
+                onClose={() => setIsPinVerifyModalOpen(false)}
+                onSuccess={handleConfirmDeactivation}
+            />
             {/* Sticky Header — matches UserProfilePage & NeedDetailPage */}
             <header className="sticky-header" style={{
                 padding: '0.75rem 1.5rem',
@@ -162,7 +204,7 @@ export const SettingsPage = () => {
                                         </button>
                                     ) : item.type === 'toggle' ? (
                                         <button
-                                            onClick={() => toggleSetting(item.id)}
+                                            onClick={() => item.customToggle ? item.customToggle() : toggleSetting(item.id)}
                                             style={{
                                                 width: '48px', height: '26px', borderRadius: '13px',
                                                 background: item.value ? 'linear-gradient(135deg, var(--primary), var(--secondary))' : 'var(--bg-base)',
@@ -179,7 +221,7 @@ export const SettingsPage = () => {
                                                 boxShadow: 'none'
                                             }} />
                                         </button>
-                                    ) : (
+                                    ) : item.type === 'select' ? (
                                         <select
                                             value={item.value}
                                             onChange={(e) => updateSetting(item.id, e.target.value)}
@@ -194,6 +236,18 @@ export const SettingsPage = () => {
                                                 <option key={opt.value} value={opt.value}>{opt.label}</option>
                                             ))}
                                         </select>
+                                    ) : (
+                                        <button
+                                            onClick={item.action}
+                                            style={{
+                                                padding: '0.4rem 1rem', borderRadius: '8px',
+                                                background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)',
+                                                color: '#ef4444', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600
+                                            }}
+                                            className="nav-link-hover"
+                                        >
+                                            Deactivate
+                                        </button>
                                     )}
                                 </div>
                             ))}

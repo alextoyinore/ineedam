@@ -100,3 +100,29 @@ export const verifyMessagePin = async (userId, pinToVerify) => {
         return false;
     }
 };
+
+/**
+ * Removes the user's message PIN.
+ * 
+ * @param {string} userId - The ID of the current user.
+ * @returns {Promise<boolean>} - True if successful.
+ */
+export const removeMessagePin = async (userId) => {
+    if (!userId) return false;
+
+    try {
+        const { error } = await supabase
+            .from('user_security')
+            .update({
+                message_pin_hash: null,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', userId);
+
+        if (error) throw error;
+        return true;
+    } catch (err) {
+        console.error('Failed to remove message pin:', err);
+        return false;
+    }
+};

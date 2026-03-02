@@ -268,9 +268,8 @@ button {
 
 @media (max-width: 768px) {
   .is-chat-detail {
-    top: var(--mobile-header-height);
-    /* Exact height between mobile top header and bottom nav */
-    height: calc(100vh - var(--mobile-header-height) - var(--mobile-nav-height));
+    top: 0;
+    height: 100dvh;
   }
 }
 
@@ -648,7 +647,7 @@ button {
     right: 0;
     bottom: 0;
     z-index: 100;
-    height: calc(100dvh - var(--mobile-nav-height));
+    height: 100dvh;
     background: var(--bg-surface);
     display: flex;
     flex-direction: column;

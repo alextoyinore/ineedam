@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
-import { hasPinSetup, verifyMessagePin, setupMessagePin } from '../lib/securityService';
+import { hasPinSetup, verifyMessagePin, setupMessagePin, removeMessagePin } from '../lib/securityService';
 
 const MessageSecurityContext = createContext();
 
@@ -24,11 +24,11 @@ export const MessageSecurityProvider = ({ children }) => {
                 setLoading(true);
                 const setup = await hasPinSetup(user.id);
                 setHasPin(setup);
-                setIsLocked(true); // Always start locked when session init
+                setIsLocked(setup); // Only lock if PIN is setup
                 setLoading(false);
             } else {
                 setHasPin(false);
-                setIsLocked(true);
+                setIsLocked(false);
                 setLoading(false);
             }
         };
@@ -39,9 +39,11 @@ export const MessageSecurityProvider = ({ children }) => {
     // Route change listener: lock messages if navigating away from the messages routes
     useEffect(() => {
         if (!location.pathname.startsWith('/messages')) {
-            setIsLocked(true);
+            if (hasPin) {
+                setIsLocked(true);
+            }
         }
-    }, [location.pathname]);
+    }, [location.pathname, hasPin]);
 
     const unlock = async (pin) => {
         if (!user) return false;
@@ -64,6 +66,17 @@ export const MessageSecurityProvider = ({ children }) => {
         return false;
     };
 
+    const clear = async () => {
+        if (!user) return false;
+        const success = await removeMessagePin(user.id);
+        if (success) {
+            setHasPin(false);
+            setIsLocked(false); // Unlock immediately on deactivation
+            return true;
+        }
+        return false;
+    };
+
     const lock = () => {
         setIsLocked(true);
     };
@@ -74,6 +87,7 @@ export const MessageSecurityProvider = ({ children }) => {
         loading,
         verifyPin: unlock,
         setupPin: setup,
+        clearPin: clear,
         lockMessages: lock
     };
 
