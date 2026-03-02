@@ -275,8 +275,8 @@ export const ChatDetail = () => {
                 {[...activeThread.messages].reverse().map(msg => {
                     const isMe = msg.sender === 'Me';
                     const isAudio = msg.fileType?.startsWith('audio/') || msg.fileUrl?.toLowerCase().endsWith('.webm') || msg.fileUrl?.toLowerCase().endsWith('.mp3') || msg.fileUrl?.toLowerCase().endsWith('.wav');
-                    const isMissedCall = msg.text?.startsWith('[MISSED_CALL]');
-                    const missedCallText = isMissedCall ? msg.text.replace('[MISSED_CALL]', '') : null;
+                    const isCall = msg.text?.startsWith('[CALL_');
+                    const isMissedCall = msg.text?.startsWith('[CALL_MISSED]') || msg.text?.startsWith('[CALL_REJECTED]');
 
                     return (
                         <div
@@ -302,7 +302,7 @@ export const ChatDetail = () => {
                                 fontSize: '0.92rem',
                                 overflow: 'hidden',
                             }}>
-                                {msg.text?.startsWith('[CALL_') || msg.text?.startsWith('[MISSED_CALL]') ? (
+                                {isCall ? (
                                     <div
                                         onClick={() => {
                                             const isVideo = msg.text.toLowerCase().includes('video');
@@ -312,43 +312,31 @@ export const ChatDetail = () => {
                                     >
                                         <div style={{
                                             width: '32px', height: '32px', borderRadius: '50%',
-                                            background: isMe ? 'rgba(255,255,255,0.2)' : (msg.text.includes('MISSED') ? 'rgba(239, 68, 68, 0.1)' : 'rgba(99, 102, 241, 0.1)'),
+                                            background: isMe ? 'rgba(255,255,255,0.2)' : (isMissedCall ? 'rgba(239, 68, 68, 0.1)' : 'rgba(34, 197, 94, 0.1)'),
                                             display: 'flex', alignItems: 'center', justifyContent: 'center'
                                         }}>
                                             {msg.text.includes('SUCCESS') ? (
-                                                msg.text.includes('Video') ? <Video size={16} color={isMe ? 'white' : 'var(--primary)'} /> : <Phone size={16} color={isMe ? 'white' : 'var(--primary)'} />
+                                                msg.text.includes('Video') ? <Video size={16} color={isMe ? 'white' : '#22c55e'} /> : <Phone size={16} color={isMe ? 'white' : '#22c55e'} />
+                                            ) : isMissedCall ? (
+                                                <PhoneOff size={16} color={isMe ? 'white' : '#ef4444'} />
                                             ) : (
-                                                <PhoneOff size={16} color={isMe ? 'white' : (msg.text.includes('MISSED') ? '#ef4444' : 'var(--text-muted)')} />
+                                                <Phone size={16} color={isMe ? 'white' : 'var(--primary)'} />
                                             )}
                                         </div>
                                         <div style={{ flex: 1 }}>
-                                            <div style={{ fontWeight: 600 }}>
+                                            <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>
                                                 {(() => {
                                                     const isVideo = msg.text.toLowerCase().includes('video');
                                                     const type = isVideo ? 'Video' : 'Voice';
-
-                                                    if (msg.text.includes('SUCCESS')) {
-                                                        const duration = msg.text.split('•')[1] || '';
-                                                        return `${type} call • ${duration}`;
-                                                    }
-
-                                                    if (msg.text.includes('MISSED')) {
-                                                        return isMe ? 'Unanswered call' : 'Missed call';
-                                                    }
-
-                                                    if (msg.text.includes('REJECTED')) {
-                                                        return isMe ? 'Canceled call' : 'Refused call';
-                                                    }
-
-                                                    if (msg.text.includes('CANCELLED')) {
-                                                        return isMe ? 'Canceled call' : 'Missed call';
-                                                    }
-
-                                                    return msg.text.replace(/\[CALL_(SUCCESS|MISSED|REJECTED|CANCELLED)\]/, '').replace('[MISSED_CALL]', '');
+                                                    if (msg.text.includes('SUCCESS')) return `${type} Call`;
+                                                    if (msg.text.includes('MISSED')) return 'Missed Call';
+                                                    if (msg.text.includes('REJECTED')) return isMe ? 'Canceled Call' : 'Refused Call';
+                                                    if (msg.text.includes('CANCELLED')) return isMe ? 'Canceled Call' : 'Missed Call';
+                                                    return 'Call';
                                                 })()}
                                             </div>
                                             <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>
-                                                {msg.text.includes('SUCCESS') ? 'Call ended' : 'Tap to call back'}
+                                                {msg.text.includes('SUCCESS') ? (msg.text.split('•')[1]?.trim() || 'Call ended') : 'Tap to call back'}
                                             </div>
                                         </div>
                                     </div>
@@ -468,6 +456,6 @@ export const ChatDetail = () => {
                     />
                 )}
             </AnimatePresence>
-        </motion.div>
+        </motion.div >
     );
 };

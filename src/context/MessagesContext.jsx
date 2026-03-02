@@ -25,6 +25,8 @@ export const MessagesProvider = ({ children }) => {
     const pendingOfferRef = useRef(null);
     const iceCandidateQueueRef = useRef([]);
     const callTimeoutRef = useRef(null);
+    const isEndingCallRef = useRef(false);
+    const lastProcessedCallIdRef = useRef(null);
 
     // Keep refs in sync with state for real-time listener closures
     useEffect(() => {
@@ -208,8 +210,6 @@ export const MessagesProvider = ({ children }) => {
         } else if (type === 'hangup') {
             soundService.stopRinging();
             endCall(payload.reason, true);
-            // Wait briefly for the DB to commit the initiator's message, then refresh
-            setTimeout(() => loadThreads(), 1000);
         }
     };
 
@@ -240,7 +240,7 @@ export const MessagesProvider = ({ children }) => {
                 fromAvatar: profile?.avatar_url
             });
 
-            // Set a timeout for missed call (45 seconds)
+            // Set a timeout for missed call (30 seconds)
             callTimeoutRef.current = setTimeout(async () => {
                 const currentCall = callRef.current;
                 if (currentCall?.status === 'calling') {
@@ -257,7 +257,7 @@ export const MessagesProvider = ({ children }) => {
                     );
                     endCall('timeout');
                 }
-            }, 45000);
+            }, 30000);
         } catch (err) {
             console.error("Failed to initiate call", err);
             alert("Could not start call: " + err.message);
@@ -344,26 +344,45 @@ export const MessagesProvider = ({ children }) => {
     };
 
     const endCall = async (reason = null, isRemote = false) => {
-        soundService.stopRinging();
-
         const currentCall = callRef.current;
+        if (!currentCall || isEndingCallRef.current) return;
 
+        isEndingCallRef.current = true;
+        soundService.stopRinging();
+        console.log("Ending call. Reason:", reason, "Remote:", isRemote);
+
+        // 1. SIGNAL OTHER PARTY FIRST (Fire and forget)
+        // We do this BEFORE closing PC to ensure it has the best chance of sending
+        if (currentCall.partner && !isRemote) {
+            sendCallSignal(currentCall.partner.id, { type: 'hangup', reason });
+        }
+
+        // 2. CLOSE UI & PC immediately for responsiveness
         if (callTimeoutRef.current) {
             clearTimeout(callTimeoutRef.current);
             callTimeoutRef.current = null;
         }
+
         if (pcRef.current) {
-            pcRef.current.close();
+            try { pcRef.current.close(); } catch (e) { }
             pcRef.current = null;
         }
+
         if (streamRef.current) {
-            streamRef.current.getTracks().forEach(track => track.stop());
+            try { streamRef.current.getTracks().forEach(track => track.stop()); } catch (e) { }
             streamRef.current = null;
         }
 
-        // Only the initiator persists the message to ensure it shows on their "sent" (right) side
-        // and on the receiver's "received" (left) side.
-        if (currentCall && currentCall.isInitiator) {
+        setCall(null);
+        setLocalStream(null);
+        setRemoteStream(null);
+        iceCandidateQueueRef.current = [];
+
+        // 3. DB LOGGING (Only for initiator, and only once per call session)
+        // We use a unique ID for the call if we have one, or just a timestamp
+        const callSessionId = currentCall.startTime || Date.now();
+        if (currentCall.isInitiator && lastProcessedCallIdRef.current !== callSessionId) {
+            lastProcessedCallIdRef.current = callSessionId;
             try {
                 const threadId = await getOrCreateThread(user.id, currentCall.partner.id);
 
@@ -373,42 +392,53 @@ export const MessagesProvider = ({ children }) => {
                     const seconds = duration % 60;
                     const durationText = `${minutes}:${seconds.toString().padStart(2, '0')}`;
                     await createMessage(threadId, user.id, `[CALL_SUCCESS]${currentCall.isVideo ? 'Video' : 'Voice'} call • ${durationText}`, null, null);
-                } else if (currentCall.status === 'calling') {
+                } else {
+                    // Only log if it's not a remote hangup (which usually means a rejection or timeout)
+                    // OR if it's specifically a rejection/timeout reason
                     if (reason === 'timeout') {
                         await createMessage(threadId, user.id, `[CALL_MISSED]${currentCall.isVideo ? 'video' : 'voice'} call`, null, null);
                     } else if (reason === 'rejected') {
                         await createMessage(threadId, user.id, `[CALL_REJECTED]${currentCall.isVideo ? 'video' : 'voice'} call`, null, null);
-                    } else {
-                        // Caller hung up before answering
+                    } else if (currentCall.status === 'calling' && !isRemote) {
+                        // Caller hung up before answer
                         await createMessage(threadId, user.id, `[CALL_CANCELLED]${currentCall.isVideo ? 'video' : 'voice'} call`, null, null);
-                        reason = 'cancelled';
                     }
                 }
-                // Refresh local state for the initiator
                 await loadThreads();
             } catch (err) {
                 console.error("Failed to record call status message:", err);
             }
+        } else if (!currentCall.isInitiator) {
+            // Receiver side: just refresh to see the initiator's message
+            setTimeout(() => loadThreads(), 2000);
         }
 
-        if (currentCall?.partner && !isRemote) {
-            sendCallSignal(currentCall.partner.id, { type: 'hangup', reason });
-        }
-
-        setCall(null);
-        setLocalStream(null);
-        setRemoteStream(null);
-        iceCandidateQueueRef.current = [];
+        // Reset the ending flag after a short delay to allow for the next call
+        setTimeout(() => {
+            isEndingCallRef.current = false;
+        }, 1000);
     };
 
     const sendCallSignal = async (targetUserId, signalData) => {
         if (!user) return;
-        console.log(`Sending signal to ${targetUserId}:`, signalData);
-        await supabase.channel(`call-${targetUserId}`).send({
-            type: 'broadcast',
-            event: 'call-signal',
-            payload: { from: user.id, ...signalData }
-        });
+
+        try {
+            // Safety: Ensure reason/payload doesn't contain circular objects (like DOM events)
+            const safeSignalData = { ...signalData };
+            if (safeSignalData.reason && typeof safeSignalData.reason !== 'string') {
+                safeSignalData.reason = 'terminated';
+            }
+
+            console.log(`Sending signal to ${targetUserId}:`, safeSignalData.type || 'candidate');
+            const channel = supabase.channel(`call-${targetUserId}`);
+            await channel.send({
+                type: 'broadcast',
+                event: 'call-signal',
+                payload: { from: user.id, ...safeSignalData }
+            });
+        } catch (err) {
+            console.error("Signal send failed:", err);
+        }
     };
 
     const startChat = async (otherUserId) => {

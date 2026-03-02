@@ -74,7 +74,7 @@ export const Layout = ({ children }) => {
           localStream={localStream}
           remoteStream={remoteStream}
           onAccept={acceptCall}
-          onReject={endCall}
+          onReject={() => endCall('rejected')}
           onToggleVideo={toggleVideo}
         />
       )}
