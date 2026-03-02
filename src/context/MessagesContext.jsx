@@ -167,7 +167,8 @@ export const MessagesProvider = ({ children }) => {
             setCall({
                 status: 'incoming',
                 isVideo,
-                partner: { id: from, name: fromName, avatar: fromAvatar }
+                partner: { id: from, name: fromName, avatar: fromAvatar },
+                isInitiator: false
             });
         } else if (type === 'answer') {
             if (callTimeoutRef.current) {
@@ -206,7 +207,7 @@ export const MessagesProvider = ({ children }) => {
             }
         } else if (type === 'hangup') {
             soundService.stopRinging();
-            endCall();
+            endCall(payload.reason, true);
         }
     };
 
@@ -225,7 +226,8 @@ export const MessagesProvider = ({ children }) => {
             setCall({
                 status: 'calling',
                 isVideo,
-                partner: { id: targetUserId, name: targetName, avatar: targetAvatar }
+                partner: { id: targetUserId, name: targetName, avatar: targetAvatar },
+                isInitiator: true
             });
 
             sendCallSignal(targetUserId, {
@@ -236,16 +238,13 @@ export const MessagesProvider = ({ children }) => {
                 fromAvatar: profile?.avatar_url
             });
 
-            // Set a timeout for missed call (60 seconds)
+            // Set a timeout for missed call (45 seconds)
             callTimeoutRef.current = setTimeout(async () => {
                 const currentCall = callRef.current;
                 if (currentCall?.status === 'calling') {
-                    console.log("Call timed out - missed call");
+                    console.log("Call timeout - calling endCall");
                     const threadId = await getOrCreateThread(user.id, targetUserId);
-
-                    // Create missed call message in chat
                     const missedCallText = `Missed ${isVideo ? 'video' : 'voice'} call`;
-                    await createMessage(threadId, user.id, `[MISSED_CALL]${missedCallText}`, null, null);
 
                     await createNotification(
                         targetUserId,
@@ -254,9 +253,9 @@ export const MessagesProvider = ({ children }) => {
                         missedCallText,
                         threadId
                     );
-                    endCall();
+                    endCall('timeout');
                 }
-            }, 60000);
+            }, 45000);
         } catch (err) {
             console.error("Failed to initiate call", err);
             alert("Could not start call: " + err.message);
@@ -288,7 +287,7 @@ export const MessagesProvider = ({ children }) => {
                 iceCandidateQueueRef.current = [];
             }
 
-            setCall(prev => ({ ...prev, status: 'connected', startTime: Date.now() }));
+            setCall(prev => ({ ...prev, status: 'connected', startTime: Date.now(), isInitiator: false }));
 
             sendCallSignal(call.partner.id, {
                 type: 'answer',
@@ -300,7 +299,7 @@ export const MessagesProvider = ({ children }) => {
             pendingOfferRef.current = null;
         } catch (err) {
             console.error("Failed to accept call", err);
-            endCall();
+            endCall('failed');
         }
     };
 
@@ -342,7 +341,7 @@ export const MessagesProvider = ({ children }) => {
         }
     };
 
-    const endCall = async () => {
+    const endCall = async (reason = null, isRemote = false) => {
         soundService.stopRinging();
 
         const currentCall = callRef.current;
@@ -360,7 +359,9 @@ export const MessagesProvider = ({ children }) => {
             streamRef.current = null;
         }
 
-        if (currentCall) {
+        // Only the initiator persists the message to ensure it shows on their "sent" (right) side
+        // and on the receiver's "received" (left) side.
+        if (currentCall && currentCall.isInitiator) {
             try {
                 const threadId = await getOrCreateThread(user.id, currentCall.partner.id);
 
@@ -370,17 +371,23 @@ export const MessagesProvider = ({ children }) => {
                     const seconds = duration % 60;
                     const durationText = `${minutes}:${seconds.toString().padStart(2, '0')}`;
                     await createMessage(threadId, user.id, `[CALL_SUCCESS]${currentCall.isVideo ? 'Video' : 'Voice'} call • ${durationText}`, null, null);
-                } else if (currentCall.status === 'incoming') {
-                    await createMessage(threadId, user.id, `[CALL_MISSED]Missed ${currentCall.isVideo ? 'video' : 'voice'} call`, null, null);
                 } else if (currentCall.status === 'calling') {
-                    await createMessage(threadId, user.id, `[CALL_CANCELLED]Cancelled ${currentCall.isVideo ? 'video' : 'voice'} call`, null, null);
+                    if (reason === 'timeout') {
+                        await createMessage(threadId, user.id, `[CALL_MISSED]${currentCall.isVideo ? 'video' : 'voice'} call`, null, null);
+                    } else if (reason === 'rejected') {
+                        await createMessage(threadId, user.id, `[CALL_REJECTED]${currentCall.isVideo ? 'video' : 'voice'} call`, null, null);
+                    } else {
+                        // Caller hung up before answering
+                        await createMessage(threadId, user.id, `[CALL_CANCELLED]${currentCall.isVideo ? 'video' : 'voice'} call`, null, null);
+                        reason = 'cancelled';
+                    }
                 }
             } catch (err) {
                 console.error("Failed to record call status message:", err);
             }
 
             if (currentCall.partner) {
-                sendCallSignal(currentCall.partner.id, { type: 'hangup' });
+                sendCallSignal(currentCall.partner.id, { type: 'hangup', reason });
             }
         }
 

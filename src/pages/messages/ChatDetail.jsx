@@ -323,7 +323,29 @@ export const ChatDetail = () => {
                                         </div>
                                         <div style={{ flex: 1 }}>
                                             <div style={{ fontWeight: 600 }}>
-                                                {msg.text.replace(/\[CALL_(SUCCESS|MISSED|CANCELLED)\]/, '').replace('[MISSED_CALL]', '')}
+                                                {(() => {
+                                                    const isVideo = msg.text.toLowerCase().includes('video');
+                                                    const type = isVideo ? 'Video' : 'Voice';
+
+                                                    if (msg.text.includes('SUCCESS')) {
+                                                        const duration = msg.text.split('•')[1] || '';
+                                                        return `${type} call • ${duration}`;
+                                                    }
+
+                                                    if (msg.text.includes('MISSED')) {
+                                                        return isMe ? 'Unanswered call' : 'Missed call';
+                                                    }
+
+                                                    if (msg.text.includes('REJECTED')) {
+                                                        return isMe ? 'Canceled call' : 'Refused call';
+                                                    }
+
+                                                    if (msg.text.includes('CANCELLED')) {
+                                                        return isMe ? 'Canceled call' : 'Missed call';
+                                                    }
+
+                                                    return msg.text.replace(/\[CALL_(SUCCESS|MISSED|REJECTED|CANCELLED)\]/, '').replace('[MISSED_CALL]', '');
+                                                })()}
                                             </div>
                                             <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>
                                                 {msg.text.includes('SUCCESS') ? 'Call ended' : 'Tap to call back'}
