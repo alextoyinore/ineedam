@@ -275,6 +275,8 @@ export const ChatDetail = () => {
                 {[...activeThread.messages].reverse().map(msg => {
                     const isMe = msg.sender === 'Me';
                     const isAudio = msg.fileType?.startsWith('audio/') || msg.fileUrl?.toLowerCase().endsWith('.webm') || msg.fileUrl?.toLowerCase().endsWith('.mp3') || msg.fileUrl?.toLowerCase().endsWith('.wav');
+                    const isMissedCall = msg.text?.startsWith('[MISSED_CALL]');
+                    const missedCallText = isMissedCall ? msg.text.replace('[MISSED_CALL]', '') : null;
 
                     return (
                         <div
@@ -290,24 +292,45 @@ export const ChatDetail = () => {
                                 {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
                             <div style={{
-                                padding: msg.fileUrl && !msg.text && !isAudio ? '0' : '0.6rem 1rem',
-                                borderRadius: '18px',
-                                borderBottomRightRadius: isMe ? '4px' : '18px',
-                                borderBottomLeftRadius: isMe ? '18px' : '4px',
-                                background: msg.fileUrl && !msg.text && !isAudio ? 'transparent' : (isMe ? 'var(--primary)' : 'var(--bg-surface)'),
+                                padding: (msg.fileUrl && !msg.text && !isAudio) ? '0' : '0.6rem 1rem',
+                                borderRadius: isMissedCall ? '12px' : '18px',
+                                borderBottomRightRadius: isMe ? '4px' : (isMissedCall ? '12px' : '18px'),
+                                borderBottomLeftRadius: isMe ? (isMissedCall ? '12px' : '18px') : '4px',
+                                background: (msg.fileUrl && !msg.text && !isAudio) ? 'transparent' : (isMe ? 'var(--primary)' : 'var(--bg-surface)'),
                                 border: isMe ? 'none' : '1px solid var(--border-glass)',
                                 color: isMe ? 'white' : 'var(--text-primary)',
                                 fontSize: '0.92rem',
                                 overflow: 'hidden',
                             }}>
-                                {msg.fileUrl && (
-                                    isAudio ? (
-                                        <AudioBubble url={msg.fileUrl} isMe={isMe} />
-                                    ) : (
-                                        <MessageAttachment fileUrl={msg.fileUrl} fileType={msg.fileType} onView={setViewingFile} />
-                                    )
+                                {isMissedCall ? (
+                                    <div
+                                        onClick={() => initiateCall(activeThread.withUserId, missedCallText.toLowerCase().includes('video'))}
+                                        style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}
+                                    >
+                                        <div style={{
+                                            width: '32px', height: '32px', borderRadius: '50%',
+                                            background: isMe ? 'rgba(255,255,255,0.2)' : 'rgba(239, 68, 68, 0.1)',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                        }}>
+                                            <PhoneOff size={16} color={isMe ? 'white' : '#ef4444'} />
+                                        </div>
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ fontWeight: 600 }}>{missedCallText}</div>
+                                            <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>Tap to call back</div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <>
+                                        {msg.fileUrl && (
+                                            isAudio ? (
+                                                <AudioBubble url={msg.fileUrl} isMe={isMe} />
+                                            ) : (
+                                                <MessageAttachment fileUrl={msg.fileUrl} fileType={msg.fileType} onView={setViewingFile} />
+                                            )
+                                        )}
+                                        {msg.text && <span>{msg.text}</span>}
+                                    </>
                                 )}
-                                {msg.text && <span>{msg.text}</span>}
                             </div>
                         </div>
                     );

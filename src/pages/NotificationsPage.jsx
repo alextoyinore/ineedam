@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Bell, Check, Trash2, UserPlus, MessageCircle, Info, Heart } from 'lucide-react';
+import { Bell, Check, Trash2, UserPlus, MessageCircle, Info, Heart, PhoneOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '../context/NotificationsContext';
 
@@ -18,6 +18,7 @@ export const NotificationsPage = () => {
             case 'follow': return <UserPlus size={18} color="#3b82f6" />;
             case 'reply': return <MessageCircle size={18} color="#10b981" />;
             case 'like': return <Heart size={18} color="#ef4444" />;
+            case 'missed_call': return <PhoneOff size={18} color="#ef4444" />;
             default: return <Info size={18} color="var(--text-muted)" />;
         }
     };
@@ -67,6 +68,8 @@ export const NotificationsPage = () => {
                                     navigate(`/${notif.actorProfile.username}`);
                                 } else if ((notif.type === 'reply' || notif.type === 'like') && notif.reference_id) {
                                     navigate(`/need/${notif.reference_id}`);
+                                } else if (notif.type === 'missed_call' && notif.reference_id) {
+                                    navigate(`/messages/${notif.reference_id}`);
                                 }
                             }}
                             style={{

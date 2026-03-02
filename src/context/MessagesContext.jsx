@@ -12,20 +12,25 @@ export const MessagesProvider = ({ children }) => {
     const [threads, setThreads] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeThreadId, setActiveThreadId] = useState(null);
-    const activeThreadIdRef = React.useRef(null);
-
-    // Call State
     const [call, setCall] = useState(null); // { status: 'idle'|'calling'|'incoming'|'connected', isVideo, partner: { id, name, avatar }, stream: null }
     const [localStream, setLocalStream] = useState(null);
     const [remoteStream, setRemoteStream] = useState(null);
+
+    const activeThreadIdRef = useRef(activeThreadId);
+    const callRef = useRef(call);
     const pcRef = useRef(null);
     const streamRef = useRef(null);
     const pendingOfferRef = useRef(null);
+    const callTimeoutRef = useRef(null);
 
-    // Keep ref in sync with state for real-time listener closure
+    // Keep refs in sync with state for real-time listener closures
     useEffect(() => {
         activeThreadIdRef.current = activeThreadId;
     }, [activeThreadId]);
+
+    useEffect(() => {
+        callRef.current = call;
+    }, [call]);
 
     const loadThreads = async () => {
         if (!user) {
@@ -121,6 +126,7 @@ export const MessagesProvider = ({ children }) => {
         const { from, type, offer, answer, candidate, isVideo, fromName, fromAvatar } = payload;
 
         if (type === 'offer') {
+            soundService.startRinging();
             pendingOfferRef.current = offer;
             setCall({
                 status: 'incoming',
@@ -128,6 +134,10 @@ export const MessagesProvider = ({ children }) => {
                 partner: { id: from, name: fromName, avatar: fromAvatar }
             });
         } else if (type === 'answer') {
+            if (callTimeoutRef.current) {
+                clearTimeout(callTimeoutRef.current);
+                callTimeoutRef.current = null;
+            }
             if (pcRef.current) {
                 await pcRef.current.setRemoteDescription(new RTCSessionDescription(answer));
             }
@@ -136,6 +146,7 @@ export const MessagesProvider = ({ children }) => {
                 await pcRef.current.addIceCandidate(new RTCIceCandidate(candidate));
             }
         } else if (type === 'hangup') {
+            soundService.stopRinging();
             endCall();
         }
     };
@@ -165,6 +176,29 @@ export const MessagesProvider = ({ children }) => {
                 fromName: profile?.display_name || user.email,
                 fromAvatar: profile?.avatar_url
             });
+
+            // Set a timeout for missed call (60 seconds)
+            callTimeoutRef.current = setTimeout(async () => {
+                const currentCall = callRef.current;
+                if (currentCall?.status === 'calling') {
+                    console.log("Call timed out - missed call");
+                    const threadId = await getOrCreateThread(user.id, targetUserId);
+
+                    // Create missed call message in chat
+                    const missedCallText = `Missed ${isVideo ? 'video' : 'voice'} call`;
+                    await createMessage(threadId, user.id, `[MISSED_CALL]${missedCallText}`, null, null);
+
+                    const { createNotification } = await import('../lib/notificationService');
+                    await createNotification(
+                        targetUserId,
+                        'missed_call',
+                        user.id,
+                        missedCallText,
+                        threadId
+                    );
+                    endCall();
+                }
+            }, 60000);
         } catch (err) {
             console.error("Failed to initiate call", err);
             alert("Could not start call: " + err.message);
@@ -174,6 +208,7 @@ export const MessagesProvider = ({ children }) => {
     const acceptCall = async () => {
         if (!call || !call.partner || !pendingOfferRef.current) return;
 
+        soundService.stopRinging();
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: call.isVideo });
             setLocalStream(stream);
@@ -203,6 +238,11 @@ export const MessagesProvider = ({ children }) => {
     };
 
     const endCall = () => {
+        soundService.stopRinging();
+        if (callTimeoutRef.current) {
+            clearTimeout(callTimeoutRef.current);
+            callTimeoutRef.current = null;
+        }
         if (pcRef.current) {
             pcRef.current.close();
             pcRef.current = null;
