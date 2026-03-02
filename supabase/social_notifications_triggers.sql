@@ -102,8 +102,8 @@ BEGIN
       NEW.thread_id,
       -- Snippet of the message
       CASE 
-        WHEN length(NEW.content) > 60 THEN left(NEW.content, 57) || '...'
-        ELSE NEW.content
+        WHEN length(NEW.text) > 60 THEN left(NEW.text, 57) || '...'
+        ELSE NEW.text
       END
     );
   END IF;
