@@ -240,6 +240,19 @@ export const MessagesProvider = ({ children }) => {
                 fromAvatar: profile?.avatar_url
             });
 
+            // Create an in-app notification for the incoming call (triggers push)
+            try {
+                await createNotification(
+                    targetUserId,
+                    'incoming_call',
+                    user.id,
+                    `is calling you...`,
+                    null // referenceId not strictly needed for the call itself
+                );
+            } catch (err) {
+                console.error("Failed to create incoming call notification:", err);
+            }
+
             // Set a timeout for missed call (30 seconds)
             callTimeoutRef.current = setTimeout(async () => {
                 const currentCall = callRef.current;

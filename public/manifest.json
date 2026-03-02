@@ -1,0 +1,21 @@
+{
+    "short_name": "ineedam",
+    "name": "ineedam - Instant Needs & Solutions",
+    "icons": [
+        {
+            "src": "/favicon.svg",
+            "type": "image/svg+xml",
+            "sizes": "192x192 512x512"
+        },
+        {
+            "src": "/icon.svg",
+            "type": "image/svg+xml",
+            "sizes": "192x192 512x512",
+            "purpose": "any maskable"
+        }
+    ],
+    "start_url": ".",
+    "display": "standalone",
+    "theme_color": "#6366f1",
+    "background_color": "#000000"
+}
