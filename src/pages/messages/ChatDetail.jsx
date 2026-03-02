@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Phone, Video, MoreVertical, Send, Paperclip, X, FileText, Image as ImageIcon, Mic } from 'lucide-react';
+import { ArrowLeft, Phone, Video, MoreVertical, Send, Paperclip, X, FileText, Image as ImageIcon, Mic, PhoneOff } from 'lucide-react';
 import { useMessages } from '../../context/MessagesContext';
 import { VoiceRecorder } from '../../components/messages/VoiceRecorder';
 import { AudioBubble } from '../../components/messages/AudioBubble';
