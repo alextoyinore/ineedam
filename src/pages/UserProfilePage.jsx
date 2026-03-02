@@ -353,6 +353,8 @@ export const UserProfilePage = () => {
             {/* Header */}
             <header className="sticky-header" style={{
                 height: 'var(--profile-header-height)',
+                top: 'var(--sticky-offset, 0px)',
+                zIndex: 1000,
                 padding: '0 1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem'
             }}>
                 <button onClick={() => navigate(-1)} style={{ padding: '0.5rem', borderRadius: '50%', color: 'var(--text-primary)' }} className="glass-panel-hover">
@@ -556,12 +558,12 @@ export const UserProfilePage = () => {
                         style={{
                             display: 'flex',
                             overflowX: 'auto',
-                            top: 'var(--profile-header-height)',
+                            top: 'calc(var(--sticky-offset, 0px) + var(--profile-header-height))',
                             background: tabsBackground,
                             backdropFilter: tabsBackdrop,
                             WebkitBackdropFilter: tabsBackdrop,
                             borderBottom: `1px solid ${tabsBorder}`,
-                            zIndex: 90 // Stay below FAB (150) and Header (100)
+                            zIndex: 900
                         }}
                     >
                         {['needs', 'broadcasts', 'endorsements', 'replies', 'following', 'followers'].map(tab => (

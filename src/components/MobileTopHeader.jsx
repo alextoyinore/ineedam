@@ -46,6 +46,7 @@ export const MobileTopHeader = () => {
                     height,
                     opacity,
                     y: translateY,
+                    "--sticky-offset": height, // Export height for sub-headers
                     pointerEvents,
                     padding: '0 1rem',
                     display: 'flex',
