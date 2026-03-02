@@ -208,6 +208,8 @@ export const MessagesProvider = ({ children }) => {
         } else if (type === 'hangup') {
             soundService.stopRinging();
             endCall(payload.reason, true);
+            // Wait briefly for the DB to commit the initiator's message, then refresh
+            setTimeout(() => loadThreads(), 1000);
         }
     };
 
@@ -382,6 +384,8 @@ export const MessagesProvider = ({ children }) => {
                         reason = 'cancelled';
                     }
                 }
+                // Refresh local state for the initiator
+                await loadThreads();
             } catch (err) {
                 console.error("Failed to record call status message:", err);
             }
