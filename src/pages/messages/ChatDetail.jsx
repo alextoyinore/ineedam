@@ -304,7 +304,7 @@ export const ChatDetail = () => {
                             }}>
                                 {isMissedCall ? (
                                     <div
-                                        onClick={() => initiateCall(activeThread.withUserId, missedCallText.toLowerCase().includes('video'))}
+                                        onClick={() => initiateCall(activeThread.withUserId, activeThread.withUser, activeThread.withUserAvatar, missedCallText.toLowerCase().includes('video'))}
                                         style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}
                                     >
                                         <div style={{

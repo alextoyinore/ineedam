@@ -241,7 +241,7 @@ export const CallModal = ({
                                             fontSize: '3.5rem', fontWeight: 'bold', border: '4px solid rgba(255,255,255,0.1)',
                                         }}
                                     >
-                                        {!callerAvatar && callerName?.charAt(0)}
+                                        {!callerAvatar && (typeof callerName === 'string' ? callerName.charAt(0) : '?')}
                                     </motion.div>
                                     <div style={{ textAlign: 'center' }}>
                                         <h2 style={{ fontSize: isMobile ? '2rem' : '2.5rem', marginBottom: '0.75rem', fontWeight: 600 }}>{callerName}</h2>
