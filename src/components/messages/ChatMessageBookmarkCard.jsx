@@ -13,13 +13,13 @@ export const ChatMessageBookmarkCard = ({ message }) => {
 
     return (
         <div className="glass-panel" style={{
-            padding: '1.25rem',
+            padding: '.75rem',
             borderBottom: '1px solid var(--border-glass)',
             position: 'relative',
             background: 'var(--bg-surface)'
         }}>
             {/* Header info */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
                 <div className="avatar-sm" style={{
                     // borderRadius: '50%',
                     background: message.sender?.avatar_url ? `url(${message.sender.avatar_url}) center/cover` : 'var(--bg-base)',
@@ -53,7 +53,7 @@ export const ChatMessageBookmarkCard = ({ message }) => {
             {/* Message Content */}
             <div style={{ marginLeft: '3.25rem', position: 'relative' }}>
                 <div style={{
-                    padding: '0.75rem 1rem',
+                    padding: '0.5rem .75rem',
                     borderRadius: '12px',
                     background: 'var(--bg-base)',
                     border: '1px solid var(--border-glass)',
@@ -66,7 +66,7 @@ export const ChatMessageBookmarkCard = ({ message }) => {
                     {message.text && <p style={{ margin: 0 }}>{message.text}</p>}
 
                     {message.file_url && (
-                        <div style={{ marginTop: message.text ? '0.75rem' : 0 }}>
+                        <div style={{ marginTop: message.text ? '0.5rem' : 0 }}>
                             {isImage ? (
                                 <img
                                     src={message.file_url}
