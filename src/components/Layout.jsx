@@ -7,11 +7,13 @@ import { BottomNav } from './BottomNav';
 import { Plus } from 'lucide-react';
 import { MobileTopHeader } from './MobileTopHeader';
 import { CallModal } from './messages/CallModal';
+import { InviteModal } from './InviteModal';
 import { useMessages } from '../context/MessagesContext';
 import { useMessageSecurity } from '../context/MessageSecurityContext';
 
 export const Layout = ({ children }) => {
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const { isLocked } = useMessageSecurity();
   const { call, endCall, acceptCall, localStream, remoteStream, toggleVideo } = useMessages();
   const location = useLocation();
@@ -29,7 +31,10 @@ export const Layout = ({ children }) => {
       <div className="social-layout-grid">
         {/* Left Navigation */}
         <div style={{ width: '250px' }} className="desktop-only">
-          <Sidebar onPostClick={() => setIsPostModalOpen(true)} />
+          <Sidebar
+            onPostClick={() => setIsPostModalOpen(true)}
+            onInviteClick={() => setIsInviteModalOpen(true)}
+          />
         </div>
 
         {/* Main Feed Activity */}
@@ -57,10 +62,11 @@ export const Layout = ({ children }) => {
       )}
 
       {/* Mobile Bottom Navigation */}
-      {!isChatDetail && <BottomNav />}
+      {!isChatDetail && <BottomNav onInviteClick={() => setIsInviteModalOpen(true)} />}
 
       {/* Modals */}
       {isPostModalOpen && <PostNeedModal isOpen={isPostModalOpen} onClose={() => setIsPostModalOpen(false)} />}
+      <InviteModal isOpen={isInviteModalOpen} onClose={() => setIsInviteModalOpen(false)} />
 
       {/* Global Call Modal */}
       {call && (

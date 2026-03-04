@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, User, PenSquare, Bookmark, Bell, Mail, LogOut, MoreHorizontal, Settings } from 'lucide-react';
+import { Home, User, PenSquare, Bookmark, Bell, Mail, LogOut, MoreHorizontal, Settings, Share2 } from 'lucide-react';
 import { useNotifications } from '../context/NotificationsContext';
 import { useMessages } from '../context/MessagesContext';
 import { useAuth } from '../context/AuthContext';
 
 
-export const Sidebar = ({ onPostClick }) => {
+export const Sidebar = ({ onPostClick, onInviteClick }) => {
     const location = useLocation();
     const { profile, signOut } = useAuth();
     const { unreadCount } = useNotifications();
@@ -31,10 +31,12 @@ export const Sidebar = ({ onPostClick }) => {
                         { to: '/notifications', label: 'Notifications', Icon: Bell, isActive: location.pathname === '/notifications', badge: unreadCount, fillable: true },
                         { to: '/messages', label: 'Messages', Icon: Mail, isActive: location.pathname === '/messages', badge: unreadThreadsCount, fillable: false },
                         { to: profile?.username ? `/${profile.username}` : '#', label: 'Profile', Icon: User, isActive: !!(profile?.username && location.pathname === `/${profile.username}`), fillable: true },
-                    ].map(({ to, label, Icon, isActive, badge, fillable }) => (
+                        { to: '#', label: 'Invite Friends', Icon: Share2, isAction: true, onClick: onInviteClick },
+                    ].map(({ to, label, Icon, isActive, badge, fillable, isAction, onClick }) => (
                         <Link
                             key={label}
                             to={to}
+                            onClick={isAction ? (e) => { e.preventDefault(); onClick(); } : undefined}
                             className={`nav-link ${isActive ? 'active' : ''}`}
                             style={{ position: 'relative', width: 'fit-content', paddingRight: '1.5rem' }}
                         >
@@ -44,7 +46,7 @@ export const Sidebar = ({ onPostClick }) => {
                                 strokeWidth={isActive ? (fillable ? 1.5 : 2.5) : 2}
                             />
                             <span className="nav-text">{label}</span>
-                            {badge > 0 && (
+                            {!isAction && badge > 0 && (
                                 <span style={{
                                     position: 'absolute', top: '0.4rem', left: '1.8rem',
                                     background: '#ef4444', color: 'white', fontSize: '0.65rem',

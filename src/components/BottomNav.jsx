@@ -6,7 +6,7 @@ import { useMessages } from '../context/MessagesContext';
 import { useAuth } from '../context/AuthContext';
 import { MobileDrawer } from './MobileDrawer';
 
-export const BottomNav = () => {
+export const BottomNav = ({ onInviteClick }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const { unreadCount } = useNotifications();
@@ -82,6 +82,7 @@ export const BottomNav = () => {
                     setShouldFocusSearch(false);
                 }}
                 autoFocusSearch={shouldFocusSearch}
+                onInviteClick={onInviteClick}
             />
         </>
     );

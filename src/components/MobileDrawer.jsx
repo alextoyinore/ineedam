@@ -2,12 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { X, Settings, HelpCircle, FileText, Shield, Users, TrendingUp, Award, Search, Bookmark, SlidersHorizontal, Trash2, BookOpen } from 'lucide-react';
+import { X, Settings, HelpCircle, FileText, Shield, Users, TrendingUp, Award, Search, Bookmark, SlidersHorizontal, Trash2, BookOpen, Share2 } from 'lucide-react';
 import { fetchMetCounts } from '../lib/needsService';
 import { getFollowStats } from '../lib/socialService';
 import { fetchEndorsementsForUser } from '../lib/endorsementService';
 
-export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false }) => {
+export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false, onInviteClick }) => {
     const { profile, signOut } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
@@ -210,6 +210,14 @@ export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false }) => {
 
                             {/* Utility Links */}
                             <div style={{ padding: '0.5rem 0', borderBottom: '1px solid var(--border-glass)' }}>
+                                <div
+                                    onClick={() => { onInviteClick(); onClose(); }}
+                                    style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', color: 'var(--text-primary)' }}
+                                    className="nav-link-hover"
+                                >
+                                    <Share2 size={20} color="var(--primary)" />
+                                    <span style={{ fontWeight: 600 }}>Invite Friends</span>
+                                </div>
                                 <div
                                     onClick={() => handleNavigation('/settings')}
                                     style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', color: 'var(--text-primary)' }}
