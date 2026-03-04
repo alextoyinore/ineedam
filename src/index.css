@@ -229,13 +229,15 @@ button {
   position: fixed;
   top: 0;
   height: 100vh;
-  overflow-y: auto;
+  overflow: hidden;
   width: 250px;
 }
 
 .social-sidebar-right {
   position: sticky;
   top: 0;
+  height: 100vh;
+  overflow-y: auto;
   align-self: start;
   width: 300px;
 }
