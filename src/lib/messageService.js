@@ -24,7 +24,11 @@ export const fetchUserThreads = async (userId) => {
             id,
             updated_at,
             thread_participants(user_id, last_read_at, profiles!inner(display_name, avatar_url, username)),
-            messages(id, text, file_url, file_type, created_at, sender_id)
+            messages(
+                id, text, file_url, file_type, created_at, sender_id, reply_to,
+                message_reactions(id, emoji, user_id),
+                message_bookmarks(user_id)
+            )
         `)
         .in('id', threadIds)
         .order('updated_at', { ascending: false });
@@ -66,7 +70,10 @@ export const fetchUserThreads = async (userId) => {
                 text: m.text,
                 fileUrl: m.file_url || null,
                 fileType: m.file_type || null,
-                timestamp: m.created_at
+                timestamp: m.created_at,
+                replyTo: m.reply_to,
+                reactions: m.message_reactions || [],
+                isBookmarked: m.message_bookmarks?.some(b => b.user_id === userId) || false
             }))
         };
     });
@@ -109,12 +116,13 @@ export const getOrCreateThread = async (userId1, userId2) => {
 };
 
 /**
- * Insert a message into a thread, with an optional file attachment.
+ * Insert a message into a thread, with an optional file attachment and reply context.
  */
-export const createMessage = async (threadId, senderId, text, fileUrl = null, fileType = null) => {
+export const createMessage = async (threadId, senderId, text, fileUrl = null, fileType = null, replyTo = null) => {
     const payload = { thread_id: threadId, sender_id: senderId, text: text || '' };
     if (fileUrl) payload.file_url = fileUrl;
     if (fileType) payload.file_type = fileType;
+    if (replyTo) payload.reply_to = replyTo;
 
     const { data, error } = await supabase
         .from('messages')
@@ -141,4 +149,67 @@ export const markThreadAsReadInDb = async (threadId, userId) => {
         .eq('user_id', userId);
 
     if (error) console.error("Error marking thread read:", error);
+};
+
+/**
+ * Toggle an emoji reaction on a message.
+ * Returns { success: true } or throws.
+ */
+export const toggleMessageReaction = async (messageId, userId, emoji) => {
+    // Check if it already exists
+    const { data: existing } = await supabase
+        .from('message_reactions')
+        .select('id')
+        .eq('message_id', messageId)
+        .eq('user_id', userId)
+        .eq('emoji', emoji)
+        .single();
+
+    if (existing) {
+        // Remove it
+        const { error } = await supabase
+            .from('message_reactions')
+            .delete()
+            .eq('id', existing.id);
+        if (error) throw error;
+        return { action: 'removed' };
+    } else {
+        // Add it
+        const { error } = await supabase
+            .from('message_reactions')
+            .insert([{ message_id: messageId, user_id: userId, emoji }]);
+        if (error) throw error;
+        return { action: 'added' };
+    }
+};
+
+/**
+ * Toggle a bookmark on a message for a user.
+ */
+export const toggleMessageBookmark = async (messageId, userId) => {
+    // Check if it already exists
+    const { data: existing } = await supabase
+        .from('message_bookmarks')
+        .select('*')
+        .eq('message_id', messageId)
+        .eq('user_id', userId)
+        .maybeSingle();
+
+    if (existing) {
+        // Remove bookmark
+        const { error } = await supabase
+            .from('message_bookmarks')
+            .delete()
+            .eq('message_id', messageId)
+            .eq('user_id', userId);
+        if (error) throw error;
+        return { action: 'removed' };
+    } else {
+        // Add bookmark
+        const { error } = await supabase
+            .from('message_bookmarks')
+            .insert([{ message_id: messageId, user_id: userId }]);
+        if (error) throw error;
+        return { action: 'added' };
+    }
 };

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { useAuth } from './AuthContext';
 import { supabase } from '../lib/supabase';
-import { fetchUserThreads, getOrCreateThread, createMessage, markThreadAsReadInDb } from '../lib/messageService';
+import { fetchUserThreads, getOrCreateThread, createMessage, markThreadAsReadInDb, toggleMessageBookmark, toggleMessageReaction } from '../lib/messageService';
 import { soundService } from '../lib/soundService';
 import { createNotification } from '../lib/notificationService';
 import { uploadFileToCloudinary } from '../lib/needsService';
@@ -17,6 +17,7 @@ export const MessagesProvider = ({ children }) => {
     const [call, setCall] = useState(null); // { status: 'idle'|'calling'|'incoming'|'connected', isVideo, partner: { id, name, avatar }, stream: null }
     const [localStream, setLocalStream] = useState(null);
     const [remoteStream, setRemoteStream] = useState(null);
+    const [replyingTo, setReplyingTo] = useState(null); // { id, text, sender }
 
     const activeThreadIdRef = useRef(activeThreadId);
     const callRef = useRef(call);
@@ -37,20 +38,20 @@ export const MessagesProvider = ({ children }) => {
         callRef.current = call;
     }, [call]);
 
-    const loadThreads = async () => {
+    const loadThreads = async (silent = false) => {
         if (!user) {
             setThreads([]);
-            setLoading(false);
+            if (!silent) setLoading(false);
             return;
         }
-        setLoading(true);
+        if (!silent) setLoading(true);
         try {
             const data = await fetchUserThreads(user.id);
             setThreads(data || []);
         } catch (err) {
             console.error("Failed to load threads", err);
         } finally {
-            setLoading(false);
+            if (!silent) setLoading(false);
         }
     };
 
@@ -60,26 +61,79 @@ export const MessagesProvider = ({ children }) => {
         if (user) {
             // Subscribe to new messages OR new thread participations
             const channel = supabase
-                .channel(`messages-refresh`)
+                .channel(`chat-updates-${user.id}`)
                 .on('postgres_changes',
-                    { event: '*', schema: 'public', table: 'messages' },
+                    { event: 'INSERT', schema: 'public', table: 'messages' },
                     (payload) => {
-                        loadThreads();
-                        // Play received sound if we are not the sender 
-                        // AND we are not currently looking at this specific thread
-                        if (payload.new && payload.new.sender_id !== user.id) {
-                            const incomingThreadId = String(payload.new.thread_id);
-                            const currentActiveId = activeThreadIdRef.current ? String(activeThreadIdRef.current) : null;
+                        console.log("Real-time message received:", payload);
 
+                        // Skip if we are the sender (handled by sendMessage optimistically)
+                        if (payload.new && payload.new.sender_id === user.id) return;
+
+                        if (payload.new) {
+                            const incomingThreadId = String(payload.new.thread_id).toLowerCase();
+
+                            // 1. Manually append the message for instant feedback
+                            setThreads(prev => {
+                                const threadIdx = prev.findIndex(t => String(t.id).toLowerCase() === incomingThreadId);
+                                if (threadIdx === -1) {
+                                    console.log("Thread not found locally, relying on background refresh");
+                                    return prev;
+                                }
+
+                                const thread = prev[threadIdx];
+                                // Avoid duplicates
+                                if (thread.messages.some(m => String(m.id).toLowerCase() === String(payload.new.id).toLowerCase())) {
+                                    return prev;
+                                }
+
+                                const newMessage = {
+                                    id: payload.new.id,
+                                    senderId: payload.new.sender_id,
+                                    sender: thread.withUser || 'Them',
+                                    text: payload.new.text || payload.new.content || '',
+                                    fileUrl: payload.new.file_url,
+                                    fileType: payload.new.file_type,
+                                    timestamp: payload.new.created_at,
+                                    replyTo: payload.new.reply_to,
+                                    reactions: [],
+                                    isBookmarked: false
+                                };
+
+                                const updatedThread = {
+                                    ...thread,
+                                    lastMessage: newMessage.text || (newMessage.fileUrl ? '📎 Attachment' : ''),
+                                    timestamp: newMessage.timestamp,
+                                    messages: [...thread.messages, newMessage]
+                                };
+
+                                // Move updated thread to top of list
+                                const newThreads = [...prev];
+                                newThreads.splice(threadIdx, 1);
+                                return [updatedThread, ...newThreads];
+                            });
+
+                            // 2. Play received sound if we are taking a break from this specific thread
+                            const currentActiveId = activeThreadIdRef.current ? String(activeThreadIdRef.current).toLowerCase() : null;
                             if (incomingThreadId !== currentActiveId) {
                                 soundService.playMessageReceived();
                             }
                         }
+
+                        // 3. Background refresh to ensure full consistency (profiles, reactions, etc.)
+                        loadThreads(true);
                     }
                 )
                 .on('postgres_changes',
                     { event: '*', schema: 'public', table: 'thread_participants', filter: `user_id=eq.${user.id}` },
-                    () => loadThreads()
+                    () => {
+                        console.log("Thread participation change detected");
+                        loadThreads(true);
+                    }
+                )
+                .on('postgres_changes',
+                    { event: '*', schema: 'public', table: 'message_reactions' },
+                    () => loadThreads(true)
                 )
                 .subscribe();
 
@@ -491,7 +545,8 @@ export const MessagesProvider = ({ children }) => {
             text: text,
             fileUrl,
             fileType,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            replyTo: replyingTo?.id
         };
 
         // 2. Update state immediately
@@ -509,13 +564,52 @@ export const MessagesProvider = ({ children }) => {
 
         try {
             const threadId = await startChat(otherUserId);
-            await createMessage(threadId, user.id, text, fileUrl, fileType);
+            soundService.playMessageSent(); // Play sound immediately for responsiveness
+
+            const newMessageData = await createMessage(threadId, user.id, text, fileUrl, fileType, replyingTo?.id);
+
+            // Reconcile optimistic message with the real message from DB
+            setThreads(prev => prev.map(t => {
+                if (t.id === threadId) {
+                    return {
+                        ...t,
+                        messages: t.messages.map(m =>
+                            m.id === optimisticMsg.id
+                                ? { ...m, id: newMessageData.id, timestamp: newMessageData.created_at }
+                                : m
+                        )
+                    };
+                }
+                return t;
+            }));
+
+            setReplyingTo(null); // Clear reply context
             await markThreadAsReadInDb(threadId, user.id);
-            soundService.playMessageSent();
-            loadThreads();
+            loadThreads(true); // Silent refresh to sync everything else
         } catch (err) {
             console.error("Failed to send message", err);
+            loadThreads(true); // Ensure state is synced even on error
+        }
+    };
+
+    const toggleBookmark = async (messageId) => {
+        if (!user) return;
+        try {
+            await toggleMessageBookmark(messageId, user.id);
+            // Re-fetch to update isBookmarked status on messages
             loadThreads();
+        } catch (err) {
+            console.error("Failed to toggle bookmark", err);
+        }
+    };
+
+    const toggleReaction = async (messageId, emoji) => {
+        if (!user) return;
+        try {
+            await toggleMessageReaction(messageId, user.id, emoji);
+            // Real-time will trigger loadThreads via 'message_reactions' listener
+        } catch (err) {
+            console.error("Failed to toggle reaction", err);
         }
     };
 
@@ -553,7 +647,11 @@ export const MessagesProvider = ({ children }) => {
             acceptCall,
             endCall,
             toggleVideo,
-            sendCallSignal
+            sendCallSignal,
+            replyingTo,
+            setReplyingTo,
+            toggleReaction,
+            toggleBookmark
         }}>
             {children}
         </MessagesContext.Provider>

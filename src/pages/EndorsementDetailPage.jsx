@@ -8,7 +8,8 @@ import { fetchRepliesForNeed, createReply, formatTimeAgo, updateReplyStatus } fr
 import { useAuth } from '../context/AuthContext';
 import { ProfileHoverCard } from '../components/ProfileHoverCard';
 import { ReplyModal } from '../components/ReplyModal';
-import { Lock, Globe, MessageSquare, Archive, Send } from 'lucide-react';
+import { Lock, Globe, MessageSquare, Archive, Send, Paperclip, FileText, Download, X } from 'lucide-react';
+import { uploadFileToCloudinary } from '../lib/needsService';
 
 const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive }) => {
     const { user } = useAuth();
@@ -73,6 +74,28 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive }) => {
                         {reply.content}
                     </p>
 
+                    {reply.file_url && (
+                        <div style={{ marginTop: '0.75rem' }}>
+                            <a
+                                href={reply.file_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: '0.75rem',
+                                    padding: '0.6rem 1rem', background: 'var(--bg-base)',
+                                    border: '1px solid var(--border-glass)', borderRadius: '10px',
+                                    color: 'var(--text-primary)', textDecoration: 'none',
+                                    fontSize: '0.9rem'
+                                }}
+                                className="glass-panel-hover"
+                            >
+                                <FileText size={18} color="var(--primary)" />
+                                <span style={{ fontWeight: 500 }}>View Attachment</span>
+                                <Download size={14} style={{ opacity: 0.5 }} />
+                            </a>
+                        </div>
+                    )}
+
                     <div style={{ display: 'flex', gap: '1.5rem', marginTop: '0.75rem', color: 'var(--text-muted)' }}>
                         <button
                             onClick={() => onReply(reply)}
@@ -115,6 +138,9 @@ export const EndorsementDetailPage = () => {
     const [replyText, setReplyText] = useState('');
     const [isPrivateReply, setIsPrivateReply] = useState(false);
     const [submittingReply, setSubmittingReply] = useState(false);
+    const [replyFile, setReplyFile] = useState(null);
+    const [uploadingFile, setUploadingFile] = useState(false);
+    const fileInputRef = React.useRef(null);
 
     // For nested replies via modal
     const [isReplyModalOpen, setIsReplyModalOpen] = useState(false);
@@ -161,12 +187,23 @@ export const EndorsementDetailPage = () => {
 
         setSubmittingReply(true);
         try {
+            let fileUrl = null;
+            let fileType = null;
+            if (replyFile) {
+                setUploadingFile(true);
+                const res = await uploadFileToCloudinary(replyFile);
+                fileUrl = res.url;
+                fileType = res.fileType;
+                setUploadingFile(false);
+            }
+
             // Pass endorsement.id as the endorsement context
-            await createReply(endorsement.need_id, user.id, replyText, isPrivateReply, null, endorsement.id);
+            await createReply(endorsement.need_id, user.id, replyText, isPrivateReply, null, endorsement.id, fileUrl, fileType);
             const repliesData = await fetchRepliesForNeed(null, endorsement.id);
             setReplies((repliesData || []).filter(r => r.status !== 'archived'));
             setReplyText('');
             setIsPrivateReply(false);
+            setReplyFile(null);
         } catch (err) {
             console.error("Failed to post reply", err);
         } finally {
@@ -285,6 +322,24 @@ export const EndorsementDetailPage = () => {
                             outline: 'none', resize: 'vertical', minHeight: '60px'
                         }}
                     />
+
+                    {replyFile && (
+                        <div style={{
+                            display: 'flex', alignItems: 'center', gap: '0.75rem',
+                            padding: '0.5rem 0.75rem', background: 'var(--bg-base)',
+                            border: '1px solid var(--border-glass)', borderRadius: '10px'
+                        }}>
+                            <FileText size={16} color="var(--primary)" />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontSize: '0.85rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{replyFile.name}</div>
+                                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{(replyFile.size / 1024 / 1024).toFixed(2)} MB</div>
+                            </div>
+                            <button type="button" onClick={() => setReplyFile(null)} style={{
+                                background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer'
+                            }}><X size={14} /></button>
+                        </div>
+                    )}
+
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-glass)', paddingTop: '0.75rem' }}>
                         <button
                             type="button"
@@ -301,9 +356,25 @@ export const EndorsementDetailPage = () => {
                             {isPrivateReply ? 'Private Reply' : 'Public Reply'}
                         </button>
 
-                        <button type="submit" disabled={!replyText.trim() || submittingReply || !user} className="btn btn-primary" style={{ padding: '0.5rem 1.5rem', borderRadius: '9999px', minWidth: '100px' }}>
-                            {submittingReply ? <Loader size={18} className="animate-spin" /> : 'Reply'}
-                        </button>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <input type="file" ref={fileInputRef} onChange={(e) => setReplyFile(e.target.files?.[0])} style={{ display: 'none' }} />
+                            <button
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                style={{
+                                    padding: '0.5rem', borderRadius: '50%', color: 'var(--text-muted)',
+                                    background: 'transparent', border: 'none', cursor: 'pointer'
+                                }}
+                                className="nav-link-hover"
+                                title="Attach a file"
+                            >
+                                <Paperclip size={18} />
+                            </button>
+
+                            <button type="submit" disabled={!replyText.trim() || submittingReply || !user} className="btn btn-primary" style={{ padding: '0.5rem 1.5rem', borderRadius: '9999px', minWidth: '100px' }}>
+                                {submittingReply ? <Loader size={18} className="animate-spin" /> : (uploadingFile ? 'Uploading...' : 'Reply')}
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>

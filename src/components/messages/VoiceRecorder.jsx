@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Mic, Square, Trash2, Send, Play, Pause } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export const VoiceRecorder = ({ onSend, onCancel }) => {
+export const VoiceRecorder = ({ onSend, onCancel, onStartRecording }) => {
     const [isRecording, setIsRecording] = useState(false);
     const [recordingTime, setRecordingTime] = useState(0);
     const [audioBlob, setAudioBlob] = useState(null);
@@ -45,6 +45,7 @@ export const VoiceRecorder = ({ onSend, onCancel }) => {
             mediaRecorderRef.current.start();
             setIsRecording(true);
             setRecordingTime(0);
+            if (onStartRecording) onStartRecording();
             timerRef.current = setInterval(() => {
                 setRecordingTime(prev => prev + 1);
             }, 1000);
@@ -72,10 +73,13 @@ export const VoiceRecorder = ({ onSend, onCancel }) => {
     const handleTogglePlayback = () => {
         if (isPlaying) {
             audioPlayerRef.current.pause();
+            setIsPlaying(false);
         } else {
+            // Signal to others to pause
+            if (onStartRecording) onStartRecording();
             audioPlayerRef.current.play();
+            setIsPlaying(true);
         }
-        setIsPlaying(!isPlaying);
     };
 
     useEffect(() => {

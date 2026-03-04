@@ -40,7 +40,7 @@ export const fetchRepliesByUser = async (userId) => {
 /**
  * Insert a new reply onto a need or endorsement.
  */
-export const createReply = async (needId, userId, content, isPrivate = false, parentId = null, endorsementId = null) => {
+export const createReply = async (needId, userId, content, isPrivate = false, parentId = null, endorsementId = null, fileUrl = null, fileType = null) => {
     const { data, error } = await supabase
         .from('replies')
         .insert([{
@@ -49,7 +49,9 @@ export const createReply = async (needId, userId, content, isPrivate = false, pa
             content: content,
             is_private: isPrivate,
             parent_id: parentId,
-            endorsement_id: endorsementId
+            endorsement_id: endorsementId,
+            file_url: fileUrl,
+            file_type: fileType
         }])
         .select('*, profiles(display_name, avatar_url, username)')
         .single();

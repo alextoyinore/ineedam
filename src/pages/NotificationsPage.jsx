@@ -98,6 +98,11 @@ export const NotificationsPage = () => {
                                 <div style={{ fontSize: '0.95rem', color: 'var(--text-primary)', lineHeight: 1.4 }}>
                                     {/* Fallback to actor_id UUID */}
                                     <strong style={{ fontWeight: 700 }}>{notif.actorProfile?.display_name || notif.actor_id?.substring(0, 6) || 'System'}</strong> {notif.message}
+                                    {notif.group_count > 1 && (
+                                        <span style={{ marginLeft: '0.5rem', padding: '0.1rem 0.4rem', borderRadius: '10px', background: 'var(--primary)', color: 'white', fontSize: '0.75rem', fontWeight: 700 }}>
+                                            {notif.group_count}
+                                        </span>
+                                    )}
                                 </div>
                                 <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
                                     {new Date(notif.created_at || notif.timestamp || Date.now()).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}

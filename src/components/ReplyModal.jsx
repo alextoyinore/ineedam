@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, X, Loader } from 'lucide-react';
+import { Send, X, Loader, Paperclip, FileText } from 'lucide-react';
 import { useMessages } from '../context/MessagesContext';
 import { useAuth } from '../context/AuthContext';
 import { createReply } from '../lib/replyService';
+import { uploadFileToCloudinary } from '../lib/needsService';
 import { useNavigate } from 'react-router-dom';
 
 export const ReplyModal = ({ isOpen, onClose, need, parentId = null, replyingTo = null, onReply, endorsementId = null }) => {
@@ -12,6 +13,9 @@ export const ReplyModal = ({ isOpen, onClose, need, parentId = null, replyingTo 
     const [replyText, setReplyText] = useState('');
     const [visibility, setVisibility] = useState('private');
     const [submitting, setSubmitting] = useState(false);
+    const [replyFile, setReplyFile] = useState(null);
+    const [uploadingFile, setUploadingFile] = useState(false);
+    const fileInputRef = React.useRef(null);
 
     const targetUser = replyingTo || {
         author: need.author,
@@ -24,6 +28,7 @@ export const ReplyModal = ({ isOpen, onClose, need, parentId = null, replyingTo 
         if (isOpen) {
             document.body.style.overflow = 'hidden';
             setReplyText(''); // reset on open
+            setReplyFile(null);
         } else {
             document.body.style.overflow = 'auto';
         }
@@ -38,8 +43,18 @@ export const ReplyModal = ({ isOpen, onClose, need, parentId = null, replyingTo 
 
         setSubmitting(true);
         try {
+            let fileUrl = null;
+            let fileType = null;
+            if (replyFile) {
+                setUploadingFile(true);
+                const res = await uploadFileToCloudinary(replyFile);
+                fileUrl = res.url;
+                fileType = res.fileType;
+                setUploadingFile(false);
+            }
+
             const isPrivate = visibility === 'private';
-            const newReply = await createReply(need.id, user.id, replyText, isPrivate, parentId, endorsementId);
+            const newReply = await createReply(need.id, user.id, replyText, isPrivate, parentId, endorsementId, fileUrl, fileType);
 
             if (onReply) {
                 onReply(newReply);
@@ -138,6 +153,25 @@ export const ReplyModal = ({ isOpen, onClose, need, parentId = null, replyingTo 
                                 }}
                             />
 
+                            {/* File Attachment Area */}
+                            {replyFile && (
+                                <div style={{
+                                    display: 'flex', alignItems: 'center', gap: '0.75rem',
+                                    padding: '0.5rem 0.75rem', background: 'var(--bg-base)',
+                                    border: '1px solid var(--border-glass)', borderRadius: '10px',
+                                    marginBottom: '0.5rem'
+                                }}>
+                                    <FileText size={16} color="var(--primary)" />
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div style={{ fontSize: '0.85rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{replyFile.name}</div>
+                                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{(replyFile.size / 1024 / 1024).toFixed(2)} MB</div>
+                                    </div>
+                                    <button type="button" onClick={() => setReplyFile(null)} style={{
+                                        background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer'
+                                    }}><X size={14} /></button>
+                                </div>
+                            )}
+
                             {/* Footer Actions */}
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '1rem', borderTop: '1px solid var(--border-glass)', marginTop: '0.5rem' }}>
                                 {/* Visibility Toggle */}
@@ -176,10 +210,26 @@ export const ReplyModal = ({ isOpen, onClose, need, parentId = null, replyingTo 
                                     </button>
                                 </div>
 
-                                <button type="submit" disabled={!replyText.trim() || submitting || !user} className="btn btn-primary" style={{ padding: '0.5rem 1.5rem', borderRadius: '9999px', opacity: (replyText.trim() && user) ? 1 : 0.5, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    {submitting ? <Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> : null}
-                                    {visibility === 'private' ? 'Send Private' : 'Reply'}
-                                </button>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <input type="file" ref={fileInputRef} onChange={(e) => setReplyFile(e.target.files?.[0])} style={{ display: 'none' }} />
+                                    <button
+                                        type="button"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        style={{
+                                            padding: '0.5rem', borderRadius: '50%', color: 'var(--text-muted)',
+                                            background: 'transparent', border: 'none', cursor: 'pointer'
+                                        }}
+                                        className="nav-link-hover"
+                                        title="Attach a file"
+                                    >
+                                        <Paperclip size={18} />
+                                    </button>
+
+                                    <button type="submit" disabled={!replyText.trim() || submitting || !user} className="btn btn-primary" style={{ padding: '0.5rem 1.5rem', borderRadius: '9999px', opacity: (replyText.trim() && user) ? 1 : 0.5, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        {submitting ? <Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> : null}
+                                        {uploadingFile ? 'Uploading...' : (visibility === 'private' ? 'Send Private' : 'Reply')}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </form>

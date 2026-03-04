@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Tag, MapPin, Banknote, Clock, MessageSquare, Bookmark, Heart, MessageCircle, Repeat2, Award, Trash2, MoreVertical, Archive, Flag, UserPlus, UserMinus, VolumeX, Share2 } from 'lucide-react';
+import { Tag, MapPin, Banknote, Clock, MessageSquare, Bookmark, Heart, MessageCircle, Repeat2, Award, Trash2, MoreVertical, Archive, Flag, UserPlus, UserMinus, VolumeX, Share2, FileText, Download } from 'lucide-react';
 import { ReplyModal } from './ReplyModal';
 import { supabase } from '../lib/supabase';
 import { useBookmarks } from '../context/BookmarksContext';
@@ -402,6 +402,32 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null }) =
                             alt={need.title}
                             style={{ width: '100%', maxHeight: '400px', objectFit: 'cover', display: 'block' }}
                         />
+                    </div>
+                )}
+
+                {/* File Attachment */}
+                {need.fileUrl && (
+                    <div style={{ marginTop: '0.75rem', marginBottom: '0.75rem' }}>
+                        <a
+                            href={need.fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                                display: 'inline-flex', alignItems: 'center', gap: '0.75rem',
+                                padding: '0.75rem 1rem', background: 'var(--bg-base)',
+                                border: '1px solid var(--border-glass)', borderRadius: '12px',
+                                color: 'var(--text-primary)', textDecoration: 'none'
+                            }}
+                            className="glass-panel-hover"
+                            onClick={(e) => e.stopPropagation()} // Prevent navigating to detail page if clicking attachment
+                        >
+                            <FileText size={20} color="var(--primary)" />
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>View Attachment</span>
+                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{need.fileType || 'Document'}</span>
+                            </div>
+                            <Download size={16} style={{ marginLeft: '0.5rem', opacity: 0.5 }} />
+                        </a>
                     </div>
                 )}
 

@@ -61,6 +61,8 @@ export const createNeed = async (needData, userId) => {
             location: needData.location || null,
             flexibility: needData.flexibility,
             image_url: needData.imageUrl || null,
+            file_url: needData.fileUrl || null,
+            file_type: needData.fileType || null,
         }])
         .select()
         .single();
@@ -163,7 +165,9 @@ export const shapeNeed = (row) => {
         budgetMin: row.budget_min,
         budgetMax: row.budget_max,
         currency: row.currency,
-        created_at: row.created_at
+        created_at: row.created_at,
+        fileUrl: row.file_url || null,
+        fileType: row.file_type || null
     };
 };
 

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Phone, Video, MoreVertical, Send, Paperclip, X, FileText, Image as ImageIcon, Mic, PhoneOff } from 'lucide-react';
+import { ArrowLeft, Phone, Video, MoreVertical, Send, Paperclip, X, FileText, Image as ImageIcon, Mic, PhoneOff, Reply, Smile, MessageSquare, Bookmark } from 'lucide-react';
 import { useMessages } from '../../context/MessagesContext';
 import { VoiceRecorder } from '../../components/messages/VoiceRecorder';
 import { AudioBubble } from '../../components/messages/AudioBubble';
@@ -38,6 +38,52 @@ const FilePreviewBubble = ({ file, onRemove }) => {
             <button onClick={onRemove} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '0.25rem', borderRadius: '50%', flexShrink: 0 }}>
                 <X size={16} />
             </button>
+        </div>
+    );
+};
+
+const ReactionsDisplay = ({ reactions, onToggle, currentUserId }) => {
+    if (!reactions || reactions.length === 0) return null;
+
+    // Group reactions by emoji
+    const grouped = reactions.reduce((acc, r) => {
+        acc[r.emoji] = acc[r.emoji] || [];
+        acc[r.emoji].push(r.user_id);
+        return acc;
+    }, {});
+
+    return (
+        <div className="reactions-display">
+            {Object.entries(grouped).map(([emoji, userIds]) => {
+                const isMine = userIds.includes(currentUserId);
+                return (
+                    <div
+                        key={emoji}
+                        className={`reaction-badge ${isMine ? 'is-mine' : ''}`}
+                        onClick={(e) => { e.stopPropagation(); onToggle(emoji); }}
+                    >
+                        <span>{emoji}</span>
+                        <span>{userIds.length}</span>
+                    </div>
+                );
+            })}
+        </div>
+    );
+};
+
+const EmojiPicker = ({ onSelect, onClose }) => {
+    const emojis = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
+    return (
+        <div className="emoji-picker-overlay" onClick={e => e.stopPropagation()}>
+            {emojis.map(emoji => (
+                <button
+                    key={emoji}
+                    className="emoji-btn"
+                    onClick={() => { onSelect(emoji); onClose(); }}
+                >
+                    {emoji}
+                </button>
+            ))}
         </div>
     );
 };
@@ -137,14 +183,21 @@ const FileViewerModal = ({ file, onClose }) => {
 export const ChatDetail = () => {
     const { threadId } = useParams();
     const navigate = useNavigate();
-    const { threads, sendMessage, markThreadAsRead, loadingThreads, setActiveThreadId, initiateCall } = useMessages();
+    const {
+        threads, sendMessage, markThreadAsRead, loadingThreads, setActiveThreadId, initiateCall,
+        replyingTo, setReplyingTo, toggleReaction, toggleBookmark
+    } = useMessages();
     const [messageText, setMessageText] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
     const [viewingFile, setViewingFile] = useState(null);
     const [isRecording, setIsRecording] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    const [currentlyPlayingId, setCurrentlyPlayingId] = useState(null);
+    const [activeEmojiMessageId, setActiveEmojiMessageId] = useState(null);
     const fileInputRef = useRef(null);
+    const messagesEndRef = useRef(null);
+    const messageContainerRef = useRef(null);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -204,6 +257,23 @@ export const ChatDetail = () => {
         setIsUploading(false);
     };
 
+    const handleReply = (msg) => {
+        setReplyingTo({
+            id: msg.id,
+            text: msg.text || (msg.fileUrl ? '📎 Attachment' : 'Message'),
+            sender: msg.sender
+        });
+    };
+
+    const scrollToMessage = (msgId) => {
+        const element = document.getElementById(`msg-${msgId}`);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            element.classList.add('highlight-message');
+            setTimeout(() => element.classList.remove('highlight-message'), 2000);
+        }
+    };
+
     const handleSendVoiceNote = async (blob, duration) => {
         setIsUploading(true);
         // Create a File object from the blob for Cloudinary
@@ -237,18 +307,24 @@ export const ChatDetail = () => {
                     >
                         <ArrowLeft size={20} />
                     </button>
-                    <div className="avatar-md" style={{
-                        borderRadius: '50%',
-                        background: activeThread.withUserAvatar ? `url(${activeThread.withUserAvatar}) center/cover` : 'var(--bg-base)',
-                        border: '1px solid var(--border-glass)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '600', overflow: 'hidden'
-                    }}>
-                        {!activeThread.withUserAvatar && activeThread.withUser.charAt(0)}
-                    </div>
-                    <div>
-                        <h3 style={{ margin: 0, fontSize: '1rem' }}>{activeThread.withUser}</h3>
-                        {activeThread.withUserUsername && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>@{activeThread.withUserUsername}</span>}
-                    </div>
+                    <Link
+                        to={`/${activeThread.withUserUsername}`}
+                        style={{ display: 'flex', alignItems: 'center', gap: '1rem', textDecoration: 'none', color: 'inherit' }}
+                        className="nav-link-hover"
+                    >
+                        <div className="avatar-md" style={{
+                            borderRadius: '50%',
+                            background: activeThread.withUserAvatar ? `url(${activeThread.withUserAvatar}) center/cover` : 'var(--bg-base)',
+                            border: '1px solid var(--border-glass)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '600', overflow: 'hidden'
+                        }}>
+                            {!activeThread.withUserAvatar && activeThread.withUser.charAt(0)}
+                        </div>
+                        <div>
+                            <h3 style={{ margin: 0, fontSize: '1rem' }}>{activeThread.withUser}</h3>
+                            {activeThread.withUserUsername && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>@{activeThread.withUserUsername}</span>}
+                        </div>
+                    </Link>
                 </div>
                 <div style={{ display: 'flex', gap: '1rem', color: 'var(--text-muted)' }}>
                     <Phone
@@ -276,83 +352,168 @@ export const ChatDetail = () => {
                     const isMe = msg.sender === 'Me';
                     const isAudio = msg.fileType?.startsWith('audio/') || msg.fileUrl?.toLowerCase().endsWith('.webm') || msg.fileUrl?.toLowerCase().endsWith('.mp3') || msg.fileUrl?.toLowerCase().endsWith('.wav');
                     const isCall = msg.text?.startsWith('[CALL_');
-                    const isMissedCall = msg.text?.startsWith('[CALL_MISSED]') || msg.text?.startsWith('[CALL_REJECTED]');
+                    const isMissedCall = msg.text?.includes('MISSED') || msg.text?.includes('REJECTED') || msg.text?.includes('CANCELLED');
+                    const replyMsg = msg.replyTo ? activeThread.messages.find(m => m.id === msg.replyTo) : null;
 
                     return (
                         <div
                             key={msg.id}
+                            id={`msg-${msg.id}`}
+                            className={`message-bubble-row ${isMe ? 'is-me' : 'is-them'}`}
                             style={{
                                 alignSelf: isMe ? 'flex-end' : 'flex-start',
-                                maxWidth: '85%', display: 'flex',
-                                flexDirection: isMe ? 'row' : 'row-reverse',
-                                alignItems: 'flex-end', gap: '0.5rem'
+                                maxWidth: '85%',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: isMe ? 'flex-end' : 'flex-start',
+                                marginBottom: '0.2rem',
+                                position: 'relative'
                             }}
                         >
-                            <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginBottom: '0.4rem', opacity: 0.7, whiteSpace: 'nowrap' }}>
-                                {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </span>
                             <div style={{
-                                padding: (msg.fileUrl && !msg.text && !isAudio) ? '0' : '0.6rem 1rem',
-                                borderRadius: isMissedCall ? '12px' : '18px',
-                                borderBottomRightRadius: isMe ? '4px' : (isMissedCall ? '12px' : '18px'),
-                                borderBottomLeftRadius: isMe ? (isMissedCall ? '12px' : '18px') : '4px',
-                                background: (msg.fileUrl && !msg.text && !isAudio) ? 'transparent' : (isMe ? 'var(--primary)' : 'var(--bg-surface)'),
-                                border: isMe ? 'none' : '1px solid var(--border-glass)',
-                                color: isMe ? 'white' : 'var(--text-primary)',
-                                fontSize: '0.92rem',
-                                overflow: 'hidden',
-                            }}>
-                                {isCall ? (
-                                    <div
-                                        onClick={() => {
-                                            const isVideo = msg.text.toLowerCase().includes('video');
-                                            initiateCall(activeThread.withUserId, activeThread.withUser, activeThread.withUserAvatar, isVideo);
-                                        }}
-                                        style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}
-                                    >
-                                        <div style={{
-                                            width: '32px', height: '32px', borderRadius: '50%',
-                                            background: isMe ? 'rgba(255,255,255,0.2)' : (isMissedCall ? 'rgba(239, 68, 68, 0.1)' : 'rgba(34, 197, 94, 0.1)'),
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center'
-                                        }}>
-                                            {msg.text.includes('SUCCESS') ? (
-                                                msg.text.includes('Video') ? <Video size={16} color={isMe ? 'white' : '#22c55e'} /> : <Phone size={16} color={isMe ? 'white' : '#22c55e'} />
-                                            ) : isMissedCall ? (
-                                                <PhoneOff size={16} color={isMe ? 'white' : '#ef4444'} />
-                                            ) : (
-                                                <Phone size={16} color={isMe ? 'white' : 'var(--primary)'} />
-                                            )}
-                                        </div>
-                                        <div style={{ flex: 1 }}>
-                                            <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>
-                                                {(() => {
-                                                    const isVideo = msg.text.toLowerCase().includes('video');
-                                                    const type = isVideo ? 'Video' : 'Voice';
-                                                    if (msg.text.includes('SUCCESS')) return `${type} Call`;
-                                                    if (msg.text.includes('MISSED')) return 'Missed Call';
-                                                    if (msg.text.includes('REJECTED')) return isMe ? 'Canceled Call' : 'Refused Call';
-                                                    if (msg.text.includes('CANCELLED')) return isMe ? 'Canceled Call' : 'Missed Call';
-                                                    return 'Call';
-                                                })()}
+                                display: 'flex',
+                                flexDirection: isMe ? 'row' : 'row-reverse',
+                                alignItems: 'flex-end',
+                                gap: '0.5rem',
+                                position: 'relative',
+                                width: 'fit-content'
+                            }} className="message-main-content">
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: isMe ? 'flex-end' : 'flex-start', gap: '2px', marginBottom: '0.4rem', opacity: 0.7 }}>
+                                    {msg.isBookmarked && <Bookmark size={10} fill="var(--primary)" color="var(--primary)" />}
+                                    <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                </div>
+
+                                <div style={{
+                                    padding: (msg.fileUrl && !msg.text && !isAudio) ? '0' : '0.6rem 1rem',
+                                    borderRadius: isMissedCall ? '12px' : '18px',
+                                    borderBottomRightRadius: isMe ? '4px' : (isMissedCall ? '12px' : '18px'),
+                                    borderBottomLeftRadius: isMe ? (isMissedCall ? '12px' : '18px') : '4px',
+                                    background: (msg.fileUrl && !msg.text && !isAudio) ? 'transparent' : (isMe ? 'var(--primary)' : 'var(--bg-surface)'),
+                                    border: isMe ? 'none' : '1px solid var(--border-glass)',
+                                    color: isMe ? 'white' : 'var(--text-primary)',
+                                    fontSize: '0.92rem',
+                                    overflow: 'hidden',
+                                    position: 'relative',
+                                    boxShadow: isMe ? '0 1px 2px rgba(0,0,0,0.05)' : 'none'
+                                }} className="message-bubble">
+                                    {replyMsg && (
+                                        <div
+                                            className="reply-context"
+                                            onClick={() => scrollToMessage(replyMsg.id)}
+                                            style={{ color: isMe ? 'rgba(255,255,255,0.9)' : 'var(--text-secondary)' }}
+                                        >
+                                            <div style={{ fontWeight: 600, fontSize: '0.7rem' }}>
+                                                {replyMsg.sender === 'Me' ? 'You' : activeThread.withUser}
                                             </div>
                                             <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>
-                                                {msg.text.includes('SUCCESS') ? (msg.text.split('•')[1]?.trim() || 'Call ended') : 'Tap to call back'}
+                                                {replyMsg.text || '📎 Attachment'}
                                             </div>
                                         </div>
+                                    )}
+
+                                    {isCall ? (
+                                        <div
+                                            onClick={() => {
+                                                const isVideo = msg.text.toLowerCase().includes('video');
+                                                initiateCall(activeThread.withUserId, activeThread.withUser, activeThread.withUserAvatar, isVideo);
+                                            }}
+                                            style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}
+                                        >
+                                            <div style={{
+                                                width: '32px', height: '32px', borderRadius: '50%',
+                                                background: isMe ? 'rgba(255,255,255,0.2)' : (() => {
+                                                    if (msg.text.includes('SUCCESS')) return 'rgba(34, 197, 94, 0.1)';
+                                                    if (msg.text.includes('REJECTED')) return 'rgba(239, 68, 68, 0.1)';
+                                                    return 'rgba(99, 102, 241, 0.1)'; // Missed or Cancelled
+                                                })(),
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                            }}>
+                                                {(() => {
+                                                    const isVideo = msg.text.toLowerCase().includes('video');
+                                                    if (msg.text.includes('SUCCESS')) {
+                                                        return isVideo ? <Video size={16} color={isMe ? 'white' : '#22c55e'} /> : <Phone size={16} color={isMe ? 'white' : '#22c55e'} />;
+                                                    }
+                                                    if (msg.text.includes('REJECTED')) {
+                                                        return <PhoneOff size={16} color={isMe ? 'white' : '#ef4444'} />;
+                                                    }
+                                                    // Missed or Cancelled
+                                                    return isVideo ? <Video size={16} color={isMe ? 'white' : 'var(--primary)'} /> : <Phone size={16} color={isMe ? 'white' : 'var(--primary)'} />;
+                                                })()}
+                                            </div>
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>
+                                                    {(() => {
+                                                        const isVideo = msg.text.toLowerCase().includes('video');
+                                                        const type = isVideo ? 'Video' : 'Voice';
+                                                        if (msg.text.includes('SUCCESS')) return `${type} Call`;
+                                                        if (msg.text.includes('MISSED')) return 'Missed Call';
+                                                        if (msg.text.includes('REJECTED')) return isMe ? 'Canceled Call' : 'Refused Call';
+                                                        if (msg.text.includes('CANCELLED')) return isMe ? 'Canceled Call' : 'Missed Call';
+                                                        return 'Call';
+                                                    })()}
+                                                </div>
+                                                <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>
+                                                    {msg.text.includes('SUCCESS') ? (msg.text.split('•')[1]?.trim() || 'Call ended') : 'Tap to call back'}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            {msg.fileUrl && (
+                                                isAudio ? (
+                                                    <AudioBubble
+                                                        id={msg.id}
+                                                        url={msg.fileUrl}
+                                                        isMe={isMe}
+                                                        currentlyPlayingId={currentlyPlayingId}
+                                                        onTogglePlay={() => setCurrentlyPlayingId(currentlyPlayingId === msg.id ? null : msg.id)}
+                                                    />
+                                                ) : (
+                                                    <MessageAttachment fileUrl={msg.fileUrl} fileType={msg.fileType} onView={setViewingFile} />
+                                                )
+                                            )}
+                                            {msg.text && <span>{msg.text}</span>}
+                                        </>
+                                    )}
+                                </div>
+
+                                {/* Message Actions moved inside main-content context */}
+                                {!isCall && (
+                                    <div className={`message-actions ${isMe ? 'is-me' : 'is-them'}`}>
+                                        <button className="message-action-btn" onClick={() => handleReply(msg)} title="Reply">
+                                            <Reply size={14} />
+                                        </button>
+                                        <button
+                                            className="message-action-btn"
+                                            onClick={() => toggleBookmark(msg.id)}
+                                            style={{ color: msg.isBookmarked ? 'var(--primary)' : 'inherit' }}
+                                            title={msg.isBookmarked ? "Remove Bookmark" : "Bookmark"}
+                                        >
+                                            <Bookmark size={14} fill={msg.isBookmarked ? "var(--primary)" : "none"} />
+                                        </button>
+                                        <div className="emoji-picker-container">
+                                            <button className="message-action-btn" onClick={() => setActiveEmojiMessageId(activeEmojiMessageId === msg.id ? null : msg.id)}>
+                                                <Smile size={14} />
+                                            </button>
+                                            {activeEmojiMessageId === msg.id && (
+                                                <EmojiPicker
+                                                    onSelect={(emoji) => toggleReaction(msg.id, emoji)}
+                                                    onClose={() => setActiveEmojiMessageId(null)}
+                                                />
+                                            )}
+                                        </div>
                                     </div>
-                                ) : (
-                                    <>
-                                        {msg.fileUrl && (
-                                            isAudio ? (
-                                                <AudioBubble url={msg.fileUrl} isMe={isMe} />
-                                            ) : (
-                                                <MessageAttachment fileUrl={msg.fileUrl} fileType={msg.fileType} onView={setViewingFile} />
-                                            )
-                                        )}
-                                        {msg.text && <span>{msg.text}</span>}
-                                    </>
                                 )}
                             </div>
+
+                            {/* Reactions stack below the main row */}
+                            <ReactionsDisplay
+                                reactions={msg.reactions}
+                                onToggle={(emoji) => toggleReaction(msg.id, emoji)}
+                                currentUserId={activeThread.senderId}
+                            />
                         </div>
                     );
                 })}
@@ -360,6 +521,22 @@ export const ChatDetail = () => {
 
             {/* Footer */}
             <footer style={{ padding: '0.75rem 1rem', borderTop: '1px solid var(--border-glass)', background: 'var(--bg-surface)', zIndex: 30, flexShrink: 0 }}>
+                {replyingTo && (
+                    <div className="reply-preview">
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontWeight: 600, color: 'var(--primary)', fontSize: '0.75rem' }}>
+                                Replying to {replyingTo.sender === 'Me' ? 'yourself' : replyingTo.sender}
+                            </div>
+                            <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {replyingTo.text}
+                            </div>
+                        </div>
+                        <button onClick={() => setReplyingTo(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                            <X size={16} />
+                        </button>
+                    </div>
+                )}
+
                 {selectedFile && (
                     <FilePreviewBubble file={selectedFile} onRemove={() => setSelectedFile(null)} />
                 )}
@@ -369,6 +546,7 @@ export const ChatDetail = () => {
                         <VoiceRecorder
                             onSend={handleSendVoiceNote}
                             onCancel={() => setIsRecording(false)}
+                            onStartRecording={() => setCurrentlyPlayingId('recording')}
                         />
                     )}
                 </AnimatePresence>

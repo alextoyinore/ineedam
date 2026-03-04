@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Bookmark, Loader } from 'lucide-react';
 import { NeedCard } from '../components/NeedCard';
 import { EndorsementFeedCard } from '../components/EndorsementFeedCard';
+import { ChatMessageBookmarkCard } from '../components/messages/ChatMessageBookmarkCard';
 import { useBookmarks } from '../context/BookmarksContext';
 import { useAuth } from '../context/AuthContext';
 import { fetchBookmarkedItems } from '../lib/bookmarkService';
@@ -82,8 +83,10 @@ export const BookmarksPage = () => {
                         >
                             {item.type === 'need' ? (
                                 <NeedCard need={item} />
-                            ) : (
+                            ) : item.type === 'endorsement' ? (
                                 <EndorsementFeedCard endorsement={item} />
+                            ) : (
+                                <ChatMessageBookmarkCard message={item} />
                             )}
                         </motion.div>
                     ))

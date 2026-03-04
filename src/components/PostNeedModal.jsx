@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, MapPin, Clock, X, Archive, Image, Loader, UploadCloud, Search } from 'lucide-react';
+import { Send, MapPin, Clock, X, Archive, Image, Loader, UploadCloud, Search, Paperclip, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useDrafts } from '../context/DraftsContext';
 import { useAuth } from '../context/AuthContext';
-import { createNeed, uploadImageToCloudinary } from '../lib/needsService';
+import { createNeed, uploadImageToCloudinary, uploadFileToCloudinary } from '../lib/needsService';
 import { CATEGORIES } from '../data/categories';
 
 export const PostNeedModal = ({ isOpen, onClose }) => {
@@ -16,10 +16,13 @@ export const PostNeedModal = ({ isOpen, onClose }) => {
     const [submitError, setSubmitError] = useState('');
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState('');
+    const [attachedFile, setAttachedFile] = useState(null);
     const [uploadingImage, setUploadingImage] = useState(false);
+    const [uploadingFile, setUploadingFile] = useState(false);
     const [categorySearch, setCategorySearch] = useState('');
     const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
     const fileInputRef = useRef(null);
+    const attachmentInputRef = useRef(null);
     const categoryRef = useRef(null);
 
     useEffect(() => {
@@ -68,8 +71,30 @@ export const PostNeedModal = ({ isOpen, onClose }) => {
     const handleImageChange = (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
+
+        // Check file size (10MB limit)
+        if (file.size > 10 * 1024 * 1024) {
+            setSubmitError('File size must be less than 10MB');
+            e.target.value = '';
+            return;
+        }
+
         setImageFile(file);
         setImagePreview(URL.createObjectURL(file));
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Check file size (10MB limit)
+        if (file.size > 10 * 1024 * 1024) {
+            setSubmitError('File size must be less than 10MB');
+            e.target.value = '';
+            return;
+        }
+
+        setAttachedFile(file);
     };
 
     const handleSubmit = async (e) => {
@@ -85,12 +110,23 @@ export const PostNeedModal = ({ isOpen, onClose }) => {
                 setUploadingImage(false);
             }
 
-            await createNeed({ ...formData, imageUrl }, user.id);
+            let fileUrl = '';
+            let fileType = '';
+            if (attachedFile) {
+                setUploadingFile(true);
+                const res = await uploadFileToCloudinary(attachedFile);
+                fileUrl = res.url;
+                fileType = res.fileType;
+                setUploadingFile(false);
+            }
+
+            await createNeed({ ...formData, imageUrl, fileUrl, fileType }, user.id);
 
             // Reset
             setFormData({ title: '', category: 'Product', description: '', currency: '$', budgetMode: 'fixed', budgetMin: '', budgetMax: '', location: '', flexibility: 'Flexible start', imageUrl: '' });
             setImageFile(null);
             setImagePreview('');
+            setAttachedFile(null);
             onClose();
             navigate('/');
         } catch (err) {
@@ -406,6 +442,36 @@ export const PostNeedModal = ({ isOpen, onClose }) => {
                                 )}
                             </div>
 
+                            {/* File Attachment Upload */}
+                            <div>
+                                <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>File Attachment (Optional)</label>
+                                <input ref={attachmentInputRef} type="file" onChange={handleFileChange} style={{ display: 'none' }} />
+                                {attachedFile ? (
+                                    <div style={{
+                                        display: 'flex', alignItems: 'center', gap: '0.75rem',
+                                        padding: '0.75rem', background: 'var(--bg-base)',
+                                        border: '1px solid var(--border-glass)', borderRadius: '10px'
+                                    }}>
+                                        <FileText size={20} color="var(--primary)" />
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <div style={{ fontSize: '0.9rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{attachedFile.name}</div>
+                                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{(attachedFile.size / 1024 / 1024).toFixed(2)} MB</div>
+                                        </div>
+                                        <button type="button" onClick={() => setAttachedFile(null)} style={{
+                                            background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer'
+                                        }}><X size={16} /></button>
+                                    </div>
+                                ) : (
+                                    <button type="button" onClick={() => attachmentInputRef.current?.click()} style={{
+                                        ...inputStyles, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        gap: '0.5rem', cursor: 'pointer', padding: '1.25rem',
+                                        color: 'var(--text-muted)', width: '100%', border: '1px dashed var(--border-glass)'
+                                    }}>
+                                        <Paperclip size={18} /> Attach Document / File
+                                    </button>
+                                )}
+                            </div>
+
                             {/* Error */}
                             {submitError && (
                                 <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '10px', padding: '0.75rem 1rem', color: '#ef4444', fontSize: '0.875rem' }}>
@@ -459,7 +525,7 @@ export const PostNeedModal = ({ isOpen, onClose }) => {
                                 }}
                             >
                                 {submitting
-                                    ? <><Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> {uploadingImage ? 'Uploading...' : 'Posting...'}</>
+                                    ? <><Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> {uploadingImage ? 'Uploading Image...' : (uploadingFile ? 'Uploading File...' : 'Posting...')}</>
                                     : <><Send size={16} /> Post Need</>}
                             </button>
                         </div>

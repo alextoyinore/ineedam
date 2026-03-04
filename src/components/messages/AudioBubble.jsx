@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Play, Pause, Volume2 } from 'lucide-react';
 
-export const AudioBubble = ({ url, isMe }) => {
+export const AudioBubble = ({ id, url, isMe, currentlyPlayingId, onTogglePlay }) => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
@@ -40,14 +40,25 @@ export const AudioBubble = ({ url, isMe }) => {
         };
     }, [url]);
 
+    // Cleanup: pause if someone else starts playing
+    useEffect(() => {
+        if (currentlyPlayingId && currentlyPlayingId !== id && isPlaying) {
+            audioRef.current.pause();
+            setIsPlaying(false);
+        }
+    }, [currentlyPlayingId, id, isPlaying]);
+
     const togglePlay = (e) => {
         e.stopPropagation();
+        const audio = audioRef.current;
         if (isPlaying) {
-            audioRef.current.pause();
+            audio.pause();
+            setIsPlaying(false);
         } else {
-            audioRef.current.play();
+            audio.play();
+            setIsPlaying(true);
         }
-        setIsPlaying(!isPlaying);
+        if (onTogglePlay) onTogglePlay();
     };
 
     const formatTime = (time) => {
