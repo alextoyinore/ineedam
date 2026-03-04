@@ -210,6 +210,13 @@ export const RightSidebar = () => {
                                 </button>
                             </div>
                         ))}
+                        <span
+                            onClick={() => navigate('/who-to-follow')}
+                            style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 600, cursor: 'pointer', marginTop: '0.25rem' }}
+                            className="nav-link-hover"
+                        >
+                            See all →
+                        </span>
                     </div>
                 )}
 

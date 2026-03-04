@@ -163,9 +163,15 @@ export const PostNeedModal = ({ isOpen, onClose }) => {
     return (
         <AnimatePresence>
             <div style={{
-                position: 'fixed', top: 0, left: 0, right: 0,
+                position: 'fixed',
+                top: isMobile ? 'var(--mobile-header-height)' : 0,
+                left: 0,
+                right: 0,
                 bottom: isMobile ? 'var(--mobile-nav-height)' : 0,
-                zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                zIndex: 1200,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 padding: isMobile ? 0 : '1rem',
                 background: isMobile ? 'transparent' : 'rgba(0, 0, 0, 0.5)',
                 backdropFilter: isMobile ? 'none' : 'blur(4px)'
