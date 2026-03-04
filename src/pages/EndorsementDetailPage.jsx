@@ -8,10 +8,11 @@ import { fetchRepliesForNeed, createReply, formatTimeAgo, updateReplyStatus } fr
 import { useAuth } from '../context/AuthContext';
 import { ProfileHoverCard } from '../components/ProfileHoverCard';
 import { ReplyModal } from '../components/ReplyModal';
+import { AttachmentModal } from '../components/AttachmentModal';
 import { Lock, Globe, MessageSquare, Archive, Send, Paperclip, FileText, Download, X } from 'lucide-react';
 import { uploadFileToCloudinary } from '../lib/needsService';
 
-const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive }) => {
+const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachment }) => {
     const { user } = useAuth();
     const isMe = user && reply.user_id === user.id;
     const authorName = reply.profiles?.display_name || 'Anonymous';
@@ -76,23 +77,21 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive }) => {
 
                     {reply.file_url && (
                         <div style={{ marginTop: '0.75rem' }}>
-                            <a
-                                href={reply.file_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                            <button
+                                onClick={() => onViewAttachment(reply.file_url, reply.file_type, 'Attachment')}
                                 style={{
                                     display: 'inline-flex', alignItems: 'center', gap: '0.75rem',
                                     padding: '0.6rem 1rem', background: 'var(--bg-base)',
                                     border: '1px solid var(--border-glass)', borderRadius: '10px',
                                     color: 'var(--text-primary)', textDecoration: 'none',
-                                    fontSize: '0.9rem'
+                                    fontSize: '0.9rem', cursor: 'pointer'
                                 }}
                                 className="glass-panel-hover"
                             >
                                 <FileText size={18} color="var(--primary)" />
                                 <span style={{ fontWeight: 500 }}>View Attachment</span>
                                 <Download size={14} style={{ opacity: 0.5 }} />
-                            </a>
+                            </button>
                         </div>
                     )}
 
@@ -121,7 +120,7 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive }) => {
                 </div>
             </div>
             {reply.children && reply.children.map(child => (
-                <ReplyItem key={child.id} reply={child} need={need} depth={depth + 1} onReply={onReply} onArchive={onArchive} />
+                <ReplyItem key={child.id} reply={child} need={need} depth={depth + 1} onReply={onReply} onArchive={onArchive} onViewAttachment={onViewAttachment} />
             ))}
         </div>
     );
@@ -145,6 +144,9 @@ export const EndorsementDetailPage = () => {
     // For nested replies via modal
     const [isReplyModalOpen, setIsReplyModalOpen] = useState(false);
     const [activeParentReply, setActiveParentReply] = useState(null);
+
+    // For viewing attachments
+    const [attachmentToView, setAttachmentToView] = useState(null);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -274,6 +276,13 @@ export const EndorsementDetailPage = () => {
                     } : null}
                 />
             )}
+            <AttachmentModal
+                isOpen={!!attachmentToView}
+                onClose={() => setAttachmentToView(null)}
+                fileUrl={attachmentToView?.url}
+                fileType={attachmentToView?.type}
+                fileName={attachmentToView?.name}
+            />
 
             <header style={{
                 position: 'sticky', top: 0, zIndex: 40,
@@ -381,7 +390,14 @@ export const EndorsementDetailPage = () => {
 
             <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {replyTree.map(reply => (
-                    <ReplyItem key={reply.id} reply={reply} need={need} onReply={handleOpenReplyToReply} onArchive={handleArchiveReply} />
+                    <ReplyItem
+                        key={reply.id}
+                        reply={reply}
+                        need={need}
+                        onReply={handleOpenReplyToReply}
+                        onArchive={handleArchiveReply}
+                        onViewAttachment={(url, type, name) => setAttachmentToView({ url, type, name })}
+                    />
                 ))}
             </div>
 
