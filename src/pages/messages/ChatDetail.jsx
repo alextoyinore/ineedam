@@ -378,11 +378,39 @@ export const ChatDetail = () => {
                                 position: 'relative',
                                 width: 'fit-content'
                             }} className="message-main-content">
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: isMe ? 'flex-end' : 'flex-start', gap: '2px', marginBottom: '0.4rem', opacity: 0.7 }}>
-                                    {msg.isBookmarked && <Bookmark size={10} fill="var(--primary)" color="var(--primary)" />}
-                                    <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
-                                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                    </span>
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: isMe ? 'flex-end' : 'flex-start', gap: '4px', marginBottom: '0.4rem', opacity: 0.9, position: 'relative' }}>
+                                    {!isCall && (
+                                        <div className={`message-actions-inline ${isMe ? 'is-me' : 'is-them'}`}>
+                                            <button className="message-action-btn" onClick={() => handleReply(msg)} title="Reply">
+                                                <Reply size={14} />
+                                            </button>
+                                            <button
+                                                className="message-action-btn"
+                                                onClick={() => toggleBookmark(msg.id)}
+                                                style={{ color: msg.isBookmarked ? 'var(--primary)' : 'inherit' }}
+                                                title={msg.isBookmarked ? "Remove Bookmark" : "Bookmark"}
+                                            >
+                                                <Bookmark size={14} fill={msg.isBookmarked ? "var(--primary)" : "none"} />
+                                            </button>
+                                            <div className="emoji-picker-container">
+                                                <button className="message-action-btn" onClick={() => setActiveEmojiMessageId(activeEmojiMessageId === msg.id ? null : msg.id)}>
+                                                    <Smile size={14} />
+                                                </button>
+                                                {activeEmojiMessageId === msg.id && (
+                                                    <EmojiPicker
+                                                        onSelect={(emoji) => toggleReaction(msg.id, emoji)}
+                                                        onClose={() => setActiveEmojiMessageId(null)}
+                                                    />
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        {msg.isBookmarked && <Bookmark size={10} fill="var(--primary)" color="var(--primary)" />}
+                                        <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                                            {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </span>
+                                    </div>
                                 </div>
 
                                 <div style={{
@@ -479,33 +507,6 @@ export const ChatDetail = () => {
                                     )}
                                 </div>
 
-                                {/* Message Actions moved inside main-content context */}
-                                {!isCall && (
-                                    <div className={`message-actions ${isMe ? 'is-me' : 'is-them'}`}>
-                                        <button className="message-action-btn" onClick={() => handleReply(msg)} title="Reply">
-                                            <Reply size={14} />
-                                        </button>
-                                        <button
-                                            className="message-action-btn"
-                                            onClick={() => toggleBookmark(msg.id)}
-                                            style={{ color: msg.isBookmarked ? 'var(--primary)' : 'inherit' }}
-                                            title={msg.isBookmarked ? "Remove Bookmark" : "Bookmark"}
-                                        >
-                                            <Bookmark size={14} fill={msg.isBookmarked ? "var(--primary)" : "none"} />
-                                        </button>
-                                        <div className="emoji-picker-container">
-                                            <button className="message-action-btn" onClick={() => setActiveEmojiMessageId(activeEmojiMessageId === msg.id ? null : msg.id)}>
-                                                <Smile size={14} />
-                                            </button>
-                                            {activeEmojiMessageId === msg.id && (
-                                                <EmojiPicker
-                                                    onSelect={(emoji) => toggleReaction(msg.id, emoji)}
-                                                    onClose={() => setActiveEmojiMessageId(null)}
-                                                />
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
                             </div>
 
                             {/* Reactions stack below the main row */}
