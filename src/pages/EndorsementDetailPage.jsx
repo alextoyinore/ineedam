@@ -291,9 +291,10 @@ export const EndorsementDetailPage = () => {
                 borderBottom: '1px solid var(--border-glass)'
             }}>
                 <button
-                    onClick={() => navigate(-1)}
-                    style={{ padding: '0.5rem', borderRadius: '50%', color: 'var(--text-primary)' }}
-                    className="glass-panel-hover"
+                    type="button"
+                    onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); navigate(-1); }}
+                    style={{ padding: '0.5rem', borderRadius: '50%', color: 'var(--text-primary)', touchAction: 'manipulation', cursor: 'pointer' }}
+                    className="nav-link-hover"
                 >
                     <ArrowLeft size={20} />
                 </button>

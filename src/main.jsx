@@ -3,6 +3,12 @@ import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './index.css'
 import { BrowserRouter } from 'react-router-dom'
+
+// Disable native browser scroll restoration — each page manages its own scroll via useEffect
+if ('scrollRestoration' in history) {
+  history.scrollRestoration = 'manual';
+}
+
 import { ThemeProvider } from './context/ThemeContext.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 import { BookmarksProvider } from './context/BookmarksContext.jsx'

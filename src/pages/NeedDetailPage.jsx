@@ -273,7 +273,12 @@ export const NeedDetailPage = () => {
                 background: 'var(--bg-surface-glass)', backdropFilter: 'blur(16px)',
                 borderBottom: '1px solid var(--border-glass)'
             }}>
-                <button onClick={() => navigate(-1)} style={{ padding: '0.5rem', borderRadius: '50%', color: 'var(--text-primary)' }} className="glass-panel-hover">
+                <button
+                    type="button"
+                    onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); navigate(-1); }}
+                    style={{ padding: '0.5rem', borderRadius: '50%', color: 'var(--text-primary)', touchAction: 'manipulation', cursor: 'pointer' }}
+                    className="nav-link-hover"
+                >
                     <ArrowLeft size={20} />
                 </button>
                 <h2 className="h2" style={{ fontSize: '1.25rem', margin: 0 }}>Thread</h2>
