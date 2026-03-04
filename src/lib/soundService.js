@@ -3,11 +3,11 @@
  */
 
 const SOUNDS = {
-    NOTIFICATION: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3',
-    MESSAGE_SENT: 'https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3',
-    MESSAGE_RECEIVED: 'https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3',
-    INCOMING_CALL: 'https://assets.mixkit.co/active_storage/sfx/1357/1357-preview.mp3',
-    RINGTONE: 'https://assets.mixkit.co/active_storage/sfx/1350/1350-preview.mp3'
+    NOTIFICATION: '/sounds/notification.mp3',
+    MESSAGE_SENT: '/sounds/message_sent.mp3',
+    MESSAGE_RECEIVED: '/sounds/message_received.mp3',
+    INCOMING_CALL: '/sounds/ringtone.mp3',
+    RINGTONE: '/sounds/ringtone.mp3'
 };
 
 class SoundService {
@@ -35,17 +35,29 @@ class SoundService {
         try {
             // Re-use or create audio object
             if (!this.audioCache[url]) {
-                this.audioCache[url] = new Audio(url);
+                const audio = new Audio(url);
+                audio.addEventListener('error', (e) => {
+                    console.error(`Audio playback error for ${soundKey}:`, e);
+                    // Check if it's a network error
+                    if (audio.error && audio.error.code === 4) {
+                        console.warn(`Sound asset at ${url} could not be loaded. Please check your network connection or if the URL is still valid.`);
+                    }
+                });
+                this.audioCache[url] = audio;
             }
 
             const audio = this.audioCache[url];
             audio.currentTime = 0;
             audio.play().catch(err => {
                 // Browser might block autoplay if user hasn't interacted yet
-                console.warn('Playback failed:', err);
+                if (err.name === 'NotAllowedError') {
+                    console.warn(`Autoplay blocked for ${soundKey}. Interaction required.`);
+                } else {
+                    console.warn(`Playback failed for ${soundKey}:`, err);
+                }
             });
         } catch (err) {
-            console.error('Audio playback error:', err);
+            console.error(`System error playing ${soundKey}:`, err);
         }
     }
 
