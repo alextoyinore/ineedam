@@ -33,7 +33,7 @@ export const SupportPage = () => {
 
         setStatus('submitting');
         try {
-            const res = await fetch('https://formsubmit.co/ajax/admin@ineedam.com', {
+            const res = await fetch('https://formsubmit.co/ajax/support@ineedam.com', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
                 body: JSON.stringify({
@@ -199,8 +199,8 @@ export const SupportPage = () => {
 
                         <p style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                             Or email us directly at{' '}
-                            <a href="mailto:admin@ineedam.com" style={{ color: 'var(--primary)', fontWeight: 600 }}>
-                                admin@ineedam.com
+                            <a href="mailto:support@ineedam.com" style={{ color: 'var(--primary)', fontWeight: 600 }}>
+                                support@ineedam.com
                             </a>
                         </p>
                     </form>

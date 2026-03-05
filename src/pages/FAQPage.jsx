@@ -160,7 +160,7 @@ export const FAQPage = () => {
                     <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
                         We're here to help you get the most out of the platform.
                     </p>
-                    <a href="mailto:admin@ineedam.com" className="btn btn-primary">
+                    <a href="mailto:support@ineedam.com" className="btn btn-primary">
                         Contact Support
                     </a>
                 </div>
