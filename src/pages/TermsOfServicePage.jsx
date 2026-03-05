@@ -32,6 +32,28 @@ export const TermsOfServicePage = () => {
                             We may terminate or suspend your account immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms.
                         </p>
                     </section>
+
+                    <section>
+                        <h2 className="h2" style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>4. Disclaimer of Warranties</h2>
+                        <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                            The Service is provided on an "AS IS" and "AS AVAILABLE" basis without any warranty of any kind, express or implied. Ineedam does not guarantee the accuracy, completeness, or usefulness of any content posted by users.
+                        </p>
+                    </section>
+
+                    <section>
+                        <h2 className="h2" style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>5. Limitation of Liability</h2>
+                        <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                            Ineedam shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of or inability to use the Service. Ineedam is a connection platform only and is not responsible for transactions, agreements, or disputes between users.
+                        </p>
+                    </section>
+
+                    <section style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-glass)', borderRadius: '16px', padding: '1.5rem' }}>
+                        <h2 className="h2" style={{ marginBottom: '0.75rem', fontSize: '1.5rem' }}>6. Contact Us</h2>
+                        <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                            If you have questions about these Terms, please contact us at{' '}
+                            <a href="mailto:admin@ineedam.com" style={{ color: 'var(--primary)', fontWeight: 600 }}>admin@ineedam.com</a>.
+                        </p>
+                    </section>
                 </div>
             </motion.div>
         </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { X, Settings, HelpCircle, FileText, Shield, Users, TrendingUp, Award, Search, Bookmark, SlidersHorizontal, Trash2, BookOpen, Share2 } from 'lucide-react';
+import { X, Settings, HelpCircle, FileText, Shield, Users, TrendingUp, Award, Search, Bookmark, SlidersHorizontal, Trash2, BookOpen, Share2, LifeBuoy } from 'lucide-react';
 import { fetchMetCounts } from '../lib/needsService';
 import { getFollowStats } from '../lib/socialService';
 import { fetchEndorsementsForUser } from '../lib/endorsementService';
@@ -227,12 +227,20 @@ export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false, onInvit
                                     <span style={{ fontWeight: 500 }}>Settings</span>
                                 </div>
                                 <div
+                                    onClick={() => handleNavigation('/support')}
+                                    style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', color: 'var(--text-primary)' }}
+                                    className="nav-link-hover"
+                                >
+                                    <LifeBuoy size={20} color="var(--accent)" />
+                                    <span style={{ fontWeight: 500 }}>Contact Support</span>
+                                </div>
+                                <div
                                     onClick={() => handleNavigation('/how-to-use')}
                                     style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', color: 'var(--text-primary)' }}
                                     className="nav-link-hover"
                                 >
                                     <HelpCircle size={20} />
-                                    <span style={{ fontWeight: 500 }}>How to Use</span>
+                                    <span style={{ fontWeight: 500 }}>Use Cases</span>
                                 </div>
                                 <div
                                     onClick={() => handleNavigation('/privacy')}

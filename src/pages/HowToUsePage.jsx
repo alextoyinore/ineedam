@@ -55,9 +55,9 @@ export const HowToUsePage = () => {
         <div style={{ padding: '2rem 1rem', maxWidth: '1000px', margin: '0 auto' }}>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                 <header style={{ textAlign: 'center', marginBottom: '4rem' }}>
-                    <h1 className="h1" style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>How to use Ineedam</h1>
+                    <h1 className="h1" style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>Use Cases</h1>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto' }}>
-                        Ineedam turns the marketplace upside down. Here is how you can leverage the power of demand.
+                        Ineedam turns the marketplace upside down. Here are real ways people use the power of demand.
                     </p>
                 </header>
 

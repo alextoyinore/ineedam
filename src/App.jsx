@@ -34,6 +34,7 @@ import { BlockedAccountsPage } from './pages/BlockedAccountsPage';
 import { ArchivedContentPage } from './pages/ArchivedContentPage';
 import { EndorsementDetailPage } from './pages/EndorsementDetailPage';
 import { HelpPage } from './pages/HelpPage';
+import { SupportPage } from './pages/SupportPage';
 
 
 
@@ -95,6 +96,7 @@ function App() {
                 <Route path="/need/:id" element={<NeedDetailPage />} />
                 <Route path="/endorsement/:id" element={<EndorsementDetailPage />} />
                 <Route path="/help" element={<HelpPage />} />
+                <Route path="/support" element={<SupportPage />} />
                 <Route path="/dashboard" element={<Navigate to={`/${useAuth().profile?.username || ''}`} replace />} />
                 <Route path="/:username" element={<UserProfilePage />} />
                 <Route path="*" element={<NotFoundPage />} />

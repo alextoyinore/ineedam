@@ -256,10 +256,11 @@ export const RightSidebar = () => {
                 </div> */}
 
                 {/* Footer Links */}
-                <div style={{ padding: '0 1rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem 1rem' }}>
+                <div style={{ padding: '0 1rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem 1rem', marginBottom: '2rem' }}>
                     <span onClick={() => navigate('/about')} style={{ fontSize: '0.8rem', color: 'var(--text-muted)', cursor: 'pointer' }} className="nav-link-hover">About</span>
                     <span onClick={() => navigate('/faq')} style={{ fontSize: '0.8rem', color: 'var(--text-muted)', cursor: 'pointer' }} className="nav-link-hover">FAQ</span>
-                    <span onClick={() => navigate('/how-to-use')} style={{ fontSize: '0.8rem', color: 'var(--text-muted)', cursor: 'pointer' }} className="nav-link-hover">How to Use</span>
+                    <span onClick={() => navigate('/support')} style={{ fontSize: '0.8rem', color: 'var(--text-muted)', cursor: 'pointer' }} className="nav-link-hover">Support</span>
+                    <span onClick={() => navigate('/how-to-use')} style={{ fontSize: '0.8rem', color: 'var(--text-muted)', cursor: 'pointer' }} className="nav-link-hover">Use Cases</span>
                     <span onClick={() => navigate('/privacy')} style={{ fontSize: '0.8rem', color: 'var(--text-muted)', cursor: 'pointer' }} className="nav-link-hover">Privacy</span>
                     <span onClick={() => navigate('/terms')} style={{ fontSize: '0.8rem', color: 'var(--text-muted)', cursor: 'pointer' }} className="nav-link-hover">Terms</span>
                     <span onClick={() => navigate('/rules')} style={{ fontSize: '0.8rem', color: 'var(--text-muted)', cursor: 'pointer' }} className="nav-link-hover">Rules</span>

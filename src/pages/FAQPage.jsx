@@ -83,18 +83,53 @@ export const FAQPage = () => {
         {
             icon: MessageCircle,
             question: "How do I reply to a need?",
-            answer: "Simply click the 'Reply' button on any need card. You can choose to post a public reply (visible to everyone) or a private proposal (visible only to the poster)."
+            answer: "Simply click the 'Reply' button on any need card. You can choose to post a public reply (visible to everyone) or a private proposal (visible only to the poster). You can also attach files or images to your reply."
         },
         {
             icon: Shield,
             question: "How can I trust other users?",
-            answer: "We focus on community transparency. You can view user profiles, see their 'Fulfilled Requests' count (how many times they've helped others), and read their bio before engaging."
+            answer: "We focus on community transparency. You can view user profiles, see their 'Fulfilled Requests' count, read their bio, and check endorsements written about them before engaging."
         },
         {
             icon: CreditCard,
             question: "How do payments work?",
             answer: "Ineedam is a connection platform. We do not process payments directly yet. You and the service provider should agree on payment methods outside the platform."
-        }
+        },
+        {
+            icon: MessageCircle,
+            question: "How does the private messaging (DMs) work?",
+            answer: "You can message any user directly by visiting their profile and tapping the Message button. Conversations are private and only visible to you and the recipient. You can send text, voice notes, images, video, and other files in DMs."
+        },
+        {
+            icon: Shield,
+            question: "Can I protect my messages with a PIN?",
+            answer: "Yes! You can set a PIN in your profile settings under 'Message PIN'. After 1 minute of inactivity or when you switch pages, your messages will be locked automatically and require your PIN to access."
+        },
+        {
+            icon: MessageCircle,
+            question: "What are Endorsements?",
+            answer: "When a need is fulfilled, the poster can formally endorse the person who helped them. Endorsements are public and appear on the helper's profile as a trust signal for the rest of the community."
+        },
+        {
+            icon: HelpCircle,
+            question: "What is the Broadcast feature?",
+            answer: "Broadcast lets you share a need or endorsement with your followers, similar to a repost. It helps needs reach a wider audience and helps great providers get more visibility."
+        },
+        {
+            icon: HelpCircle,
+            question: "Can I save content for later?",
+            answer: "Yes. You can bookmark any need, endorsement, or even individual chat messages. All your bookmarks are accessible from the Bookmarks tab in the navigation."
+        },
+        {
+            icon: MessageCircle,
+            question: "Can I attach files to messages and replies?",
+            answer: "Yes! You can attach images, videos, PDFs, and other documents to both direct messages and need replies. Attachments can be previewed in-app by tapping on them — videos play directly, images open in a full-screen viewer."
+        },
+        {
+            icon: HelpCircle,
+            question: "How do I invite friends to Ineedam?",
+            answer: "Tap 'Invite Friends' in the sidebar (desktop) or the menu drawer (mobile). You can share an invite via WhatsApp, Telegram, Email, SMS, or by copying the link directly."
+        },
     ];
 
     return (
@@ -125,7 +160,7 @@ export const FAQPage = () => {
                     <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
                         We're here to help you get the most out of the platform.
                     </p>
-                    <a href="mailto:support@ineedam.com" className="btn btn-primary">
+                    <a href="mailto:admin@ineedam.com" className="btn btn-primary">
                         Contact Support
                     </a>
                 </div>
