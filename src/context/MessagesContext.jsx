@@ -16,14 +16,17 @@ export const MessagesProvider = ({ children }) => {
     const [activeThreadId, setActiveThreadId] = useState(null);
     const [call, setCall] = useState(null); // { status: 'idle'|'calling'|'incoming'|'connected', isVideo, partner: { id, name, avatar }, stream: null }
     const [localStream, setLocalStream] = useState(null);
-    const [remoteStream, setRemoteStream] = useState(null);
+    const [secondaryCall, setSecondaryCall] = useState(null); // For incoming call while in another
+    const [remoteStreams, setRemoteStreams] = useState({}); // { userId: stream }
     const [replyingTo, setReplyingTo] = useState(null); // { id, text, sender }
 
     const activeThreadIdRef = useRef(activeThreadId);
     const callRef = useRef(call);
-    const pcRef = useRef(null);
+    const secondaryCallRef = useRef(secondaryCall);
+    const pcsRef = useRef({}); // { userId: RTCPeerConnection }
     const streamRef = useRef(null);
     const pendingOfferRef = useRef(null);
+    const pendingSecondaryOfferRef = useRef(null);
     const iceCandidateQueueRef = useRef([]);
     const callTimeoutRef = useRef(null);
     const isEndingCallRef = useRef(false);
@@ -37,6 +40,10 @@ export const MessagesProvider = ({ children }) => {
     useEffect(() => {
         callRef.current = call;
     }, [call]);
+
+    useEffect(() => {
+        secondaryCallRef.current = secondaryCall;
+    }, [secondaryCall]);
 
     const loadThreads = async (silent = false) => {
         if (!user) {
@@ -174,7 +181,7 @@ export const MessagesProvider = ({ children }) => {
                 supabase.removeChannel(channel);
                 supabase.removeChannel(callChannel);
                 clearInterval(heartbeat);
-                if (pcRef.current) pcRef.current.close();
+                Object.values(pcsRef.current).forEach(pc => pc.close());
             };
         }
     }, [user]);
@@ -189,62 +196,87 @@ export const MessagesProvider = ({ children }) => {
 
         pc.onicecandidate = (event) => {
             if (event.candidate) {
-                console.log("Local ICE candidate generated");
+                console.log("Local ICE candidate generated for", targetUserId);
                 sendCallSignal(targetUserId, { candidate: event.candidate });
             }
         };
 
-        pc.onicegatheringstatechange = () => {
-            console.log("ICE gathering state:", pc.iceGatheringState);
-        };
-
         pc.ontrack = (event) => {
-            console.log("Got remote track:", event.track.kind, event.streams[0]?.id);
+            console.log("Got remote track from", targetUserId, ":", event.track.kind);
             if (event.streams && event.streams[0]) {
-                setRemoteStream(event.streams[0]);
+                setRemoteStreams(prev => ({ ...prev, [targetUserId]: event.streams[0] }));
             }
         };
 
         pc.onconnectionstatechange = () => {
-            console.log("Connection state changed:", pc.connectionState);
-            if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed' || pc.connectionState === 'closed') {
-                endCall();
+            console.log(`Connection state for ${targetUserId}:`, pc.connectionState);
+            if (['disconnected', 'failed', 'closed'].includes(pc.connectionState)) {
+                handleParticipantLeave(targetUserId);
             }
         };
 
-        pcRef.current = pc;
+        pcsRef.current[targetUserId] = pc;
         return pc;
+    };
+
+    const handleParticipantLeave = (userId) => {
+        if (pcsRef.current[userId]) {
+            pcsRef.current[userId].close();
+            delete pcsRef.current[userId];
+        }
+        setRemoteStreams(prev => {
+            const next = { ...prev };
+            delete next[userId];
+            return next;
+        });
+
+        if (Object.keys(pcsRef.current).length === 0) {
+            endCall();
+        }
     };
 
     const handleIncomingSignal = async (payload) => {
         const { from, type, offer, answer, candidate, isVideo, fromName, fromAvatar } = payload;
 
         if (type === 'offer') {
-            if (pcRef.current && callRef.current?.status === 'connected') {
+            const currentPC = pcsRef.current[from];
+            if (currentPC && callRef.current?.status === 'connected') {
                 // Re-negotiation (e.g. upgrade to video)
                 try {
-                    await pcRef.current.setRemoteDescription(new RTCSessionDescription(offer));
-                    const answer = await pcRef.current.createAnswer();
-                    await pcRef.current.setLocalDescription(answer);
+                    await currentPC.setRemoteDescription(new RTCSessionDescription(offer));
+                    const answer = await currentPC.createAnswer();
+                    await currentPC.setLocalDescription(answer);
                     sendCallSignal(from, { type: 'answer', answer });
 
                     // Process queued candidates
                     if (iceCandidateQueueRef.current.length > 0) {
-                        console.log(`Processing ${iceCandidateQueueRef.current.length} queued candidates`);
                         iceCandidateQueueRef.current.forEach(async (cand) => {
-                            await pcRef.current.addIceCandidate(new RTCIceCandidate(cand));
+                            await currentPC.addIceCandidate(new RTCIceCandidate(cand));
                         });
                         iceCandidateQueueRef.current = [];
                     }
 
-                    if (isVideo) {
-                        setCall(prev => ({ ...prev, isVideo: true }));
-                    }
+                    if (isVideo) setCall(prev => ({ ...prev, isVideo: true }));
                 } catch (err) {
                     console.error("Re-negotiation failed:", err);
                 }
                 return;
             }
+
+            // If already in a call with SOMEONE ELSE
+            if (callRef.current && callRef.current.status !== 'idle' && from !== callRef.current.partner.id) {
+                console.log("Received secondary call offer from", from);
+                pendingSecondaryOfferRef.current = offer;
+                setSecondaryCall({
+                    status: 'incoming',
+                    isVideo,
+                    partner: { id: from, name: fromName, avatar: fromAvatar }
+                });
+                // Alert the caller they are in queue/busy but ringing
+                sendCallSignal(from, { type: 'busy-ringing' });
+                return;
+            }
+
             soundService.startRinging();
             pendingOfferRef.current = offer;
             setCall({
@@ -253,22 +285,23 @@ export const MessagesProvider = ({ children }) => {
                 partner: { id: from, name: fromName, avatar: fromAvatar },
                 isInitiator: false
             });
+        } else if (type === 'busy-ringing') {
+            // Initiator side: show "User in another call..." status but stay in calling
+            setCall(prev => ({ ...prev, statusText: 'User is in another call' }));
         } else if (type === 'answer') {
             if (callTimeoutRef.current) {
                 clearTimeout(callTimeoutRef.current);
                 callTimeoutRef.current = null;
             }
-            if (pcRef.current) {
+            const currentPC = pcsRef.current[from];
+            if (currentPC) {
                 try {
-                    await pcRef.current.setRemoteDescription(new RTCSessionDescription(answer));
-
+                    await currentPC.setRemoteDescription(new RTCSessionDescription(answer));
                     setCall(prev => ({ ...prev, status: 'connected', startTime: Date.now() }));
 
-                    // Process queued candidates
                     if (iceCandidateQueueRef.current.length > 0) {
-                        console.log(`Processing ${iceCandidateQueueRef.current.length} queued candidates`);
                         iceCandidateQueueRef.current.forEach(async (cand) => {
-                            await pcRef.current.addIceCandidate(new RTCIceCandidate(cand));
+                            await currentPC.addIceCandidate(new RTCIceCandidate(cand));
                         });
                         iceCandidateQueueRef.current = [];
                     }
@@ -277,20 +310,26 @@ export const MessagesProvider = ({ children }) => {
                 }
             }
         } else if (candidate) {
-            console.log("Received remote ICE candidate");
-            if (pcRef.current && pcRef.current.remoteDescription) {
+            const currentPC = pcsRef.current[from];
+            if (currentPC && currentPC.remoteDescription) {
                 try {
-                    await pcRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+                    await currentPC.addIceCandidate(new RTCIceCandidate(candidate));
                 } catch (err) {
                     console.error("Error adding ICE candidate:", err);
                 }
             } else {
-                console.log("Queueing ICE candidate - remote description not set");
                 iceCandidateQueueRef.current.push(candidate);
             }
         } else if (type === 'hangup') {
             soundService.stopRinging();
-            endCall(payload.reason, true);
+            if (from === callRef.current?.partner?.id) {
+                endCall(payload.reason, true);
+            } else if (from === secondaryCallRef.current?.partner?.id) {
+                setSecondaryCall(null);
+                pendingSecondaryOfferRef.current = null;
+            } else {
+                handleParticipantLeave(from);
+            }
         }
     };
 
@@ -414,19 +453,24 @@ export const MessagesProvider = ({ children }) => {
                 const newStream = await navigator.mediaDevices.getUserMedia({ video: true });
                 const newVideoTrack = newStream.getVideoTracks()[0];
 
-                if (streamRef.current && pcRef.current) {
+                if (streamRef.current && Object.keys(pcsRef.current).length > 0) {
                     streamRef.current.addTrack(newVideoTrack);
-                    pcRef.current.addTrack(newVideoTrack, streamRef.current);
-
-                    // Re-negotiate
-                    const offer = await pcRef.current.createOffer();
-                    await pcRef.current.setLocalDescription(offer);
-
-                    sendCallSignal(call.partner.id, {
-                        type: 'offer',
-                        offer,
-                        isVideo: true
+                    Object.values(pcsRef.current).forEach(pc => {
+                        pc.addTrack(newVideoTrack, streamRef.current);
                     });
+
+                    // Re-negotiate with everyone
+                    for (const partnerId of Object.keys(pcsRef.current)) {
+                        const pc = pcsRef.current[partnerId];
+                        const offer = await pc.createOffer();
+                        await pc.setLocalDescription(offer);
+
+                        sendCallSignal(partnerId, {
+                            type: 'offer',
+                            offer,
+                            isVideo: true
+                        });
+                    }
 
                     setCall(prev => ({ ...prev, isVideo: true }));
                 }
@@ -457,9 +501,11 @@ export const MessagesProvider = ({ children }) => {
             callTimeoutRef.current = null;
         }
 
-        if (pcRef.current) {
-            try { pcRef.current.close(); } catch (e) { }
-            pcRef.current = null;
+        if (pcsRef.current) {
+            Object.values(pcsRef.current).forEach(pc => {
+                try { pc.close(); } catch (e) { }
+            });
+            pcsRef.current = {};
         }
 
         if (streamRef.current) {
@@ -511,6 +557,48 @@ export const MessagesProvider = ({ children }) => {
         setTimeout(() => {
             isEndingCallRef.current = false;
         }, 1000);
+    };
+
+    const addToCall = async () => {
+        if (!secondaryCall || !pendingSecondaryOfferRef.current) return;
+
+        const partner = secondaryCall.partner;
+        try {
+            const pc = createPeerConnection(partner.id, secondaryCall.isVideo);
+
+            // Add existing tracks (audio/video) to the new PC
+            if (streamRef.current) {
+                streamRef.current.getTracks().forEach(track => pc.addTrack(track, streamRef.current));
+            }
+
+            await pc.setRemoteDescription(new RTCSessionDescription(pendingSecondaryOfferRef.current));
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+
+            sendCallSignal(partner.id, {
+                type: 'answer',
+                answer,
+                fromName: profile?.display_name || user.email,
+                fromAvatar: profile?.avatar_url
+            });
+
+            setSecondaryCall(null);
+            pendingSecondaryOfferRef.current = null;
+
+            // If we are merging, we should also inform existing participants about the new one
+            // In a simple star topology, the bridge (A) relays signals.
+            // For now, let's just allow A to see/hear everyone.
+        } catch (err) {
+            console.error("Failed to add to call", err);
+        }
+    };
+
+    const rejectSecondaryCall = () => {
+        if (secondaryCall) {
+            sendCallSignal(secondaryCall.partner.id, { type: 'hangup', reason: 'busy' });
+            setSecondaryCall(null);
+            pendingSecondaryOfferRef.current = null;
+        }
     };
 
     const sendCallSignal = async (targetUserId, signalData) => {
@@ -669,7 +757,6 @@ export const MessagesProvider = ({ children }) => {
             loadingThreads: loading,
             call,
             localStream,
-            remoteStream,
             initiateCall,
             acceptCall,
             endCall,
@@ -678,7 +765,11 @@ export const MessagesProvider = ({ children }) => {
             replyingTo,
             setReplyingTo,
             toggleReaction,
-            toggleBookmark
+            toggleBookmark,
+            secondaryCall,
+            remoteStreams,
+            addToCall,
+            rejectSecondaryCall
         }}>
             {children}
         </MessagesContext.Provider>

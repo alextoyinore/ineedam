@@ -15,7 +15,10 @@ export const Layout = ({ children }) => {
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const { isLocked } = useMessageSecurity();
-  const { call, endCall, acceptCall, localStream, remoteStream, toggleVideo } = useMessages();
+  const {
+    call, endCall, acceptCall, localStream, remoteStreams, toggleVideo,
+    secondaryCall, addToCall, rejectSecondaryCall
+  } = useMessages();
   const location = useLocation();
 
   // Hide FAB and potentially other logic for chat detail view
@@ -78,10 +81,13 @@ export const Layout = ({ children }) => {
           callerAvatar={call.partner.avatar}
           isVideoCall={call.isVideo}
           localStream={localStream}
-          remoteStream={remoteStream}
+          remoteStreams={remoteStreams}
           onAccept={acceptCall}
           onReject={() => endCall('rejected')}
           onToggleVideo={toggleVideo}
+          secondaryCall={secondaryCall}
+          onAddToCall={addToCall}
+          onRejectSecondary={rejectSecondaryCall}
         />
       )}
     </div>

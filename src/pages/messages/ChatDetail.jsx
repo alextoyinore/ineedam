@@ -89,15 +89,20 @@ const ReactionsDisplay = ({ reactions, onToggle, currentUserId }) => {
     );
 };
 
-const EmojiPicker = ({ onSelect, onClose }) => {
-    const emojis = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
+const EmojiPicker = ({ onSelect, onClose, align = 'right' }) => {
+    const emojis = ['👍', '❤️', '😂', '😮', '😢', '🔥', '🎉', '🙏', '✨', '👀', '💯', '🤝'];
     return (
-        <div className="emoji-picker-overlay" onClick={e => e.stopPropagation()}>
+        <div className={`emoji-picker-overlay is-${align}`} onClick={e => e.stopPropagation()}>
             {emojis.map(emoji => (
                 <button
                     key={emoji}
+                    type="button"
                     className="emoji-btn"
-                    onClick={() => { onSelect(emoji); onClose(); }}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onSelect(emoji);
+                        onClose();
+                    }}
                 >
                     {emoji}
                 </button>
@@ -216,6 +221,24 @@ export const ChatDetail = () => {
     const fileInputRef = useRef(null);
     const messagesEndRef = useRef(null);
     const messageContainerRef = useRef(null);
+    const emojiPickerRef = useRef(null);
+
+    // Global click listener to close emoji picker
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            // If we have an active picker and click is outside any picker container
+            if (activeEmojiMessageId && !event.target.closest('.emoji-picker-container')) {
+                setActiveEmojiMessageId(null);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+        };
+    }, [activeEmojiMessageId]);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -360,12 +383,14 @@ export const ChatDetail = () => {
             </header>
 
             {/* Messages */}
-            <div style={{
-                flex: 1, overflowY: 'auto', padding: isMobile ? '1rem' : '1.5rem',
-                display: 'flex', flexDirection: 'column-reverse', gap: '0.4rem',
-                WebkitOverflowScrolling: 'touch',
-                backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Cg stroke='%236366f1' stroke-opacity='0.02' fill='none' stroke-width='1.5'%3E%3Cpath d='M40 40h60c8 0 15 7 15 15v40c0 8-7 15-15 15h-20l-15 15v-15h-25c-8 0-15-7-15-15v-40c0-8 7-15 15-15z'/%3E%3Cpath d='M160 160l30-30 15 15-30 30z M195 125l15-15 15 15-15 15z M155 165l5 25-25-5z'/%3E%3Cpath d='M160 40h30c4 0 8 4 8 8v15c0 4-4 8-8 8h-5l-10 10v-10h-15c-4 0-8-4-8-8v-15c0-4 4-8 8-8z'/%3E%3C/g%3E%3C/svg%3E\")"
-            }}>
+            <div
+                className={`messages-scroll-area ${activeEmojiMessageId ? 'has-active-picker' : ''}`}
+                style={{
+                    flex: 1, overflowY: 'auto', padding: isMobile ? '1rem' : '1.5rem',
+                    display: 'flex', flexDirection: 'column-reverse', gap: '0.4rem',
+                    WebkitOverflowScrolling: 'touch',
+                    backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Cg stroke='%236366f1' stroke-opacity='0.02' fill='none' stroke-width='1.5'%3E%3Cpath d='M40 40h60c8 0 15 7 15 15v40c0 8-7 15-15 15h-20l-15 15v-15h-25c-8 0-15-7-15-15v-40c0-8 7-15 15-15z'/%3E%3Cpath d='M160 160l30-30 15 15-30 30z M195 125l15-15 15 15-15 15z M155 165l5 25-25-5z'/%3E%3Cpath d='M160 40h30c4 0 8 4 8 8v15c0 4-4 8-8 8h-5l-10 10v-10h-15c-4 0-8-4-8-8v-15c0-4 4-8 8-8z'/%3E%3C/g%3E%3C/svg%3E\")"
+                }}>
                 {[...activeThread.messages].reverse().map(msg => {
                     const isMe = msg.sender === 'Me';
                     const isAudio = msg.fileType?.startsWith('audio/') || msg.fileUrl?.toLowerCase().endsWith('.webm') || msg.fileUrl?.toLowerCase().endsWith('.mp3') || msg.fileUrl?.toLowerCase().endsWith('.wav');
@@ -398,29 +423,30 @@ export const ChatDetail = () => {
                             }} className="message-main-content">
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: isMe ? 'flex-end' : 'flex-start', gap: '4px', marginBottom: '0.4rem', opacity: 0.9, position: 'relative' }}>
                                     {!isCall && (
-                                        <div className={`message-actions-inline ${isMe ? 'is-me' : 'is-them'}`}>
-                                            <button className="message-action-btn" onClick={() => handleReply(msg)} title="Reply">
-                                                <Reply size={14} />
-                                            </button>
-                                            <button
-                                                className="message-action-btn"
-                                                onClick={() => toggleBookmark(msg.id)}
-                                                style={{ color: msg.isBookmarked ? 'var(--primary)' : 'inherit' }}
-                                                title={msg.isBookmarked ? "Remove Bookmark" : "Bookmark"}
-                                            >
-                                                <Bookmark size={14} fill={msg.isBookmarked ? "var(--primary)" : "none"} />
-                                            </button>
-                                            <div className="emoji-picker-container">
+                                        <div className={`emoji-picker-container`}>
+                                            <div className={`message-actions-inline ${isMe ? 'is-me' : 'is-them'} ${activeEmojiMessageId === msg.id ? 'is-active' : ''}`}>
+                                                <button className="message-action-btn" onClick={() => handleReply(msg)} title="Reply">
+                                                    <Reply size={14} />
+                                                </button>
+                                                <button
+                                                    className="message-action-btn"
+                                                    onClick={() => toggleBookmark(msg.id)}
+                                                    style={{ color: msg.isBookmarked ? 'var(--primary)' : 'inherit' }}
+                                                    title={msg.isBookmarked ? "Remove Bookmark" : "Bookmark"}
+                                                >
+                                                    <Bookmark size={14} fill={msg.isBookmarked ? "var(--primary)" : "none"} />
+                                                </button>
                                                 <button className="message-action-btn" onClick={() => setActiveEmojiMessageId(activeEmojiMessageId === msg.id ? null : msg.id)}>
                                                     <Smile size={14} />
                                                 </button>
-                                                {activeEmojiMessageId === msg.id && (
-                                                    <EmojiPicker
-                                                        onSelect={(emoji) => toggleReaction(msg.id, emoji)}
-                                                        onClose={() => setActiveEmojiMessageId(null)}
-                                                    />
-                                                )}
                                             </div>
+                                            {activeEmojiMessageId === msg.id && (
+                                                <EmojiPicker
+                                                    onSelect={(emoji) => toggleReaction(msg.id, emoji)}
+                                                    onClose={() => setActiveEmojiMessageId(null)}
+                                                    align={isMe ? 'right' : 'left'}
+                                                />
+                                            )}
                                         </div>
                                     )}
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>

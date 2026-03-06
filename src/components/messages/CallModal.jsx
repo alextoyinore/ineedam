@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Phone, PhoneOff, Video, VideoOff, Mic, MicOff, Maximize2, Minimize2 } from 'lucide-react';
+import { Phone, PhoneOff, Video, VideoOff, Mic, MicOff, Maximize2, Minimize2, Plus, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ICE_SERVERS = {
@@ -17,10 +17,13 @@ export const CallModal = ({
     callerAvatar,
     onAccept,
     onReject,
-    remoteStream,
     localStream,
     isVideoCall,
-    onToggleVideo
+    onToggleVideo,
+    secondaryCall,
+    remoteStreams = {},
+    onAddToCall,
+    onRejectSecondary
 }) => {
     const [isMuted, setIsMuted] = useState(false);
     const [isVideoOff, setIsVideoOff] = useState(!isVideoCall);
@@ -45,23 +48,12 @@ export const CallModal = ({
     }, [localStream, isOpen]);
 
     useEffect(() => {
-        if (remoteStream && remoteVideoRef.current) {
-            console.log("Setting remote stream to video element");
-            remoteVideoRef.current.srcObject = remoteStream;
-
-            const updateTrackStatus = () => {
-                const videoTrack = remoteStream.getVideoTracks()[0];
-                setHasRemoteVideo(!!videoTrack && videoTrack.enabled && videoTrack.readyState === 'live');
-                console.log("Remote video track status:", videoTrack?.enabled, videoTrack?.readyState);
-            };
-
-            updateTrackStatus();
-            remoteStream.onaddtrack = updateTrackStatus;
-            remoteStream.onremovetrack = updateTrackStatus;
-
+        // Clear old videos when remoteStreams changes
+        // remoteStreams is { userId: stream }
+        if (Object.keys(remoteStreams).length > 0) {
             setCallStatus('connected');
         }
-    }, [remoteStream]);
+    }, [remoteStreams]);
 
     const handleToggleMute = () => {
         if (localStream) {
@@ -202,18 +194,81 @@ export const CallModal = ({
                     {/* Main Content Area */}
                     <div style={{ flex: 1, position: 'relative', background: '#000', display: 'flex', flexDirection: 'column' }}>
                         {/* Always have video element for audio playback, but hide if no video track */}
-                        <video
-                            ref={remoteVideoRef}
-                            autoPlay
-                            playsInline
-                            style={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'contain',
-                                display: hasRemoteVideo ? 'block' : 'none',
-                                position: hasRemoteVideo ? 'relative' : 'absolute'
-                            }}
-                        />
+                        <div style={{ display: 'flex', flexWrap: 'wrap', width: '100%', height: '100%' }}>
+                            {Object.entries(remoteStreams).map(([userId, stream], index) => (
+                                <div key={userId} style={{
+                                    flex: Object.keys(remoteStreams).length > 1 ? '1 1 50%' : '1 1 100%',
+                                    position: 'relative',
+                                    height: Object.keys(remoteStreams).length > 2 ? '50%' : '100%',
+                                    border: '1px solid rgba(255,255,255,0.1)'
+                                }}>
+                                    <video
+                                        autoPlay
+                                        playsInline
+                                        ref={el => { if (el) el.srcObject = stream; }}
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                    />
+                                    <div style={{
+                                        position: 'absolute', bottom: '1rem', left: '1rem',
+                                        background: 'rgba(0,0,0,0.5)', padding: '0.25rem 0.5rem',
+                                        borderRadius: '4px', fontSize: '0.75rem'
+                                    }}>
+                                        Participant {index + 1}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Secondary Call Overlay */}
+                        {secondaryCall && (
+                            <div style={{
+                                position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                                zIndex: 1000, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem'
+                            }}>
+                                <motion.div
+                                    initial={{ scale: 0.9, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    style={{
+                                        background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.1)',
+                                        borderRadius: '24px', padding: '2rem', maxWidth: '400px', width: '100%', textAlign: 'center'
+                                    }}
+                                >
+                                    <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center' }}>
+                                        <div style={{
+                                            width: '80px', height: '80px', borderRadius: '50%',
+                                            background: secondaryCall.partner.avatar ? `url(${secondaryCall.partner.avatar}) center/cover` : 'var(--primary)',
+                                            border: '2px solid var(--primary)', animation: 'pulse 2s infinite'
+                                        }}>
+                                            {!secondaryCall.partner.avatar && <User size={40} style={{ margin: '18px' }} />}
+                                        </div>
+                                    </div>
+                                    <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>{secondaryCall.partner.name}</h3>
+                                    <p style={{ opacity: 0.6, fontSize: '0.875rem', marginBottom: '2rem' }}>is calling you...</p>
+                                    <div style={{ display: 'flex', gap: '1rem' }}>
+                                        <button
+                                            onClick={onRejectSecondary}
+                                            style={{
+                                                flex: 1, padding: '1rem', borderRadius: '12px', background: 'rgba(239, 68, 68, 0.2)',
+                                                color: '#ef4444', border: 'none', cursor: 'pointer', fontWeight: 600
+                                            }}
+                                        >
+                                            Reject
+                                        </button>
+                                        <button
+                                            onClick={onAddToCall}
+                                            style={{
+                                                flex: 1, padding: '1rem', borderRadius: '12px', background: 'var(--primary)',
+                                                color: 'white', border: 'none', cursor: 'pointer', fontWeight: 600,
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
+                                            }}
+                                        >
+                                            <Plus size={18} /> Add to call
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            </div>
+                        )}
 
                         {!hasRemoteVideo ? (
                             <div style={{
