@@ -10,14 +10,15 @@ import { CallModal } from './messages/CallModal';
 import { InviteModal } from './InviteModal';
 import { useMessages } from '../context/MessagesContext';
 import { useMessageSecurity } from '../context/MessageSecurityContext';
+import { useAuth } from '../context/AuthContext';
 
 export const Layout = ({ children }) => {
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const { user, profile } = useAuth();
   const { isLocked } = useMessageSecurity();
   const {
-    call, endCall, acceptCall, localStream, remoteParticipants, toggleVideo,
-    secondaryCall, addToCall, rejectSecondaryCall
+    call, endCall, acceptCall, localStream, remoteStream, toggleVideo
   } = useMessages();
   const location = useLocation();
 
@@ -81,14 +82,13 @@ export const Layout = ({ children }) => {
           callerAvatar={call.partner.avatar}
           isVideoCall={call.isVideo}
           localStream={localStream}
+          remoteStream={remoteStream}
           status={call.status}
-          remoteParticipants={remoteParticipants}
           onAccept={acceptCall}
           onReject={() => endCall('rejected')}
           onToggleVideo={toggleVideo}
-          secondaryCall={secondaryCall}
-          onAddToCall={addToCall}
-          onRejectSecondary={rejectSecondaryCall}
+          localName={profile?.display_name || user?.email}
+          localAvatar={profile?.avatar_url}
         />
       )}
     </div>

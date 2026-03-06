@@ -436,7 +436,15 @@ export const ChatDetail = () => {
                                                 >
                                                     <Bookmark size={14} fill={msg.isBookmarked ? "var(--primary)" : "none"} />
                                                 </button>
-                                                <button className="message-action-btn" onClick={() => setActiveEmojiMessageId(activeEmojiMessageId === msg.id ? null : msg.id)}>
+                                                <button
+                                                    className="message-action-btn"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        // If another picker is open, don't open this one
+                                                        if (activeEmojiMessageId && activeEmojiMessageId !== msg.id) return;
+                                                        setActiveEmojiMessageId(activeEmojiMessageId === msg.id ? null : msg.id);
+                                                    }}
+                                                >
                                                     <Smile size={14} />
                                                 </button>
                                             </div>
