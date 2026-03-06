@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ThemeToggle } from './ThemeToggle';
 import { Search, UserPlus, TrendingUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useSocial } from '../context/SocialContext';
@@ -110,11 +109,7 @@ export const RightSidebar = () => {
                     />
                 </div>
 
-                {/* Theme Toggle */}
-                <div style={{ padding: '0 0.5rem' }}>
-                    <h3 className="h3" style={{ fontSize: '1.1rem', marginBottom: '0.75rem', paddingLeft: '0.5rem' }}>Appearance</h3>
-                    <ThemeToggle />
-                </div>
+
 
                 {/* Trending Widget */}
                 <div style={{

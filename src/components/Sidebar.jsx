@@ -4,6 +4,7 @@ import { Home, User, PenSquare, Bookmark, Bell, Mail, LogOut, MoreHorizontal, Se
 import { useNotifications } from '../context/NotificationsContext';
 import { useMessages } from '../context/MessagesContext';
 import { useAuth } from '../context/AuthContext';
+import { ThemeToggle } from '../components/ThemeToggle';
 
 
 export const Sidebar = ({ onPostClick, onInviteClick }) => {
@@ -83,6 +84,10 @@ export const Sidebar = ({ onPostClick, onInviteClick }) => {
                             backdropFilter: 'blur(10px)',
                             boxShadow: 'none' // Ensure no shadow
                         }}>
+                            <div style={{ padding: '0.5rem 0.5rem', marginBottom: '0.25rem' }}>
+                                <ThemeToggle />
+                            </div>
+                            <div style={{ height: '1px', background: 'var(--border-glass)', margin: '0 0 0.4rem 0' }} />
                             <Link
                                 to="/settings"
                                 onClick={() => setShowLogout(false)}
