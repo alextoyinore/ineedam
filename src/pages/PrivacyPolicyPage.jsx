@@ -48,7 +48,7 @@ export const PrivacyPolicyPage = () => {
                         <h2 className="h2" style={{ marginBottom: '0.75rem', fontSize: '1.5rem' }}>6. Contact Us</h2>
                         <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                             If you have any questions about this Privacy Policy or how we handle your data, please reach out to us at{' '}
-                            <a href="mailto:admin@ineedam.com" style={{ color: 'var(--primary)', fontWeight: 600 }}>admin@ineedam.com</a>.
+                            <a href="mailto:support@ineedam.com" style={{ color: 'var(--primary)', fontWeight: 600 }}>support@ineedam.com</a>.
                         </p>
                     </section>
                 </div>

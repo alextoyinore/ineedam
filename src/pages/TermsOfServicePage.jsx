@@ -51,7 +51,7 @@ export const TermsOfServicePage = () => {
                         <h2 className="h2" style={{ marginBottom: '0.75rem', fontSize: '1.5rem' }}>6. Contact Us</h2>
                         <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                             If you have questions about these Terms, please contact us at{' '}
-                            <a href="mailto:admin@ineedam.com" style={{ color: 'var(--primary)', fontWeight: 600 }}>admin@ineedam.com</a>.
+                            <a href="mailto:support@ineedam.com" style={{ color: 'var(--primary)', fontWeight: 600 }}>support@ineedam.com</a>.
                         </p>
                     </section>
                 </div>

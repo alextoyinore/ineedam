@@ -43,15 +43,19 @@ export const SupportPage = () => {
                     message: form.message,
                     category: form.category,
                     _template: 'table',
+                    _honey: '', // Honeypot field for spam prevention
+                    _captcha: 'false' // Can disable captcha for AJAX if needed, though usually handled by FormSubmit
                 }),
             });
             const data = await res.json();
             if (data.success === 'true' || data.success === true) {
                 setStatus('success');
             } else {
+                console.error("FormSubmit Error:", data);
                 setStatus('error');
             }
-        } catch {
+        } catch (err) {
+            console.error("Submission error:", err);
             setStatus('error');
         }
     };
@@ -183,9 +187,18 @@ export const SupportPage = () => {
                         </div>
 
                         {status === 'error' && (
-                            <p style={{ color: '#ef4444', fontSize: '0.85rem', padding: '0.75rem 1rem', background: 'rgba(239,68,68,0.1)', borderRadius: '10px' }}>
-                                Something went wrong. Please try again or email us directly at <strong>admin@ineedam.com</strong>.
-                            </p>
+                            <div style={{ padding: '1rem', background: 'rgba(239,68,68,0.1)', borderRadius: '12px', border: '1px solid rgba(239,68,68,0.2)' }}>
+                                <p style={{ color: '#ef4444', fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: 600 }}>
+                                    Something went wrong.
+                                </p>
+                                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.5 }}>
+                                    Please ensure you've <strong>verified your email</strong> if this is your first time using this support tool.
+                                    Alternatively, email us directly at:
+                                </p>
+                                <a href="mailto:support@ineedam.com" style={{ display: 'inline-block', marginTop: '0.5rem', color: 'var(--primary)', fontWeight: 700, textDecoration: 'none' }}>
+                                    support@ineedam.com
+                                </a>
+                            </div>
                         )}
 
                         <button
