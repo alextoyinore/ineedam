@@ -55,6 +55,7 @@ export const fetchUserThreads = async (userId) => {
 
         return {
             id: thread.id,
+            senderId: userId,
             withUserId: otherParticipant?.user_id || 'unknown',
             withUser: otherParticipant?.profiles?.display_name || 'Anonymous',
             withUserAvatar: otherParticipant?.profiles?.avatar_url,
@@ -62,6 +63,8 @@ export const fetchUserThreads = async (userId) => {
             lastMessage: lastMessage?.text || '',
             timestamp: thread.updated_at,
             unread: isUnread,
+            // Recipient's last_read_at — used for read receipts (double ticks)
+            recipientLastReadAt: otherParticipant?.last_read_at || null,
             // Only keeping full message history if actively requested, but for context we pass the array
             messages: sortedMessages.map(m => ({
                 id: m.id,

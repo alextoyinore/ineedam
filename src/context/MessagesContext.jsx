@@ -125,7 +125,14 @@ export const MessagesProvider = ({ children }) => {
                     }
                 )
                 .on('postgres_changes',
-                    { event: '*', schema: 'public', table: 'thread_participants', filter: `user_id=eq.${user.id}` },
+                    { event: 'UPDATE', schema: 'public', table: 'thread_participants' },
+                    () => {
+                        // Recipient read the chat — refresh so recipientLastReadAt updates (turns ticks blue)
+                        loadThreads(true);
+                    }
+                )
+                .on('postgres_changes',
+                    { event: 'INSERT', schema: 'public', table: 'thread_participants', filter: `user_id=eq.${user.id}` },
                     () => {
                         console.log("Thread participation change detected");
                         loadThreads(true);

@@ -19,32 +19,35 @@ import { MessagesProvider } from './context/MessagesContext.jsx'
 import { LikesProvider } from './context/LikesContext.jsx'
 import { SettingsProvider } from './context/SettingsContext.jsx'
 import { BroadcastsProvider } from './context/BroadcastsContext.jsx'
+import { HelmetProvider } from 'react-helmet-async'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <ThemeProvider>
-      <BrowserRouter>
-        <AuthProvider>
-          <SettingsProvider>
-            <BookmarksProvider>
-              <SocialProvider>
-                <DraftsProvider>
-                  <NotificationsProvider>
-                    <MessagesProvider>
-                      <LikesProvider>
-                        <BroadcastsProvider>
-                          <App />
-                        </BroadcastsProvider>
-                      </LikesProvider>
-                    </MessagesProvider>
-                  </NotificationsProvider>
-                </DraftsProvider>
-              </SocialProvider>
-            </BookmarksProvider>
-          </SettingsProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </ThemeProvider>
+    <HelmetProvider>
+      <ThemeProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <SettingsProvider>
+              <BookmarksProvider>
+                <SocialProvider>
+                  <DraftsProvider>
+                    <NotificationsProvider>
+                      <MessagesProvider>
+                        <LikesProvider>
+                          <BroadcastsProvider>
+                            <App />
+                          </BroadcastsProvider>
+                        </LikesProvider>
+                      </MessagesProvider>
+                    </NotificationsProvider>
+                  </DraftsProvider>
+                </SocialProvider>
+              </BookmarksProvider>
+            </SettingsProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </ThemeProvider>
+    </HelmetProvider>
   </React.StrictMode>,
 
 )

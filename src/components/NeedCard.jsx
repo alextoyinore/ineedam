@@ -32,6 +32,7 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null }) =
     const [endorsementCount, setEndorsementCount] = useState(0);
     const [isArchived, setIsArchived] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [shareCopied, setShareCopied] = useState(false);
 
     const isBroadcast = broadcastedBy || need.type === 'broadcast';
     const targetId = isBroadcast ? (need.broadcast_id || need.id) : need.id;
@@ -110,15 +111,34 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null }) =
             url: window.location.origin + `/need/${need.id}`
         };
 
-        try {
-            if (navigator.share) {
-                await navigator.share(shareData);
-            } else {
+        const fallbackCopy = async () => {
+            try {
                 await navigator.clipboard.writeText(shareData.url);
-                alert("Link copied to clipboard!");
+                setShareCopied(true);
+                setTimeout(() => setShareCopied(false), 2500);
+            } catch (err) {
+                console.error('Clipboard fallback failed', err);
             }
-        } catch (err) {
-            console.error("Error sharing", err);
+        };
+
+        if (navigator.share) {
+            try {
+                // If canShare exists and returns false, skip to fallback
+                if (navigator.canShare && !navigator.canShare(shareData)) {
+                    await fallbackCopy();
+                    return;
+                }
+                await navigator.share(shareData);
+            } catch (err) {
+                // AbortError means the user cancelled the share sheet manually.
+                // Any other error means the share failed (e.g. desktop OS block), so we fallback.
+                if (err.name !== 'AbortError') {
+                    console.error('Native share failed, falling back', err);
+                    await fallbackCopy();
+                }
+            }
+        } else {
+            await fallbackCopy();
         }
     };
 
@@ -344,13 +364,13 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null }) =
                                         style={{
                                             width: '100%', textAlign: 'left', padding: '0.7rem',
                                             borderRadius: '8px', display: 'flex', alignItems: 'center',
-                                            gap: '0.75rem', color: 'var(--text-primary)',
-                                            fontSize: '0.9rem', fontWeight: 500
+                                            gap: '0.75rem', color: shareCopied ? '#22c55e' : 'var(--text-primary)',
+                                            fontSize: '0.9rem', fontWeight: 500, transition: 'color 0.2s'
                                         }}
                                         className="nav-link-hover"
                                     >
                                         <Share2 size={18} />
-                                        Share Post
+                                        {shareCopied ? 'Link Copied!' : 'Share Post'}
                                     </button>
 
                                     {/* Archive Action (Owner Only) */}

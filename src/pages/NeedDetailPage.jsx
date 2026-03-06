@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import { ProfileHoverCard } from '../components/ProfileHoverCard';
 import { ReplyModal } from '../components/ReplyModal';
 import { AttachmentModal } from '../components/AttachmentModal';
+import { Helmet } from 'react-helmet-async';
 
 const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachment }) => {
     const { user } = useAuth();
@@ -248,6 +249,21 @@ export const NeedDetailPage = () => {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <Helmet>
+                <title>{need.title} | Ineedam</title>
+                <meta property="og:title" content={`${need.title} | Ineedam`} />
+                <meta property="og:description" content={need.description} />
+                <meta property="twitter:title" content={`${need.title} | Ineedam`} />
+                <meta property="twitter:description" content={need.description} />
+                {need.imageUrl && (
+                    <>
+                        <meta property="og:image" content={need.imageUrl} />
+                        <meta property="twitter:image" content={need.imageUrl} />
+                        <meta property="twitter:card" content="summary_large_image" />
+                    </>
+                )}
+            </Helmet>
+
             <ReplyModal
                 isOpen={isReplyModalOpen}
                 onClose={handleModalClose}

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Phone, Video, MoreVertical, Send, Paperclip, X, FileText, Image as ImageIcon, Mic, PhoneOff, Reply, Smile, MessageSquare, Bookmark } from 'lucide-react';
+import { ArrowLeft, Phone, Video, MoreVertical, Send, Paperclip, X, FileText, Image as ImageIcon, Mic, PhoneOff, Reply, Smile, MessageSquare, Bookmark, Check } from 'lucide-react';
 import { useMessages } from '../../context/MessagesContext';
 import { VoiceRecorder } from '../../components/messages/VoiceRecorder';
 import { AudioBubble } from '../../components/messages/AudioBubble';
@@ -41,6 +41,24 @@ const FilePreviewBubble = ({ file, onRemove }) => {
         </div>
     );
 };
+
+// WhatsApp-style tick icons for sent messages
+const MessageStatus = ({ isRead }) => (
+    <span style={{ display: 'inline-flex', alignItems: 'center', marginLeft: '2px', flexShrink: 0 }}>
+        {isRead ? (
+            // Double tick — blue when read
+            <span style={{ display: 'inline-flex', position: 'relative', width: '18px', height: '12px' }}>
+                <Check size={11} strokeWidth={3} style={{ position: 'absolute', left: 0, color: '#4fc3f7' }} />
+                <Check size={11} strokeWidth={3} style={{ position: 'absolute', left: '5px', color: '#4fc3f7' }} />
+            </span>
+        ) : (
+            // Single tick — grey when just sent
+            <span style={{ display: 'inline-flex', position: 'relative', width: '13px', height: '12px' }}>
+                <Check size={11} strokeWidth={3} style={{ color: 'rgba(255,255,255,0.65)' }} />
+            </span>
+        )}
+    </span>
+);
 
 const ReactionsDisplay = ({ reactions, onToggle, currentUserId }) => {
     if (!reactions || reactions.length === 0) return null;
@@ -405,11 +423,16 @@ export const ChatDetail = () => {
                                             </div>
                                         </div>
                                     )}
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
                                         {msg.isBookmarked && <Bookmark size={10} fill="var(--primary)" color="var(--primary)" />}
                                         <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
                                             {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         </span>
+                                        {isMe && !isCall && (
+                                            <MessageStatus
+                                                isRead={!!(activeThread.recipientLastReadAt && new Date(activeThread.recipientLastReadAt) >= new Date(msg.timestamp))}
+                                            />
+                                        )}
                                     </div>
                                 </div>
 
