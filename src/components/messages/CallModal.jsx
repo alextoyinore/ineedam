@@ -18,10 +18,11 @@ export const CallModal = ({
     onAccept,
     onReject,
     localStream,
+    status,
     isVideoCall,
     onToggleVideo,
     secondaryCall,
-    remoteStreams = {},
+    remoteParticipants = {},
     onAddToCall,
     onRejectSecondary
 }) => {
@@ -48,12 +49,19 @@ export const CallModal = ({
     }, [localStream, isOpen]);
 
     useEffect(() => {
-        // Clear old videos when remoteStreams changes
-        // remoteStreams is { userId: stream }
-        if (Object.keys(remoteStreams).length > 0) {
-            setCallStatus('connected');
+        if (status) {
+            setCallStatus(status);
         }
-    }, [remoteStreams]);
+    }, [status]);
+
+    const participantColors = [
+        'rgba(99, 102, 241, 0.1)',   // Indigo
+        'rgba(34, 197, 94, 0.1)',    // Green
+        'rgba(239, 68, 68, 0.1)',    // Red
+        'rgba(245, 158, 11, 0.1)',   // Amber
+        'rgba(139, 92, 246, 0.1)',   // Violet
+        'rgba(236, 72, 153, 0.1)'    // Pink
+    ];
 
     const handleToggleMute = () => {
         if (localStream) {
@@ -194,26 +202,46 @@ export const CallModal = ({
                     {/* Main Content Area */}
                     <div style={{ flex: 1, position: 'relative', background: '#000', display: 'flex', flexDirection: 'column' }}>
                         {/* Always have video element for audio playback, but hide if no video track */}
-                        <div style={{ display: 'flex', flexWrap: 'wrap', width: '100%', height: '100%' }}>
-                            {Object.entries(remoteStreams).map(([userId, stream], index) => (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', width: '100%', height: '100%', gap: '2px', background: '#111' }}>
+                            {Object.entries(remoteParticipants).map(([userId, p], index) => (
                                 <div key={userId} style={{
-                                    flex: Object.keys(remoteStreams).length > 1 ? '1 1 50%' : '1 1 100%',
+                                    flex: Object.keys(remoteParticipants).length > 1 ? '1 1 calc(50% - 2px)' : '1 1 100%',
                                     position: 'relative',
-                                    height: Object.keys(remoteStreams).length > 2 ? '50%' : '100%',
-                                    border: '1px solid rgba(255,255,255,0.1)'
+                                    height: Object.keys(remoteParticipants).length > 2 ? '50%' : '100%',
+                                    background: participantColors[index % participantColors.length],
+                                    overflow: 'hidden'
                                 }}>
-                                    <video
-                                        autoPlay
-                                        playsInline
-                                        ref={el => { if (el) el.srcObject = stream; }}
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                    />
+                                    {p.stream ? (
+                                        <video
+                                            autoPlay
+                                            playsInline
+                                            ref={el => { if (el) el.srcObject = p.stream; }}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        />
+                                    ) : (
+                                        <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
+                                            <div style={{
+                                                width: '80px', height: '80px', borderRadius: '50%',
+                                                background: p.avatar ? `url(${p.avatar}) center/cover` : 'rgba(255,255,255,0.1)',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                border: '2px solid rgba(255,255,255,0.2)'
+                                            }}>
+                                                {!p.avatar && <User size={40} style={{ opacity: 0.2 }} className="text-white" />}
+                                            </div>
+                                            <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)' }}>
+                                                {p.name || 'Participant'}
+                                            </div>
+                                        </div>
+                                    )}
                                     <div style={{
                                         position: 'absolute', bottom: '1rem', left: '1rem',
-                                        background: 'rgba(0,0,0,0.5)', padding: '0.25rem 0.5rem',
-                                        borderRadius: '4px', fontSize: '0.75rem'
+                                        background: 'rgba(0,0,0,0.6)', padding: '0.4rem 0.8rem',
+                                        borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600,
+                                        display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                        backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.1)'
                                     }}>
-                                        Participant {index + 1}
+                                        {p.avatar && <img src={p.avatar} style={{ width: '16px', height: '16px', borderRadius: '50%' }} alt="" />}
+                                        {p.name || `Participant ${index + 1}`}
                                     </div>
                                 </div>
                             ))}

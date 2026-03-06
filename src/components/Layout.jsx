@@ -16,7 +16,7 @@ export const Layout = ({ children }) => {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const { isLocked } = useMessageSecurity();
   const {
-    call, endCall, acceptCall, localStream, remoteStreams, toggleVideo,
+    call, endCall, acceptCall, localStream, remoteParticipants, toggleVideo,
     secondaryCall, addToCall, rejectSecondaryCall
   } = useMessages();
   const location = useLocation();
@@ -81,7 +81,8 @@ export const Layout = ({ children }) => {
           callerAvatar={call.partner.avatar}
           isVideoCall={call.isVideo}
           localStream={localStream}
-          remoteStreams={remoteStreams}
+          status={call.status}
+          remoteParticipants={remoteParticipants}
           onAccept={acceptCall}
           onReject={() => endCall('rejected')}
           onToggleVideo={toggleVideo}

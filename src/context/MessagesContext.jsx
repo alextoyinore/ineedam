@@ -17,7 +17,7 @@ export const MessagesProvider = ({ children }) => {
     const [call, setCall] = useState(null); // { status: 'idle'|'calling'|'incoming'|'connected', isVideo, partner: { id, name, avatar }, stream: null }
     const [localStream, setLocalStream] = useState(null);
     const [secondaryCall, setSecondaryCall] = useState(null); // For incoming call while in another
-    const [remoteStreams, setRemoteStreams] = useState({}); // { userId: stream }
+    const [remoteParticipants, setRemoteParticipants] = useState({}); // { userId: { stream, name, avatar } }
     const [replyingTo, setReplyingTo] = useState(null); // { id, text, sender }
 
     const activeThreadIdRef = useRef(activeThreadId);
@@ -204,7 +204,13 @@ export const MessagesProvider = ({ children }) => {
         pc.ontrack = (event) => {
             console.log("Got remote track from", targetUserId, ":", event.track.kind);
             if (event.streams && event.streams[0]) {
-                setRemoteStreams(prev => ({ ...prev, [targetUserId]: event.streams[0] }));
+                setRemoteParticipants(prev => ({
+                    ...prev,
+                    [targetUserId]: {
+                        ...prev[targetUserId],
+                        stream: event.streams[0]
+                    }
+                }));
             }
         };
 
@@ -224,7 +230,7 @@ export const MessagesProvider = ({ children }) => {
             pcsRef.current[userId].close();
             delete pcsRef.current[userId];
         }
-        setRemoteStreams(prev => {
+        setRemoteParticipants(prev => {
             const next = { ...prev };
             delete next[userId];
             return next;
@@ -237,6 +243,18 @@ export const MessagesProvider = ({ children }) => {
 
     const handleIncomingSignal = async (payload) => {
         const { from, type, offer, answer, candidate, isVideo, fromName, fromAvatar } = payload;
+
+        // Capture/update participant metadata if we have it
+        if (fromName || fromAvatar) {
+            setRemoteParticipants(prev => ({
+                ...prev,
+                [from]: {
+                    ...prev[from],
+                    name: fromName || prev[from]?.name,
+                    avatar: fromAvatar || prev[from]?.avatar
+                }
+            }));
+        }
 
         if (type === 'offer') {
             const currentPC = pcsRef.current[from];
@@ -297,7 +315,16 @@ export const MessagesProvider = ({ children }) => {
             if (currentPC) {
                 try {
                     await currentPC.setRemoteDescription(new RTCSessionDescription(answer));
-                    setCall(prev => ({ ...prev, status: 'connected', startTime: Date.now() }));
+                    setCall(prev => ({
+                        ...prev,
+                        status: 'connected',
+                        startTime: Date.now(),
+                        partner: {
+                            ...prev.partner,
+                            name: fromName || prev.partner?.name,
+                            avatar: fromAvatar || prev.partner?.avatar
+                        }
+                    }));
 
                     if (iceCandidateQueueRef.current.length > 0) {
                         iceCandidateQueueRef.current.forEach(async (cand) => {
@@ -515,7 +542,7 @@ export const MessagesProvider = ({ children }) => {
 
         setCall(null);
         setLocalStream(null);
-        setRemoteStream(null);
+        setRemoteParticipants({});
         iceCandidateQueueRef.current = [];
 
         // 3. DB LOGGING (Only for initiator, and only once per call session)
@@ -575,6 +602,16 @@ export const MessagesProvider = ({ children }) => {
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
 
+            // Store metadata for the new participant
+            setRemoteParticipants(prev => ({
+                ...prev,
+                [partner.id]: {
+                    ...prev[partner.id],
+                    name: partner.name,
+                    avatar: partner.avatar
+                }
+            }));
+
             sendCallSignal(partner.id, {
                 type: 'answer',
                 answer,
@@ -616,7 +653,12 @@ export const MessagesProvider = ({ children }) => {
             await channel.send({
                 type: 'broadcast',
                 event: 'call-signal',
-                payload: { from: user.id, ...safeSignalData }
+                payload: {
+                    from: user.id,
+                    fromName: profile?.display_name || user.email,
+                    fromAvatar: profile?.avatar_url,
+                    ...safeSignalData
+                }
             });
         } catch (err) {
             console.error("Signal send failed:", err);
@@ -767,7 +809,7 @@ export const MessagesProvider = ({ children }) => {
             toggleReaction,
             toggleBookmark,
             secondaryCall,
-            remoteStreams,
+            remoteParticipants,
             addToCall,
             rejectSecondaryCall
         }}>
