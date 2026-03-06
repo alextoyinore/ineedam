@@ -63,12 +63,15 @@ export const MessagesProvider = ({ children }) => {
             const channel = supabase
                 .channel(`chat-updates-${user.id}`)
                 .on('postgres_changes',
-                    { event: 'INSERT', schema: 'public', table: 'messages' },
+                    { event: '*', schema: 'public', table: 'messages' },
                     (payload) => {
-                        console.log("Real-time message received:", payload);
+                        console.log("Real-time message event:", payload.eventType, payload);
 
-                        // Skip if we are the sender (handled by sendMessage optimistically)
-                        if (payload.new && payload.new.sender_id === user.id) return;
+                        // If it's an UPDATE or DELETE, or if we are the sender of an INSERT, just refresh silently
+                        if (payload.eventType !== 'INSERT' || (payload.new && payload.new.sender_id === user.id)) {
+                            loadThreads(true);
+                            return;
+                        }
 
                         if (payload.new) {
                             const incomingThreadId = String(payload.new.thread_id).toLowerCase();
@@ -142,6 +145,17 @@ export const MessagesProvider = ({ children }) => {
                     { event: '*', schema: 'public', table: 'message_reactions' },
                     () => loadThreads(true)
                 )
+                .on('postgres_changes',
+                    { event: '*', schema: 'public', table: 'message_bookmarks' },
+                    () => loadThreads(true)
+                )
+                .on('postgres_changes',
+                    { event: '*', schema: 'public', table: 'replies' },
+                    () => {
+                        console.log("Real-time reply change detected");
+                        loadThreads(true);
+                    }
+                )
                 .subscribe();
 
             // Subscribe to call signals
@@ -151,9 +165,15 @@ export const MessagesProvider = ({ children }) => {
                 })
                 .subscribe();
 
+            // 4. Heartbeat silent refresh (safety net for liquid feel)
+            const heartbeat = setInterval(() => {
+                loadThreads(true);
+            }, 10000);
+
             return () => {
                 supabase.removeChannel(channel);
                 supabase.removeChannel(callChannel);
+                clearInterval(heartbeat);
                 if (pcRef.current) pcRef.current.close();
             };
         }
