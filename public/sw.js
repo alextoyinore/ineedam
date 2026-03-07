@@ -1,5 +1,9 @@
 // Service worker for handling push notifications
 /* eslint-disable no-restricted-globals */
+import { precacheAndRoute } from 'workbox-precaching';
+
+// The self.__WB_MANIFEST is injected by workbox during the build process
+precacheAndRoute(self.__WB_MANIFEST);
 
 self.addEventListener('push', (event) => {
     if (!event.data) return;

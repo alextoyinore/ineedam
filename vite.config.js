@@ -7,9 +7,13 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      strategies: 'injectManifest',
+      srcDir: 'public',
+      filename: 'sw.js',
       registerType: 'autoUpdate',
       devOptions: {
         enabled: true,
+        type: 'module'
       },
       includeAssets: ['icon.svg', 'logo.svg'],
       manifest: {

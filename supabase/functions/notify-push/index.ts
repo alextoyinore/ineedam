@@ -13,9 +13,27 @@ webpush.setVapidDetails(
 
 serve(async (req) => {
     try {
-        const { userId, title, body, url } = await req.json();
+        const body_json = await req.json();
+
+        // Handle both direct calls and Supabase Webbook format
+        const isWebhook = body_json.record !== undefined;
+        const payloadData = isWebhook ? body_json.record : body_json;
+
+        const userId = payloadData.user_id || payloadData.userId;
+        const title = payloadData.title || "Ineedam";
+        const message = payloadData.message || payloadData.body || "You have a new update";
+        const type = payloadData.type;
+        const referenceId = payloadData.reference_id || payloadData.referenceId;
 
         if (!userId) throw new Error("userId is required");
+
+        // Construct URL based on type
+        let url = "/notifications";
+        if (type === 'message') {
+            url = `/messages/${referenceId}`;
+        } else if (['reply', 'reply_message', 'mention', 'new_need', 'need_update'].includes(type)) {
+            url = `/need/${referenceId}`;
+        }
 
         // Initialize Supabase Client
         const supabase = createClient(
@@ -26,7 +44,7 @@ serve(async (req) => {
         // Fetch User's Push Subscription
         const { data: profile, error: profileError } = await supabase
             .from("profiles")
-            .select("push_subscription, display_name")
+            .select("push_subscription")
             .eq("id", userId)
             .single();
 
@@ -36,9 +54,9 @@ serve(async (req) => {
         }
 
         const payload = JSON.stringify({
-            title: title || "ineedam",
-            body: body || "You have a new update",
-            url: url || "/",
+            title: title,
+            body: message,
+            url: url,
         });
 
         await webpush.sendNotification(profile.push_subscription, payload);
