@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { handleMentions } from './mentionService';
 
 const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`;
 const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
@@ -68,6 +69,10 @@ export const createNeed = async (needData, userId) => {
         .single();
 
     if (error) throw error;
+
+    // Handle Mentions asynchronously
+    handleMentions(needData.description, userId, 'mention', data.id, 'mentioned you in a need');
+
     return data;
 };
 

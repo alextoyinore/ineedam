@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import { ProfileHoverCard } from '../components/ProfileHoverCard';
 import { ReplyModal } from '../components/ReplyModal';
 import { AttachmentModal } from '../components/AttachmentModal';
+import { MentionText } from '../components/MentionText';
 import { Helmet } from 'react-helmet-async';
 
 const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachment }) => {
@@ -70,9 +71,7 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachmen
                             </span>
                         )}
                     </div>
-                    <p className="need-description" style={{ color: 'var(--text-primary)', lineHeight: 1.5, margin: 0, whiteSpace: 'pre-wrap' }}>
-                        {reply.content}
-                    </p>
+                    <MentionText text={reply.content} style={{ color: 'var(--text-primary)', lineHeight: 1.5, margin: 0 }} />
 
                     {reply.file_url && (
                         <div style={{ marginTop: '0.75rem' }}>
@@ -157,8 +156,14 @@ export const NeedDetailPage = () => {
                     getNeedById(id),
                     fetchRepliesForNeed(id) // fetchRepliesForNeed(id) now implicitly filters for endorsement_id IS NULL
                 ]);
-                setNeed(shapeNeed(needData));
+                const shaped = shapeNeed(needData);
+                setNeed(shaped);
                 setReplies((repliesData || []).filter(r => r.status !== 'archived'));
+
+                // Pre-fill mention if the user is replying to the author
+                if (shaped.authorUsername) {
+                    setReplyText(`@${shaped.authorUsername} `);
+                }
             } catch (err) {
                 console.error("Failed to load need or replies:", err);
                 setNeed(null);
@@ -205,7 +210,7 @@ export const NeedDetailPage = () => {
             // Re-fetch to get profile joins and proper order since RT might be complex here
             const repliesData = await fetchRepliesForNeed(id);
             setReplies(repliesData || []);
-            setReplyText('');
+            setReplyText(need.authorUsername ? `@${need.authorUsername} ` : '');
             setIsPrivateReply(false);
             setReplyFile(null);
         } catch (err) {

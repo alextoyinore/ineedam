@@ -27,7 +27,9 @@ export const ReplyModal = ({ isOpen, onClose, need, parentId = null, replyingTo 
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
-            setReplyText(''); // reset on open
+            // Pre-fill with mention if replying to a specific user
+            const mention = targetUser.authorUsername ? `@${targetUser.authorUsername} ` : '';
+            setReplyText(mention);
             setReplyFile(null);
         } else {
             document.body.style.overflow = 'auto';
@@ -35,7 +37,7 @@ export const ReplyModal = ({ isOpen, onClose, need, parentId = null, replyingTo 
         return () => {
             document.body.style.overflow = 'auto';
         };
-    }, [isOpen]);
+    }, [isOpen, targetUser.authorUsername]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();

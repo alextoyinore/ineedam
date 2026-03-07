@@ -14,6 +14,7 @@ import { useSocial } from '../context/SocialContext';
 import { useNotifications } from '../context/NotificationsContext';
 import { ProfileHoverCard } from './ProfileHoverCard';
 import { updateNeedStatus } from '../lib/needsService';
+import { MentionText } from './MentionText';
 
 export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null }) => {
     const { user } = useAuth();
@@ -406,13 +407,14 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null }) =
             {/* Post Content */}
             <div className="need-content-wrapper" style={{}}>
                 <h3 className="h3" style={{ marginBottom: '0.25rem', fontSize: '1.1rem' }}>{need.title}</h3>
-                <p className="need-description" style={{
-                    color: 'var(--text-primary)', lineHeight: 1.5, margin: '0 0 1rem 0',
-                    display: isFullDetail ? 'block' : '-webkit-box', WebkitLineClamp: isFullDetail ? 'none' : 3, WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden', whiteSpace: 'pre-wrap'
-                }}>
-                    {need.description}
-                </p>
+                <MentionText
+                    text={need.description}
+                    style={{
+                        color: 'var(--text-primary)', lineHeight: 1.5, margin: '0 0 1rem 0',
+                        display: isFullDetail ? 'block' : '-webkit-box', WebkitLineClamp: isFullDetail ? 'none' : 3, WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden'
+                    }}
+                />
 
                 {/* Rich Media */}
                 {need.imageUrl && (

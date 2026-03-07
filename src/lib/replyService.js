@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { createNotification } from './notificationService';
+import { handleMentions } from './mentionService';
 import { timeAgo } from './needsService';
 
 /**
@@ -60,7 +61,10 @@ export const createReply = async (needId, userId, content, isPrivate = false, pa
 
     // Try to send notifications asynchronously (don't block the UI)
     try {
-        // 1. Notify the Author of the Need
+        // 1. Handle Mentions
+        await handleMentions(content, userId, 'mention', needId, 'mentioned you in a reply');
+
+        // 2. Notify the Author of the Need
         const { data: needData } = await supabase
             .from('needs')
             .select('user_id, title')
@@ -77,7 +81,7 @@ export const createReply = async (needId, userId, content, isPrivate = false, pa
             );
         }
 
-        // 2. If it's a nested reply, notify the Author of the parent comment
+        // 3. If it's a nested reply, notify the Author of the parent comment
         if (parentId) {
             const { data: parentData } = await supabase
                 .from('replies')
