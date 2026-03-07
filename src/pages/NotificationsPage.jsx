@@ -16,9 +16,12 @@ export const NotificationsPage = () => {
     const getIcon = (type) => {
         switch (type) {
             case 'follow': return <UserPlus size={18} color="#3b82f6" />;
-            case 'reply': return <MessageCircle size={18} color="#10b981" />;
+            case 'reply':
+            case 'reply_message': return <MessageCircle size={18} color="#10b981" />;
             case 'like': return <Heart size={18} color="#ef4444" />;
             case 'missed_call': return <PhoneOff size={18} color="#ef4444" />;
+            case 'incoming_call': return <Bell size={18} color="var(--primary)" />;
+            case 'mention': return <motion.span style={{ color: 'var(--primary)', fontWeight: 800 }}>@</motion.span>;
             default: return <Info size={18} color="var(--text-muted)" />;
         }
     };
@@ -64,9 +67,9 @@ export const NotificationsPage = () => {
                             className="feed-item-hover"
                             onClick={() => {
                                 markAsRead(notif.id);
-                                if (notif.type === 'follow' && notif.actorProfile?.username) {
+                                if ((notif.type === 'follow' || notif.type === 'incoming_call') && notif.actorProfile?.username) {
                                     navigate(`/${notif.actorProfile.username}`);
-                                } else if ((notif.type === 'reply' || notif.type === 'like') && notif.reference_id) {
+                                } else if ((notif.type === 'reply' || notif.type === 'like' || notif.type === 'mention' || notif.type === 'reply_message') && notif.reference_id) {
                                     navigate(`/need/${notif.reference_id}`);
                                 } else if (notif.type === 'missed_call' && notif.reference_id) {
                                     navigate(`/messages/${notif.reference_id}`);

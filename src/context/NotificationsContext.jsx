@@ -30,7 +30,33 @@ export const NotificationsProvider = ({ children }) => {
             setLoading(true);
             try {
                 const data = await fetchNotifications(user.id);
-                setNotifications(data || []);
+
+                // Grouping logic: group "incoming_call" and possibly others from same user
+                const grouped = [];
+                const groups = {}; // key: type-actorId
+
+                (data || []).forEach(notif => {
+                    // Only group specific types, or group everything from same user?
+                    // User mentioned "is calling you..." (incoming_call)
+                    const shouldGroup = ['incoming_call', 'missed_call', 'like'].includes(notif.type);
+
+                    if (shouldGroup) {
+                        const key = `${notif.type}-${notif.actor_id}`;
+                        if (!groups[key]) {
+                            groups[key] = { ...notif, group_count: 1, grouped_ids: [notif.id] };
+                            grouped.push(groups[key]);
+                        } else {
+                            groups[key].group_count++;
+                            groups[key].grouped_ids.push(notif.id);
+                            // Keep the most recent unread status if any is unread
+                            if (!notif.read) groups[key].read = false;
+                        }
+                    } else {
+                        grouped.push({ ...notif, group_count: 1, grouped_ids: [notif.id] });
+                    }
+                });
+
+                setNotifications(grouped);
             } catch (err) {
                 console.error("Failed to load notifications context", err);
             } finally {
@@ -72,9 +98,13 @@ export const NotificationsProvider = ({ children }) => {
     };
 
     const markAsRead = async (id) => {
+        const notif = notifications.find(n => n.id === id);
+        const idsToMark = notif?.grouped_ids || [id];
+
         setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
         try {
-            await markNotificationAsRead(id);
+            // Mark all underlying notifications as read
+            await Promise.all(idsToMark.map(notifId => markNotificationAsRead(notifId)));
         } catch (err) {
             // Revert on failure
             setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: false } : n));
