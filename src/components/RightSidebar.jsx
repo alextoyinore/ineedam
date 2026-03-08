@@ -219,7 +219,7 @@ export const RightSidebar = () => {
                             <div key={profile.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'space-between' }}>
                                 <div
                                     onClick={() => navigate(`/${profile.username}`)}
-                                    style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', padding: '0.25rem', borderRadius: '8px', transition: 'all 0.2s' }}
+                                    style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', padding: '0.25rem', borderRadius: '8px', transition: 'all 0.2s', minWidth: 0 }}
                                     className="nav-link-hover"
                                 >
                                     <div style={{
@@ -229,7 +229,7 @@ export const RightSidebar = () => {
                                     }}>
                                         {!profile.avatar_url && profile.display_name.charAt(0).toUpperCase()}
                                     </div>
-                                    <div style={{ minWidth: 0 }}>
+                                    <div style={{ flex: 1, minWidth: 0 }}>
                                         <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{profile.display_name}</p>
                                         <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>@{profile.username}</p>
                                     </div>

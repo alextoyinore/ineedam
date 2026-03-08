@@ -499,12 +499,12 @@ export const UserProfilePage = () => {
                     </div>
                 </div>
 
-                <div style={{ marginTop: '0.5rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <h1 className="h1" style={{ fontSize: '1.5rem', margin: 0 }}>{profile.display_name}</h1>
-                        {profile.id === '31080433-1e29-4eee-9b6f-673b1e159802' && <ShieldCheck size={18} color="var(--primary)" />}
+                <div style={{ marginTop: '0.5rem', minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', minWidth: 0 }}>
+                        <h1 className="h1" style={{ fontSize: '1.5rem', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{profile.display_name}</h1>
+                        {profile.id === '31080433-1e29-4eee-9b6f-673b1e159802' && <ShieldCheck size={18} color="var(--primary)" style={{ flexShrink: 0 }} />}
                     </div>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '1rem', margin: '0 0 1rem 0' }}>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '1rem', margin: '0 0 1rem 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         @{profile.username}
                     </p>
 
