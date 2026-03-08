@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Tag, MapPin, Banknote, Clock, MessageSquare, Bookmark, Heart, MessageCircle, Repeat2, Award, Trash2, MoreVertical, Archive, Flag, UserPlus, UserMinus, VolumeX, Share2, FileText, Download } from 'lucide-react';
+import { Tag, MapPin, Banknote, Clock, MessageSquare, Bookmark, Heart, MessageCircle, Repeat2, Award, Trash2, MoreVertical, Archive, Flag, UserPlus, UserMinus, VolumeX, Share2, FileText, Download, Edit3, CheckCircle } from 'lucide-react';
 import { ReplyModal } from './ReplyModal';
 import { supabase } from '../lib/supabase';
 import { useBookmarks } from '../context/BookmarksContext';
@@ -16,7 +16,7 @@ import { ProfileHoverCard } from './ProfileHoverCard';
 import { updateNeedStatus } from '../lib/needsService';
 import { MentionText } from './MentionText';
 
-export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null }) => {
+export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onEdit = null, onMarkMet = null }) => {
     const { user } = useAuth();
     const [isReplyOpen, setIsReplyOpen] = useState(false);
     const navigate = useNavigate();
@@ -374,28 +374,6 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null }) =
                                         {shareCopied ? 'Link Copied!' : 'Share Post'}
                                     </button>
 
-                                    {/* Archive Action (Owner Only) */}
-                                    {user && need.authorId === user.id && (
-                                        <button
-                                            onClick={(e) => {
-                                                setIsMenuOpen(false);
-                                                handleArchive(e);
-                                            }}
-                                            style={{
-                                                width: '100%', textAlign: 'left', padding: '0.7rem',
-                                                borderRadius: '8px', display: 'flex', alignItems: 'center',
-                                                gap: '0.75rem', color: '#ef4444',
-                                                fontSize: '0.9rem', fontWeight: 500,
-                                                borderTop: '1px solid var(--border-glass)',
-                                                marginTop: '2px',
-                                                paddingTop: '0.75rem'
-                                            }}
-                                            className="nav-link-hover"
-                                        >
-                                            <Archive size={18} />
-                                            Archive Post
-                                        </button>
-                                    )}
                                 </div>
                             </>
                         )}
@@ -517,6 +495,42 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null }) =
                                 <span>{likeCount}</span>
                             )}
                         </button>
+
+                        {/* Owner Actions */}
+                        {user && need.authorId === user.id && (
+                            <>
+                                {need.status !== 'met' && onEdit && (
+                                    <button onClick={(e) => { e.stopPropagation(); onEdit(need); }} className="nav-link-hover" style={{
+                                        display: 'flex', alignItems: 'center', gap: '0.4rem',
+                                        color: 'var(--text-muted)', fontSize: '0.9rem', background: 'transparent',
+                                        transition: 'all 0.2s', padding: '0.25rem 0.5rem', borderRadius: '4px',
+                                        cursor: 'pointer'
+                                    }} title="Edit Need" onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'} onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}>
+                                        <Edit3 size={16} />
+                                    </button>
+                                )}
+                                {need.status === 'open' && onMarkMet && (
+                                    <button onClick={(e) => { e.stopPropagation(); onMarkMet(need); }} className="nav-link-hover" style={{
+                                        display: 'flex', alignItems: 'center', gap: '0.4rem',
+                                        color: 'var(--text-muted)', fontSize: '0.9rem', background: 'transparent',
+                                        transition: 'all 0.2s', padding: '0.25rem 0.5rem', borderRadius: '4px',
+                                        cursor: 'pointer'
+                                    }} title="Mark as Met" onMouseEnter={(e) => e.currentTarget.style.color = '#10b981'} onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}>
+                                        <CheckCircle size={16} />
+                                    </button>
+                                )}
+                                {need.status === 'open' && (
+                                    <button onClick={handleArchive} className="nav-link-hover" style={{
+                                        display: 'flex', alignItems: 'center', gap: '0.4rem',
+                                        color: 'var(--text-muted)', fontSize: '0.9rem', background: 'transparent',
+                                        transition: 'all 0.2s', padding: '0.25rem 0.5rem', borderRadius: '4px',
+                                        cursor: 'pointer'
+                                    }} title="Archive Need" onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'} onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}>
+                                        <Archive size={16} />
+                                    </button>
+                                )}
+                            </>
+                        )}
                     </div>
 
                     {/* Bookmark Action right-aligned */}

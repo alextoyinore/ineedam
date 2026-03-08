@@ -10,6 +10,9 @@ import { ProfileHoverCard } from '../components/ProfileHoverCard';
 import { ReplyModal } from '../components/ReplyModal';
 import { AttachmentModal } from '../components/AttachmentModal';
 import { MentionText } from '../components/MentionText';
+import { EditNeedModal } from '../components/EditNeedModal';
+import { MarkMetModal } from '../components/MarkMetModal';
+import { EndorseModal } from '../components/EndorseModal';
 import { Helmet } from 'react-helmet-async';
 
 const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachment }) => {
@@ -144,6 +147,12 @@ export const NeedDetailPage = () => {
     const [isReplyModalOpen, setIsReplyModalOpen] = useState(false);
     const [activeParentReply, setActiveParentReply] = useState(null);
 
+    // For editing/marking met
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isMarkMetModalOpen, setIsMarkMetModalOpen] = useState(false);
+    const [isEndorseModalOpen, setIsEndorseModalOpen] = useState(false);
+    const [needToEndorse, setNeedToEndorse] = useState(null);
+
     // For viewing attachments
     const [attachmentToView, setAttachmentToView] = useState(null);
 
@@ -242,6 +251,34 @@ export const NeedDetailPage = () => {
         }
     };
 
+    const handleEditUpdate = async (needId, updates) => {
+        try {
+            await updateNeed(needId, updates);
+            const needData = await getNeedById(id);
+            setNeed(shapeNeed(needData));
+        } catch (err) {
+            console.error("Failed to update need:", err);
+            throw err;
+        }
+    };
+
+    const handleConfirmMet = async (needId, helperProfile) => {
+        try {
+            await updateNeedStatus(needId, 'met', helperProfile.id);
+            const needData = await getNeedById(id);
+            const shaped = shapeNeed(needData);
+            setNeed(shaped);
+
+            setTimeout(() => {
+                setNeedToEndorse({ ...shaped, metByProfile: helperProfile });
+                setIsEndorseModalOpen(true);
+            }, 2100);
+        } catch (err) {
+            console.error("Failed to mark met:", err);
+            throw err;
+        }
+    };
+
     if (loading) {
         return (
             <div style={{ padding: '4rem', display: 'flex', justifyContent: 'center', color: 'var(--primary)' }}>
@@ -287,6 +324,26 @@ export const NeedDetailPage = () => {
                 fileType={attachmentToView?.type}
                 fileName={attachmentToView?.name}
             />
+            <EditNeedModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                need={need}
+                onUpdate={handleEditUpdate}
+            />
+            <MarkMetModal
+                isOpen={isMarkMetModalOpen}
+                onClose={() => setIsMarkMetModalOpen(false)}
+                need={need}
+                onConfirm={handleConfirmMet}
+            />
+            <EndorseModal
+                isOpen={isEndorseModalOpen}
+                onClose={() => setIsEndorseModalOpen(false)}
+                need={needToEndorse}
+                onSuccess={async () => {
+                    // Refetch if needed, though endorsements are on profile usually
+                }}
+            />
 
             <header style={{
                 position: 'sticky', top: 0, zIndex: 40,
@@ -306,7 +363,12 @@ export const NeedDetailPage = () => {
             </header>
 
             <div style={{ padding: '', borderBottom: '1px solid var(--border-glass)' }}>
-                <NeedCard need={need} isFullDetail={true} />
+                <NeedCard
+                    need={need}
+                    isFullDetail={true}
+                    onEdit={() => setIsEditModalOpen(true)}
+                    onMarkMet={() => setIsMarkMetModalOpen(true)}
+                />
             </div>
 
             {/* Main Reply Box */}

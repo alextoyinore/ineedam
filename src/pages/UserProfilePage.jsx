@@ -609,6 +609,8 @@ export const UserProfilePage = () => {
                                                     <NeedCard
                                                         need={item}
                                                         broadcastedBy={item.type === 'broadcast' ? item.broadcasted_by : null}
+                                                        onEdit={item.type === 'need' ? (n) => { setSelectedNeed(n); setIsNeedEditModalOpen(true); } : null}
+                                                        onMarkMet={item.type === 'need' ? handleMarkMet : null}
                                                     />
                                                 ) : item.type === 'endorsement' || item.type === 'broadcast_endorsement' ? (
                                                     <EndorsementFeedCard
@@ -619,14 +621,10 @@ export const UserProfilePage = () => {
                                                     <div className="nav-link-hover" style={{ padding: '1.5rem', borderBottom: '1px solid var(--border-glass)', display: 'flex', gap: '1rem' }}>
                                                         <div style={{
                                                             width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
-                                                            background: profile.avatar_url ? `url(${profile.avatar_url}) center/cover` : 'var(--bg-surface)',
-                                                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', overflow: 'hidden'
+                                                            background: profile.avatar_url ? `url(${profile.avatar_url}) center / cover` : 'var(--bg-surface)',
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'
                                                         }}>
-                                                            {profile.avatar_url ? (
-                                                                <img src={profile.avatar_url} alt={profile.display_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                            ) : (
-                                                                (profile.display_name || '?').charAt(0).toUpperCase()
-                                                            )}
+                                                            {!profile.avatar_url && profile.display_name.charAt(0).toUpperCase()}
                                                         </div>
                                                         <div style={{ flex: 1 }}>
                                                             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
@@ -661,20 +659,6 @@ export const UserProfilePage = () => {
                                                         </div>
                                                     </div>
                                                 ) : null}
-
-                                                {isOwnItem && (
-                                                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', marginBottom: '1.5rem', paddingLeft: '6rem' }}>
-                                                        {item.status !== 'met' && (
-                                                            <button onClick={() => { setSelectedNeed(item); setIsNeedEditModalOpen(true); }} className="btn btn-secondary" style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem', borderRadius: '9999px' }}>Edit</button>
-                                                        )}
-                                                        {item.status === 'open' && (
-                                                            <button onClick={() => handleMarkMet(item)} className="btn btn-secondary" style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem', color: '#10b981', borderRadius: '9999px' }}>Mark Met</button>
-                                                        )}
-                                                        {item.status === 'open' && (
-                                                            <button onClick={() => handleArchive(item.id)} className="btn btn-secondary" style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem', color: '#ef4444', borderRadius: '9999px', marginLeft: 'auto', marginRight: '1.5rem' }}>Archive</button>
-                                                        )}
-                                                    </div>
-                                                )}
                                             </motion.div>
                                         );
                                     })}
