@@ -235,11 +235,10 @@ button {
 
 .social-sidebar-right {
   position: sticky;
-  top: 0;
-  height: 100vh;
-  overflow-y: auto;
+  top: 1rem;
   align-self: start;
   width: 300px;
+  /* Removed height: 100vh and overflow-y: auto to allow page-based sticky parking */
 }
 
 .social-main-wrapper {

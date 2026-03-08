@@ -18,6 +18,44 @@ export const RightSidebar = () => {
     const [trendLoading, setTrendLoading] = useState(false);
     const navigate = useNavigate();
 
+    const sidebarRef = React.useRef(null);
+    const [stickyTop, setStickyTop] = useState(16);
+
+    useEffect(() => {
+        let lastScrollY = window.scrollY;
+
+        const handleScroll = () => {
+            if (!sidebarRef.current) return;
+
+            const sidebar = sidebarRef.current;
+            const sh = sidebar.offsetHeight;
+            const vh = window.innerHeight;
+            const scrollY = window.scrollY;
+            const delta = scrollY - lastScrollY;
+            lastScrollY = scrollY;
+
+            // If sidebar is shorter than viewport, keep it at top
+            if (sh <= vh - 32) {
+                setStickyTop(16);
+                return;
+            }
+
+            setStickyTop(prev => {
+                const newTop = prev - delta;
+                const minTop = vh - sh - 24; // 24px bottom margin/buffer
+                const maxTop = 16; // 1rem top margin
+                return Math.min(maxTop, Math.max(minTop, newTop));
+            });
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        window.addEventListener('resize', handleScroll);
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            window.removeEventListener('resize', handleScroll);
+        };
+    }, []);
+
     useEffect(() => {
         const loadSidebarData = async () => {
             if (!user) return;
@@ -89,7 +127,7 @@ export const RightSidebar = () => {
         { key: '3h', label: '3h' },
     ];
     return (
-        <aside className="social-sidebar-right">
+        <aside ref={sidebarRef} className="social-sidebar-right" style={{ top: `${stickyTop}px` }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', height: '100%', padding: '1.5rem 0' }}>
 
                 {/* Search */}
