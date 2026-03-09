@@ -32,15 +32,16 @@
   --mobile-header-height: 56px;
   --mobile-nav-height: 4.5rem;
   --profile-header-height: 53px;
+  --sidebar-width: 250px;
 }
 
 html {
-  font-size: 15px;
+  font-size: 16px;
 }
 
 @media (max-width: 768px) {
   html {
-    font-size: 14px;
+    font-size: 15px;
   }
 }
 
@@ -110,6 +111,7 @@ html {
 }
 
 body {
+  font-size: 18px;
   font-family: var(--font-family);
   background-color: var(--bg-base);
   color: var(--text-primary);
@@ -393,6 +395,66 @@ button {
   border-radius: 16px;
 }
 
+/* Responsive Modal Utility */
+.modal-overlay-social {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.modal-content-social {
+  width: 100%;
+  max-width: 600px;
+  height: auto;
+  max-height: 90vh;
+  overflow: hidden;
+  background: var(--bg-surface);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  border: 1px solid var(--border-glass);
+}
+
+@media (max-width: 1280px) {
+  .modal-overlay-social {
+    left: var(--sidebar-width);
+    padding: 0;
+  }
+
+  .modal-content-social {
+    max-width: none;
+    height: 100%;
+    max-height: 100%;
+    border-radius: 0;
+    border-top: none;
+    border-bottom: none;
+  }
+}
+
+@media (max-width: 435px) {
+  .modal-overlay-social {
+    left: 0;
+    top: var(--mobile-header-height);
+    bottom: var(--mobile-nav-height);
+    background: var(--bg-surface);
+    backdrop-filter: none;
+  }
+
+  .modal-content-social {
+    border: none;
+  }
+}
+
 /* Layout Nav Classes */
 .mobile-only {
   display: none !important;
@@ -402,7 +464,7 @@ button {
   display: block;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 435px) {
   .mobile-only {
     display: flex !important;
   }
@@ -581,6 +643,10 @@ button {
     width: 80px;
   }
 
+  :root {
+    --sidebar-width: 80px;
+  }
+
   /* Center items in iconic mode */
   .social-sidebar-left .nav-link {
     width: 100% !important;
@@ -620,26 +686,45 @@ button {
 }
 
 @media (max-width: 768px) {
+
+  /* === Medium screens (435px – 768px): sidebar stays but in iconic mode === */
   .social-layout-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 64px minmax(0, 1fr);
     gap: 0;
     padding: 0;
     width: 100%;
   }
 
+  /* Keep the sidebar visible but narrower */
+  .social-sidebar-left {
+    width: 64px;
+  }
+
+  :root {
+    --sidebar-width: 64px;
+  }
+
+  /* Iconic rules already applied by 1280px breakpoint – just refine padding */
+  .social-sidebar-left .nav-link,
+  .social-sidebar-left a:not(.sidebar-logo-container),
+  .social-sidebar-left .btn-primary,
+  .social-sidebar-left .nav-link-hover,
+  .sidebar-logo-container {
+    padding: 0.75rem 0 !important;
+  }
+
   .social-main-wrapper {
-    max-width: 100vw;
+    max-width: 100%;
     width: 100%;
     margin: 0;
   }
 
   .social-main-content {
-    border: none;
+    border-left: 1px solid var(--border-glass);
+    border-right: 1px solid var(--border-glass);
     padding-top: 0;
-    padding-bottom: 5rem;
-    /* Space for BottomNav */
     width: 100%;
-    max-width: 100vw;
+    max-width: 100%;
   }
 
   .social-main-content.is-chat-detail {
@@ -669,6 +754,33 @@ button {
     height: 100dvh !important;
     border-radius: 0 !important;
     z-index: 1000;
+  }
+}
+
+@media (max-width: 435px) {
+
+  /* === Small screens: hide sidebar completely, switch to full-width === */
+  .social-layout-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 0;
+    width: 100%;
+  }
+
+  .social-sidebar-left {
+    display: none;
+  }
+
+  .social-main-wrapper {
+    max-width: 100vw;
+    width: 100%;
+    margin: 0;
+  }
+
+  .social-main-content {
+    border: none;
+    padding-bottom: 5rem;
+    /* Space for BottomNav */
   }
 }
 

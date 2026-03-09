@@ -11,7 +11,7 @@ export const PostNeedModal = ({ isOpen, onClose }) => {
     const navigate = useNavigate();
     const { drafts, saveDraft, deleteDraft } = useDrafts();
     const { user } = useAuth();
-    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 435);
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState('');
     const [imageFile, setImageFile] = useState(null);
@@ -26,7 +26,7 @@ export const PostNeedModal = ({ isOpen, onClose }) => {
     const categoryRef = useRef(null);
 
     useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        const handleResize = () => setIsMobile(window.innerWidth <= 435);
         window.addEventListener('resize', handleResize);
 
         const handleClickOutside = (e) => {
@@ -162,37 +162,12 @@ export const PostNeedModal = ({ isOpen, onClose }) => {
 
     return (
         <AnimatePresence>
-            <div style={{
-                position: 'fixed',
-                top: isMobile ? 'var(--mobile-header-height)' : 0,
-                left: 0,
-                right: 0,
-                bottom: isMobile ? 'var(--mobile-nav-height)' : 0,
-                zIndex: 2000,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: isMobile ? 0 : '1rem',
-                background: isMobile ? 'transparent' : 'rgba(0, 0, 0, 0.5)',
-                backdropFilter: isMobile ? 'none' : 'blur(4px)'
-            }}>
+            <div className="modal-overlay-social">
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95, y: isMobile ? 100 : 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: isMobile ? 100 : 20 }}
-                    className={isMobile ? "" : "glass-panel"}
-                    style={{
-                        width: '100%',
-                        maxWidth: isMobile ? '100vw' : '600px',
-                        height: isMobile ? '100%' : 'auto',
-                        maxHeight: isMobile ? '100%' : '90vh',
-                        overflow: 'hidden',
-                        background: 'var(--bg-surface)',
-                        position: 'relative',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        borderRadius: isMobile ? 0 : '16px'
-                    }}
+                    className="modal-content-social"
                 >
                     {/* Header */}
                     <div style={{

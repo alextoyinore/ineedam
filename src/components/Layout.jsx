@@ -34,7 +34,7 @@ export const Layout = ({ children }) => {
 
       <div className="social-layout-grid">
         {/* Left Navigation */}
-        <div style={{ width: '250px' }} className="desktop-only">
+        <div style={{ width: '250px' }}>
           <Sidebar
             onPostClick={() => setIsPostModalOpen(true)}
             onInviteClick={() => setIsInviteModalOpen(true)}

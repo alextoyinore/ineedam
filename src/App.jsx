@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Loader } from 'lucide-react';
 import { Layout } from './components/Layout';
@@ -6,39 +6,38 @@ import { PublicPageWrapper } from './components/PublicPageWrapper';
 import { useAuth } from './context/AuthContext';
 import { MessageSecurityProvider } from './context/MessageSecurityContext';
 
-import { ExplorePage } from './pages/ExplorePage';
-import { NeedDetailPage } from './pages/NeedDetailPage';
-import { BookmarksPage } from './pages/BookmarksPage';
-import { SearchPage } from './pages/SearchPage';
-import { LandingPage } from './pages/LandingPage';
-import { AboutPage } from './pages/AboutPage';
-import { FAQPage } from './pages/FAQPage';
-import { HowToUsePage } from './pages/HowToUsePage';
-import { ResetPasswordPage } from './pages/ResetPasswordPage';
-import { UserProfilePage } from './pages/UserProfilePage';
-import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
-import { TermsOfServicePage } from './pages/TermsOfServicePage';
-import { NotificationsPage } from './pages/NotificationsPage';
-import { MessagesPage } from './pages/MessagesPage';
-import { MessageThreads } from './pages/messages/MessageThreads';
-import { ChatDetail } from './pages/messages/ChatDetail';
-import { SettingsPage } from './pages/SettingsPage';
-import { RuleOfEngagementPage } from './pages/RuleOfEngagementPage';
-import { MobileWhoToFollowPage } from './pages/MobileWhoToFollowPage';
-import { MobileWhatsHappeningPage } from './pages/MobileWhatsHappeningPage';
-import { CategoriesPage } from './pages/CategoriesPage';
-import { PremiumPage } from './pages/PremiumPage';
-import { NotFoundPage } from './pages/NotFoundPage';
-import { ServerErrorPage } from './pages/ServerErrorPage';
-import { BlockedAccountsPage } from './pages/BlockedAccountsPage';
-import { ArchivedContentPage } from './pages/ArchivedContentPage';
-import { EndorsementDetailPage } from './pages/EndorsementDetailPage';
-import { HelpPage } from './pages/HelpPage';
-import { SupportPage } from './pages/SupportPage';
+// Lazy load all pages
+const ExplorePage = lazy(() => import('./pages/ExplorePage').then(module => ({ default: module.ExplorePage })));
+const NeedDetailPage = lazy(() => import('./pages/NeedDetailPage').then(module => ({ default: module.NeedDetailPage })));
+const BookmarksPage = lazy(() => import('./pages/BookmarksPage').then(module => ({ default: module.BookmarksPage })));
+const SearchPage = lazy(() => import('./pages/SearchPage').then(module => ({ default: module.SearchPage })));
+const LandingPage = lazy(() => import('./pages/LandingPage').then(module => ({ default: module.LandingPage })));
+const AboutPage = lazy(() => import('./pages/AboutPage').then(module => ({ default: module.AboutPage })));
+const FAQPage = lazy(() => import('./pages/FAQPage').then(module => ({ default: module.FAQPage })));
+const HowToUsePage = lazy(() => import('./pages/HowToUsePage').then(module => ({ default: module.HowToUsePage })));
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage').then(module => ({ default: module.ResetPasswordPage })));
+const UserProfilePage = lazy(() => import('./pages/UserProfilePage').then(module => ({ default: module.UserProfilePage })));
+const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage').then(module => ({ default: module.PrivacyPolicyPage })));
+const TermsOfServicePage = lazy(() => import('./pages/TermsOfServicePage').then(module => ({ default: module.TermsOfServicePage })));
+const NotificationsPage = lazy(() => import('./pages/NotificationsPage').then(module => ({ default: module.NotificationsPage })));
+const MessagesPage = lazy(() => import('./pages/MessagesPage').then(module => ({ default: module.MessagesPage })));
+const MessageThreads = lazy(() => import('./pages/messages/MessageThreads').then(module => ({ default: module.MessageThreads })));
+const ChatDetail = lazy(() => import('./pages/messages/ChatDetail').then(module => ({ default: module.ChatDetail })));
+const SettingsPage = lazy(() => import('./pages/SettingsPage').then(module => ({ default: module.SettingsPage })));
+const RuleOfEngagementPage = lazy(() => import('./pages/RuleOfEngagementPage').then(module => ({ default: module.RuleOfEngagementPage })));
+const MobileWhoToFollowPage = lazy(() => import('./pages/MobileWhoToFollowPage').then(module => ({ default: module.MobileWhoToFollowPage })));
+const MobileWhatsHappeningPage = lazy(() => import('./pages/MobileWhatsHappeningPage').then(module => ({ default: module.MobileWhatsHappeningPage })));
+const CategoriesPage = lazy(() => import('./pages/CategoriesPage').then(module => ({ default: module.CategoriesPage })));
+const PremiumPage = lazy(() => import('./pages/PremiumPage').then(module => ({ default: module.PremiumPage })));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage').then(module => ({ default: module.NotFoundPage })));
+const ServerErrorPage = lazy(() => import('./pages/ServerErrorPage').then(module => ({ default: module.ServerErrorPage })));
+const BlockedAccountsPage = lazy(() => import('./pages/BlockedAccountsPage').then(module => ({ default: module.BlockedAccountsPage })));
+const ArchivedContentPage = lazy(() => import('./pages/ArchivedContentPage').then(module => ({ default: module.ArchivedContentPage })));
+const EndorsementDetailPage = lazy(() => import('./pages/EndorsementDetailPage').then(module => ({ default: module.EndorsementDetailPage })));
+const HelpPage = lazy(() => import('./pages/HelpPage').then(module => ({ default: module.HelpPage })));
+const SupportPage = lazy(() => import('./pages/SupportPage').then(module => ({ default: module.SupportPage })));
 
-
-
-// Full-screen spinner while the session is being determined
+// Full-screen spinner while the session is being determined or pages are loading
 const AuthLoader = () => (
   <div style={{
     minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -58,54 +57,56 @@ const ProtectedRoute = ({ children }) => {
 
 function App() {
   return (
-    <Routes>
-      {/* ── Public: landing & auth ───────────────────────────── */}
-      <Route path="/welcome" element={<LandingPage />} />
-      <Route path="/500" element={<ServerErrorPage />} />
+    <Suspense fallback={<AuthLoader />}>
+      <Routes>
+        {/* ── Public: landing & auth ───────────────────────────── */}
+        <Route path="/welcome" element={<LandingPage />} />
+        <Route path="/500" element={<ServerErrorPage />} />
 
-      {/* ── Public: info pages (no social layout, no auth) ───── */}
-      <Route path="/about" element={<PublicPageWrapper><AboutPage /></PublicPageWrapper>} />
-      <Route path="/faq" element={<PublicPageWrapper><FAQPage /></PublicPageWrapper>} />
-      <Route path="/how-to-use" element={<PublicPageWrapper><HowToUsePage /></PublicPageWrapper>} />
-      <Route path="/reset-password" element={<PublicPageWrapper><ResetPasswordPage /></PublicPageWrapper>} />
-      <Route path="/privacy" element={<PublicPageWrapper><PrivacyPolicyPage /></PublicPageWrapper>} />
-      <Route path="/terms" element={<PublicPageWrapper><TermsOfServicePage /></PublicPageWrapper>} />
-      <Route path="/rules" element={<PublicPageWrapper><RuleOfEngagementPage /></PublicPageWrapper>} />
+        {/* ── Public: info pages (no social layout, no auth) ───── */}
+        <Route path="/about" element={<PublicPageWrapper><AboutPage /></PublicPageWrapper>} />
+        <Route path="/faq" element={<PublicPageWrapper><FAQPage /></PublicPageWrapper>} />
+        <Route path="/how-to-use" element={<PublicPageWrapper><HowToUsePage /></PublicPageWrapper>} />
+        <Route path="/reset-password" element={<PublicPageWrapper><ResetPasswordPage /></PublicPageWrapper>} />
+        <Route path="/privacy" element={<PublicPageWrapper><PrivacyPolicyPage /></PublicPageWrapper>} />
+        <Route path="/terms" element={<PublicPageWrapper><TermsOfServicePage /></PublicPageWrapper>} />
+        <Route path="/rules" element={<PublicPageWrapper><RuleOfEngagementPage /></PublicPageWrapper>} />
 
-      {/* ── Protected: all app routes inside social layout ────── */}
-      <Route path="/*" element={
-        <ProtectedRoute>
-          <MessageSecurityProvider>
-            <Layout>
-              <Routes>
-                <Route path="/" element={<ExplorePage />} />
-                <Route path="/bookmarks" element={<BookmarksPage />} />
-                <Route path="/notifications" element={<NotificationsPage />} />
-                <Route path="/messages" element={<MessagesPage />}>
-                  <Route index element={<MessageThreads />} />
-                  <Route path=":threadId" element={<ChatDetail />} />
-                </Route>
-                <Route path="/search" element={<SearchPage />} />
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/who-to-follow" element={<MobileWhoToFollowPage />} />
-                <Route path="/whats-happening" element={<MobileWhatsHappeningPage />} />
-                <Route path="/categories" element={<CategoriesPage />} />
-                <Route path="/premium" element={<PremiumPage />} />
-                <Route path="/blocked-accounts" element={<BlockedAccountsPage />} />
-                <Route path="/settings/archived" element={<ArchivedContentPage />} />
-                <Route path="/need/:id" element={<NeedDetailPage />} />
-                <Route path="/endorsement/:id" element={<EndorsementDetailPage />} />
-                <Route path="/help" element={<HelpPage />} />
-                <Route path="/support" element={<SupportPage />} />
-                <Route path="/dashboard" element={<Navigate to={`/${useAuth().profile?.username || ''}`} replace />} />
-                <Route path="/:username" element={<UserProfilePage />} />
-                <Route path="*" element={<NotFoundPage />} />
-              </Routes>
-            </Layout>
-          </MessageSecurityProvider>
-        </ProtectedRoute>
-      } />
-    </Routes>
+        {/* ── Protected: all app routes inside social layout ────── */}
+        <Route path="/*" element={
+          <ProtectedRoute>
+            <MessageSecurityProvider>
+              <Layout>
+                <Routes>
+                  <Route path="/" element={<ExplorePage />} />
+                  <Route path="/bookmarks" element={<BookmarksPage />} />
+                  <Route path="/notifications" element={<NotificationsPage />} />
+                  <Route path="/messages" element={<MessagesPage />}>
+                    <Route index element={<MessageThreads />} />
+                    <Route path=":threadId" element={<ChatDetail />} />
+                  </Route>
+                  <Route path="/search" element={<SearchPage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="/who-to-follow" element={<MobileWhoToFollowPage />} />
+                  <Route path="/whats-happening" element={<MobileWhatsHappeningPage />} />
+                  <Route path="/categories" element={<CategoriesPage />} />
+                  <Route path="/premium" element={<PremiumPage />} />
+                  <Route path="/blocked-accounts" element={<BlockedAccountsPage />} />
+                  <Route path="/settings/archived" element={<ArchivedContentPage />} />
+                  <Route path="/need/:id" element={<NeedDetailPage />} />
+                  <Route path="/endorsement/:id" element={<EndorsementDetailPage />} />
+                  <Route path="/help" element={<HelpPage />} />
+                  <Route path="/support" element={<SupportPage />} />
+                  <Route path="/dashboard" element={<Navigate to={`/${useAuth().profile?.username || ''}`} replace />} />
+                  <Route path="/:username" element={<UserProfilePage />} />
+                  <Route path="*" element={<NotFoundPage />} />
+                </Routes>
+              </Layout>
+            </MessageSecurityProvider>
+          </ProtectedRoute>
+        } />
+      </Routes>
+    </Suspense>
   );
 }
 
