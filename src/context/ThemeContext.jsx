@@ -5,22 +5,25 @@ const ThemeContext = createContext();
 export const useTheme = () => useContext(ThemeContext);
 
 export const ThemeProvider = ({ children }) => {
-    // Check localStorage or default to 'system'
     const [theme, setTheme] = useState(() => {
         const savedTheme = localStorage.getItem('app-theme');
         return savedTheme || 'system';
     });
 
+    const [isDark, setIsDark] = useState(false);
+
     useEffect(() => {
         const root = document.documentElement;
 
         const applyTheme = (currentTheme) => {
+            let resolvedTheme = currentTheme;
             if (currentTheme === 'system') {
                 const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                root.setAttribute('data-theme', systemPrefersDark ? 'dark' : 'light');
-            } else {
-                root.setAttribute('data-theme', currentTheme);
+                resolvedTheme = systemPrefersDark ? 'dark' : 'light';
             }
+
+            root.setAttribute('data-theme', resolvedTheme);
+            setIsDark(resolvedTheme === 'dark');
         };
 
         applyTheme(theme);
@@ -31,7 +34,9 @@ export const ThemeProvider = ({ children }) => {
         if (theme === 'system') {
             const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
             mediaListener = (e) => {
-                root.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+                const resolvedTheme = e.matches ? 'dark' : 'light';
+                root.setAttribute('data-theme', resolvedTheme);
+                setIsDark(resolvedTheme === 'dark');
             };
             mediaQuery.addEventListener('change', mediaListener);
         }
@@ -44,7 +49,7 @@ export const ThemeProvider = ({ children }) => {
     }, [theme]);
 
     return (
-        <ThemeContext.Provider value={{ theme, setTheme }}>
+        <ThemeContext.Provider value={{ theme, setTheme, isDark }}>
             {children}
         </ThemeContext.Provider>
     );

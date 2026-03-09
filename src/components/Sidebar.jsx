@@ -6,12 +6,14 @@ import { useMessages } from '../context/MessagesContext';
 import { useAuth } from '../context/AuthContext';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { useSettings } from '../context/SettingsContext';
+import { useTheme } from '../context/ThemeContext';
 
 
 export const Sidebar = ({ onPostClick, onInviteClick }) => {
     const location = useLocation();
     const { profile, signOut } = useAuth();
     const { settings } = useSettings();
+    const { isDark } = useTheme();
     const { unreadCount } = useNotifications();
     const { unreadThreadsCount } = useMessages();
     const [showLogout, setShowLogout] = useState(false);
@@ -22,7 +24,7 @@ export const Sidebar = ({ onPostClick, onInviteClick }) => {
 
                 {/* Logo */}
                 <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', padding: '0 1rem' }} className="sidebar-logo-container">
-                    <img src={settings.theme === 'dark' ? "/logo-dark.svg" : "/logo.svg"} alt="Ineedam Logo" className="full-text-logo" style={{ height: '40px' }} />
+                    <img src={isDark ? "/logo-dark.svg" : "/logo.svg"} alt="Ineedam Logo" className="full-text-logo" style={{ height: '40px' }} />
                     <img src="/icon.svg" alt="Ineedam Icon" className="icon-only-logo" style={{ height: '40px', display: 'none' }} />
                 </Link>
 

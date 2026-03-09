@@ -1,9 +1,11 @@
 import React from 'react';
 import { useTheme } from '../context/ThemeContext';
+import { useSettings } from '../context/SettingsContext';
 import { Sun, Moon, Laptop } from 'lucide-react';
 
 export const ThemeToggle = () => {
-    const { theme, setTheme } = useTheme();
+    const { theme } = useTheme();
+    const { updateSetting } = useSettings();
 
     const options = [
         { value: 'light', icon: <Sun size={18} />, label: 'Light' },
@@ -19,7 +21,7 @@ export const ThemeToggle = () => {
             {options.map((opt) => (
                 <button
                     key={opt.value}
-                    onClick={() => setTheme(opt.value)}
+                    onClick={() => updateSetting('theme', opt.value)}
                     style={{
                         flex: 1,
                         display: 'flex',

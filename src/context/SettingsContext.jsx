@@ -19,6 +19,8 @@ export const SettingsProvider = ({ children }) => {
         localStorage.setItem('needam_settings', JSON.stringify(settings));
         if (settings.theme) {
             setTheme(settings.theme);
+            // Also update app-theme key to stay in sync with ThemeContext's initializer
+            localStorage.setItem('app-theme', settings.theme);
         }
     }, [settings, setTheme]);
 
