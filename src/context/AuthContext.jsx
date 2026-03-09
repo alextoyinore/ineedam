@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { getFCMToken } from '../lib/firebase';
 
 const AuthContext = createContext(null);
 
@@ -60,6 +61,25 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    // --- Firebase Cloud Messaging Token Registration ---
+    const subscribeToFCM = async () => {
+        if (!import.meta.env.VITE_FIREBASE_API_KEY) return; // Skip if Firebase not configured
+        try {
+            const token = await getFCMToken();
+            if (!token) return;
+            console.log('[FCM] Token obtained:', token);
+            if (user) {
+                await supabase
+                    .from('profiles')
+                    .update({ fcm_token: token })
+                    .eq('id', user.id);
+                console.log('[FCM] Token saved to profile');
+            }
+        } catch (err) {
+            console.error('[FCM] Failed to subscribe:', err);
+        }
+    };
+
     const fetchProfile = async (userId) => {
         try {
             const { data, error } = await supabase
@@ -101,12 +121,17 @@ export const AuthProvider = ({ children }) => {
 
     // Handle auto-subscription for verified/logged-in users
     useEffect(() => {
-        if (user && profile && !profile.push_subscription) {
-            // Check if permission is already granted or not denied
+        if (user && profile) {
             if (Notification.permission === 'default' || Notification.permission === 'granted') {
-                // We wrap in a short delay to ensure UI is ready or user is engaged
                 const timer = setTimeout(() => {
-                    subscribeToPush();
+                    // Existing Web Push (VAPID) subscription
+                    if (!profile.push_subscription) {
+                        subscribeToPush();
+                    }
+                    // Firebase FCM subscription (independent)
+                    if (!profile.fcm_token) {
+                        subscribeToFCM();
+                    }
                 }, 3000);
                 return () => clearTimeout(timer);
             }

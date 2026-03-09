@@ -52,7 +52,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 
 )
 
-// Register Service Worker for Push Notifications
+// Register Service Worker for Push Notifications (existing Web Push / VAPID)
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
@@ -62,5 +62,17 @@ if ('serviceWorker' in navigator) {
       .catch(registrationError => {
         console.log('SW registration failed: ', registrationError);
       });
+
+    // Also register the Firebase messaging service worker (FCM)
+    // This runs independently alongside the existing sw.js
+    if (import.meta.env.VITE_FIREBASE_API_KEY && import.meta.env.VITE_FIREBASE_API_KEY !== 'YOUR_API_KEY') {
+      navigator.serviceWorker.register('/firebase-messaging-sw.js')
+        .then(registration => {
+          console.log('[FCM] Service worker registered:', registration);
+        })
+        .catch(err => {
+          console.log('[FCM] Service worker registration failed:', err);
+        });
+    }
   });
 }
