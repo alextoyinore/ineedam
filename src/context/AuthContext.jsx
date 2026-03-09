@@ -124,10 +124,11 @@ export const AuthProvider = ({ children }) => {
         if (user && profile) {
             if (Notification.permission === 'default' || Notification.permission === 'granted') {
                 const timer = setTimeout(() => {
-                    // Existing Web Push (VAPID) subscription
+                    /* Existing Web Push (VAPID) subscription - Commented out
                     if (!profile.push_subscription) {
                         subscribeToPush();
                     }
+                    */
                     // Firebase FCM subscription (independent)
                     if (!profile.fcm_token) {
                         subscribeToFCM();

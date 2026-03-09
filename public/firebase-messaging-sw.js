@@ -11,12 +11,12 @@ importScripts('https://www.gstatic.com/firebasejs/10.9.0/firebase-messaging-comp
 // service workers cannot access import.meta.env.
 // You MUST replace these with your actual values or inject them during deploy.
 firebase.initializeApp({
-    apiKey: self.__FIREBASE_CONFIG__?.apiKey || '',
-    authDomain: self.__FIREBASE_CONFIG__?.authDomain || '',
-    projectId: self.__FIREBASE_CONFIG__?.projectId || '',
-    storageBucket: self.__FIREBASE_CONFIG__?.storageBucket || '',
-    messagingSenderId: self.__FIREBASE_CONFIG__?.messagingSenderId || '',
-    appId: self.__FIREBASE_CONFIG__?.appId || '',
+    apiKey: 'AIzaSyDmSU8tTrcWgkwLzBYr5OQOHmBs8ECSY48',
+    authDomain: 'ineedam.firebaseapp.com',
+    projectId: 'ineedam',
+    storageBucket: 'ineedam.firebasestorage.app',
+    messagingSenderId: '266363335362',
+    appId: '1:266363335362:web:5b83b8ec53768f8900815b',
 });
 
 const messaging = firebase.messaging();
