@@ -464,26 +464,26 @@ button {
 
 /* Profile Page */
 .profile-banner {
-  height: 200px;
+  height: 150px;
 }
 
 .profile-avatar {
-  width: 130px;
-  height: 130px;
-  margin-top: -65px;
-  font-size: 3rem;
+  width: 90px;
+  height: 90px;
+  margin-top: -45px;
+  font-size: 2rem;
 }
 
 @media (max-width: 768px) {
   .profile-banner {
-    height: 130px;
+    height: 100px;
   }
 
   .profile-avatar {
-    width: 90px;
-    height: 90px;
-    margin-top: -45px;
-    font-size: 2rem;
+    width: 60px;
+    height: 60px;
+    margin-top: -30px;
+    font-size: 1.5rem;
   }
 }
 
@@ -506,6 +506,12 @@ button {
   border: none;
   cursor: pointer;
   transition: transform 0.2s, background 0.2s;
+}
+
+@media (max-width: 768px) {
+  .mobile-fab {
+    right: 1rem;
+  }
 }
 
 .mobile-fab:active {

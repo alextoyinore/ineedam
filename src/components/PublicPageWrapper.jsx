@@ -58,7 +58,7 @@ export const PublicPageWrapper = ({ children }) => {
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             fontWeight: 'bold', color: 'white', fontSize: '0.9rem',
                         }}>I</div>
-                        <span className="text-gradient" style={{ fontWeight: 700, fontSize: '1rem' }}>Ineedam</span>
+                        <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>Ineedam</span>
                     </Link>
                 </div>
 

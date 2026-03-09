@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthModal } from '../components/AuthModal';
 import { useAuth } from '../context/AuthContext';
+import { useSettings } from '../context/SettingsContext';
 
 export const LandingPage = () => {
     const [authModal, setAuthModal] = useState(null); // null | 'signin' | 'signup'
     const { session, loading } = useAuth();
+    const { settings } = useSettings();
     const navigate = useNavigate();
 
     // If already signed in, go straight to the app
@@ -18,7 +20,7 @@ export const LandingPage = () => {
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem', textAlign: 'center' }}>
             {/* Full Brand Logo */}
             <div style={{ marginBottom: '2.5rem' }}>
-                <img src="/logo.svg" alt="Ineedam" style={{ height: 'clamp(44px, 11vw, 64px)' }} />
+                <img src={settings.theme === 'dark' ? "/logo-dark.svg" : "/logo.svg"} alt="Ineedam" style={{ height: 'clamp(44px, 11vw, 64px)' }} />
             </div>
 
             <h1 className="h1" style={{ fontSize: 'clamp(2.2rem, 8vw, 4rem)', marginBottom: '1rem', maxWidth: '800px', lineHeight: 1.1 }}>

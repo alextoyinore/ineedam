@@ -62,7 +62,7 @@ export const MobileTopHeader = () => {
                 {/* Logo area */}
                 <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <img src="/icon.svg" alt="Ineedam Icon" style={{ height: '28px' }} />
-                    <span className="text-gradient" style={{ fontWeight: 900, fontSize: '1.25rem', letterSpacing: '-0.025em' }}>
+                    <span style={{ fontWeight: 900, fontSize: '1.25rem', letterSpacing: '-0.025em', color: 'var(--text-primary)' }}>
                         Ineedam
                     </span>
                 </Link>

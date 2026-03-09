@@ -179,9 +179,9 @@ export const SettingsPage = () => {
                                 >
                                     <div style={{
                                         width: '38px', height: '38px', borderRadius: '10px',
-                                        background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(236, 72, 153, 0.1))',
+                                        background: 'linear-gradient(135deg, rgba(22, 163, 74, 0.05), rgba(16, 185, 129, 0.05))',
                                         display: 'flex', alignItems: 'center',
-                                        justifyContent: 'center', color: 'var(--secondary)', flexShrink: 0
+                                        justifyContent: 'center', color: 'var(--primary)', opacity: 0.8, flexShrink: 0
                                     }}>
                                         {item.icon}
                                     </div>
@@ -207,7 +207,8 @@ export const SettingsPage = () => {
                                             onClick={() => item.customToggle ? item.customToggle() : toggleSetting(item.id)}
                                             style={{
                                                 width: '48px', height: '26px', borderRadius: '13px',
-                                                background: item.value ? 'linear-gradient(135deg, var(--primary), var(--secondary))' : 'var(--bg-base)',
+                                                background: item.value ? 'var(--primary)' : 'var(--bg-base)',
+                                                opacity: item.value ? 0.85 : 1,
                                                 border: '1px solid var(--border-glass)', position: 'relative',
                                                 cursor: 'pointer', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                                                 flexShrink: 0
