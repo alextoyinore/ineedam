@@ -62,6 +62,7 @@ serve(async (req) => {
                     title: title,
                     body: message,
                     icon: "/icon.svg",
+                    badge: "/badge.png",
                     click_action: url,
                 },
                 data: {

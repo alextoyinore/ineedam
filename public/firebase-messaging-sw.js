@@ -31,7 +31,7 @@ messaging.onBackgroundMessage((payload) => {
     self.registration.showNotification(title || 'ineedam', {
         body: body || 'You have a new notification.',
         icon: icon || '/icon.svg',
-        badge: '/favicon.svg',
+        badge: '/badge.png',
         data: { url: clickAction },
         vibrate: [100, 50, 100],
     });

@@ -434,7 +434,7 @@ export const ChatDetail = () => {
                     gap: '0.4rem',
                     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Cg stroke='%236366f1' stroke-opacity='0.02' fill='none' stroke-width='1.5'%3E%3Cpath d='M40 40h60c8 0 15 7 15 15v40c0 8-7 15-15 15h-20l-15 15v-15h-25c-8 0-15-7-15-15v-40c0-8 7-15 15-15z'/%3E%3Cpath d='M160 160l30-30 15 15-30 30z M195 125l15-15 15 15-15 15z M155 165l5 25-25-5z'/%3E%3Cpath d='M160 40h30c4 0 8 4 8 8v15c0 4-4 8-8 8h-5l-10 10v-10h-15c-4 0-8-4-8-8v-15c0-4 4-8 8-8z'/%3E%3C/g%3E%3C/svg%3E")`
                 }}>
-                {[...activeThread.messages].reverse().map(msg => {
+                {[...activeThread.messages].reverse().map((msg, index, allMsgs) => {
                     const isMe = msg.sender === 'Me';
                     const isAudio = msg.fileType?.startsWith('audio/') || msg.fileUrl?.toLowerCase().endsWith('.webm') || msg.fileUrl?.toLowerCase().endsWith('.mp3') || msg.fileUrl?.toLowerCase().endsWith('.wav');
                     const isCall = msg.text?.startsWith('[CALL_');
@@ -442,204 +442,229 @@ export const ChatDetail = () => {
                     const replyMsg = msg.replyTo ? activeThread.messages.find(m => m.id === msg.replyTo) : null;
                     const isRead = !!(activeThread.recipientLastReadAt && new Date(activeThread.recipientLastReadAt) >= new Date(msg.timestamp));
 
+                    // Date Separator Logic
+                    const currentDate = new Date(msg.timestamp).toLocaleDateString();
+                    const nextMsg = allMsgs[index + 1];
+                    const nextDate = nextMsg ? new Date(nextMsg.timestamp).toLocaleDateString() : null;
+                    const showDateSeparator = currentDate !== nextDate;
+
+                    const dateLabel = (() => {
+                        const d = new Date(msg.timestamp);
+                        const today = new Date();
+                        const yesterday = new Date();
+                        yesterday.setDate(today.getDate() - 1);
+
+                        if (d.toLocaleDateString() === today.toLocaleDateString()) return 'Today';
+                        if (d.toLocaleDateString() === yesterday.toLocaleDateString()) return 'Yesterday';
+                        return d.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
+                    })();
+
                     return (
-                        <div
-                            key={msg.id}
-                            id={`msg-${msg.id}`}
-                            className={`message-bubble-row ${isMe ? 'is-me' : 'is-them'}`}
-                            style={{
-                                alignSelf: isMe ? 'flex-end' : 'flex-start',
-                                maxWidth: '85%',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: isMe ? 'flex-end' : 'flex-start',
-                                marginBottom: '0.2rem',
-                                position: 'relative'
-                            }}
-                        >
-                            <div style={{
-                                display: 'flex',
-                                flexDirection: isMe ? 'row' : 'row-reverse',
-                                alignItems: 'flex-end',
-                                gap: '0.5rem',
-                                position: 'relative',
-                                width: 'fit-content'
-                            }} className="message-main-content">
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: isMe ? 'flex-end' : 'flex-start', gap: '4px', marginBottom: '0.4rem', opacity: 0.9, position: 'relative' }}>
-                                    {!isCall && (
-                                        <div className={`emoji-picker-container`}>
-                                            <div className={`message-actions-inline ${isMe ? 'is-me' : 'is-them'} ${activeEmojiMessageId === msg.id ? 'is-active' : ''}`}>
-                                                <button className="message-action-btn" onClick={() => handleReply(msg)} title="Reply">
-                                                    <Reply size={14} />
-                                                </button>
-                                                <button
-                                                    className="message-action-btn"
-                                                    onClick={() => toggleBookmark(msg.id)}
-                                                    style={{ color: msg.isBookmarked ? 'var(--primary)' : 'inherit' }}
-                                                    title={msg.isBookmarked ? "Remove Bookmark" : "Bookmark"}
-                                                >
-                                                    <Bookmark size={14} fill={msg.isBookmarked ? "var(--primary)" : "none"} />
-                                                </button>
-                                                <button
-                                                    className="message-action-btn"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        // If another picker is open, don't open this one
-                                                        if (activeEmojiMessageId && activeEmojiMessageId !== msg.id) return;
-                                                        setActiveEmojiMessageId(activeEmojiMessageId === msg.id ? null : msg.id);
-                                                    }}
-                                                >
-                                                    <Smile size={14} />
-                                                </button>
-                                                {isMe && !isRead && !isCall && (
-                                                    <>
-                                                        <button
-                                                            className="message-action-btn"
-                                                            onClick={() => {
-                                                                setEditingMessageId(msg.id);
-                                                                setMessageText(msg.text);
-                                                            }}
-                                                            title="Edit"
-                                                        >
-                                                            <Edit2 size={14} />
-                                                        </button>
-                                                        <button
-                                                            className="message-action-btn"
-                                                            onClick={async () => {
-                                                                if (window.confirm("Delete this unread message?")) {
-                                                                    await deleteMessage(msg.id);
-                                                                }
-                                                            }}
-                                                            title="Delete"
-                                                            style={{ color: '#ef4444' }}
-                                                        >
-                                                            <Trash2 size={14} />
-                                                        </button>
-                                                    </>
+                        <React.Fragment key={msg.id}>
+                            <div
+                                id={`msg-${msg.id}`}
+                                className={`message-bubble-row ${isMe ? 'is-me' : 'is-them'}`}
+                                style={{
+                                    alignSelf: isMe ? 'flex-end' : 'flex-start',
+                                    maxWidth: '85%',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: isMe ? 'flex-end' : 'flex-start',
+                                    marginBottom: '0.2rem',
+                                    position: 'relative'
+                                }}
+                            >
+                                <div style={{
+                                    display: 'flex',
+                                    flexDirection: isMe ? 'row' : 'row-reverse',
+                                    alignItems: 'flex-end',
+                                    gap: '0.5rem',
+                                    position: 'relative',
+                                    width: 'fit-content'
+                                }} className="message-main-content">
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: isMe ? 'flex-end' : 'flex-start', gap: '4px', marginBottom: '0.4rem', opacity: 0.9, position: 'relative' }}>
+                                        {!isCall && (
+                                            <div className={`emoji-picker-container`}>
+                                                <div className={`message-actions-inline ${isMe ? 'is-me' : 'is-them'} ${activeEmojiMessageId === msg.id ? 'is-active' : ''}`}>
+                                                    <button className="message-action-btn" onClick={() => handleReply(msg)} title="Reply">
+                                                        <Reply size={14} />
+                                                    </button>
+                                                    <button
+                                                        className="message-action-btn"
+                                                        onClick={() => toggleBookmark(msg.id)}
+                                                        style={{ color: msg.isBookmarked ? 'var(--primary)' : 'inherit' }}
+                                                        title={msg.isBookmarked ? "Remove Bookmark" : "Bookmark"}
+                                                    >
+                                                        <Bookmark size={14} fill={msg.isBookmarked ? "var(--primary)" : "none"} />
+                                                    </button>
+                                                    <button
+                                                        className="message-action-btn"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            // If another picker is open, don't open this one
+                                                            if (activeEmojiMessageId && activeEmojiMessageId !== msg.id) return;
+                                                            setActiveEmojiMessageId(activeEmojiMessageId === msg.id ? null : msg.id);
+                                                        }}
+                                                    >
+                                                        <Smile size={14} />
+                                                    </button>
+                                                    {isMe && !isRead && !isCall && (
+                                                        <>
+                                                            <button
+                                                                className="message-action-btn"
+                                                                onClick={() => {
+                                                                    setEditingMessageId(msg.id);
+                                                                    setMessageText(msg.text);
+                                                                }}
+                                                                title="Edit"
+                                                            >
+                                                                <Edit2 size={14} />
+                                                            </button>
+                                                            <button
+                                                                className="message-action-btn"
+                                                                onClick={async () => {
+                                                                    if (window.confirm("Delete this unread message?")) {
+                                                                        await deleteMessage(msg.id);
+                                                                    }
+                                                                }}
+                                                                title="Delete"
+                                                                style={{ color: '#ef4444' }}
+                                                            >
+                                                                <Trash2 size={14} />
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </div>
+                                                {activeEmojiMessageId === msg.id && (
+                                                    <EmojiPicker
+                                                        onSelect={(emoji) => toggleReaction(msg.id, emoji)}
+                                                        onClose={() => setActiveEmojiMessageId(null)}
+                                                        align={isMe ? 'right' : 'left'}
+                                                    />
                                                 )}
                                             </div>
-                                            {activeEmojiMessageId === msg.id && (
-                                                <EmojiPicker
-                                                    onSelect={(emoji) => toggleReaction(msg.id, emoji)}
-                                                    onClose={() => setActiveEmojiMessageId(null)}
-                                                    align={isMe ? 'right' : 'left'}
-                                                />
+                                        )}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                            {msg.isBookmarked && <Bookmark size={10} fill="var(--primary)" color="var(--primary)" />}
+                                            <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                                                {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </span>
+                                            {isMe && !isCall && (
+                                                <MessageStatus isRead={isRead} />
                                             )}
                                         </div>
-                                    )}
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                                        {msg.isBookmarked && <Bookmark size={10} fill="var(--primary)" color="var(--primary)" />}
-                                        <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
-                                            {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        </span>
-                                        {isMe && !isCall && (
-                                            <MessageStatus isRead={isRead} />
-                                        )}
                                     </div>
-                                </div>
 
-                                <div style={{
-                                    padding: (msg.fileUrl && !msg.text && !isAudio) ? '0' : '0.6rem 1rem',
-                                    borderRadius: isMissedCall ? '12px' : '18px',
-                                    borderBottomRightRadius: isMe ? '4px' : (isMissedCall ? '12px' : '18px'),
-                                    borderBottomLeftRadius: isMe ? (isMissedCall ? '12px' : '18px') : '4px',
-                                    background: (msg.fileUrl && !msg.text && !isAudio) ? 'transparent' : (isMe ? 'var(--primary)' : 'var(--bg-surface)'),
-                                    border: isMe ? 'none' : '1px solid var(--border-glass)',
-                                    color: isMe ? 'white' : 'var(--text-primary)',
-                                    fontSize: '0.92rem',
-                                    overflow: 'hidden',
-                                    position: 'relative',
-                                    boxShadow: isMe ? '0 1px 2px rgba(0,0,0,0.05)' : 'none'
-                                }} className="message-bubble">
-                                    {replyMsg && (
-                                        <div
-                                            className="reply-context"
-                                            onClick={() => scrollToMessage(replyMsg.id)}
-                                            style={{ color: isMe ? 'rgba(255,255,255,0.9)' : 'var(--text-secondary)' }}
-                                        >
-                                            <div style={{ fontWeight: 600, fontSize: '0.7rem' }}>
-                                                {replyMsg.sender === 'Me' ? 'You' : activeThread.withUser}
-                                            </div>
-                                            <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>
-                                                {replyMsg.text || '📎 Attachment'}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {isCall ? (
-                                        <div
-                                            onClick={() => {
-                                                const isVideo = msg.text.toLowerCase().includes('video');
-                                                initiateCall(activeThread.withUserId, activeThread.withUser, activeThread.withUserAvatar, isVideo);
-                                            }}
-                                            style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}
-                                        >
-                                            <div style={{
-                                                width: '32px', height: '32px', borderRadius: '50%',
-                                                background: isMe ? 'rgba(255,255,255,0.2)' : (() => {
-                                                    if (msg.text.includes('SUCCESS')) return 'rgba(34, 197, 94, 0.1)';
-                                                    if (msg.text.includes('REJECTED')) return 'rgba(239, 68, 68, 0.1)';
-                                                    return 'rgba(16, 185, 129, 0.1)';
-                                                })(),
-                                                display: 'flex', alignItems: 'center', justifyContent: 'center'
-                                            }}>
-                                                {(() => {
-                                                    const isVideo = msg.text.toLowerCase().includes('video');
-                                                    if (msg.text.includes('SUCCESS')) {
-                                                        return isVideo ? <Video size={16} color={isMe ? 'white' : '#22c55e'} /> : <Phone size={16} color={isMe ? 'white' : '#22c55e'} />;
-                                                    }
-                                                    if (msg.text.includes('REJECTED')) {
-                                                        return <PhoneOff size={16} color={isMe ? 'white' : '#ef4444'} />;
-                                                    }
-                                                    return isVideo ? <Video size={16} color={isMe ? 'white' : 'var(--primary)'} /> : <Phone size={16} color={isMe ? 'white' : 'var(--primary)'} />;
-                                                })()}
-                                            </div>
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>
-                                                    {(() => {
-                                                        const isVideo = msg.text.toLowerCase().includes('video');
-                                                        const type = isVideo ? 'Video' : 'Voice';
-                                                        if (msg.text.includes('SUCCESS')) return `${type} Call`;
-                                                        if (msg.text.includes('MISSED')) return 'Missed Call';
-                                                        if (msg.text.includes('REJECTED')) return isMe ? 'Canceled Call' : 'Refused Call';
-                                                        if (msg.text.includes('CANCELLED')) return isMe ? 'Canceled Call' : 'Missed Call';
-                                                        return 'Call';
-                                                    })()}
+                                    <div style={{
+                                        padding: (msg.fileUrl && !msg.text && !isAudio) ? '0' : '0.6rem 1rem',
+                                        borderRadius: isMissedCall ? '12px' : '18px',
+                                        borderBottomRightRadius: isMe ? '4px' : (isMissedCall ? '12px' : '18px'),
+                                        borderBottomLeftRadius: isMe ? (isMissedCall ? '12px' : '18px') : '4px',
+                                        background: (msg.fileUrl && !msg.text && !isAudio) ? 'transparent' : (isMe ? 'var(--primary)' : 'var(--bg-surface)'),
+                                        border: isMe ? 'none' : '1px solid var(--border-glass)',
+                                        color: isMe ? 'white' : 'var(--text-primary)',
+                                        fontSize: '0.92rem',
+                                        overflow: 'hidden',
+                                        position: 'relative',
+                                        boxShadow: isMe ? '0 1px 2px rgba(0,0,0,0.05)' : 'none'
+                                    }} className="message-bubble">
+                                        {replyMsg && (
+                                            <div
+                                                className="reply-context"
+                                                onClick={() => scrollToMessage(replyMsg.id)}
+                                                style={{ color: isMe ? 'rgba(255,255,255,0.9)' : 'var(--text-secondary)' }}
+                                            >
+                                                <div style={{ fontWeight: 600, fontSize: '0.7rem' }}>
+                                                    {replyMsg.sender === 'Me' ? 'You' : activeThread.withUser}
                                                 </div>
                                                 <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>
-                                                    {msg.text.includes('SUCCESS') ? (msg.text.split('•')[1]?.trim() || 'Call ended') : 'Tap to call back'}
+                                                    {replyMsg.text || '📎 Attachment'}
                                                 </div>
                                             </div>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            {msg.fileUrl && (
-                                                isAudio ? (
-                                                    <AudioBubble
-                                                        id={msg.id}
-                                                        url={msg.fileUrl}
-                                                        isMe={isMe}
-                                                        currentlyPlayingId={currentlyPlayingId}
-                                                        onTogglePlay={() => setCurrentlyPlayingId(currentlyPlayingId === msg.id ? null : msg.id)}
-                                                    />
-                                                ) : (
-                                                    <MessageAttachment fileUrl={msg.fileUrl} fileType={msg.fileType} onView={setViewingFile} />
-                                                )
-                                            )}
-                                            {msg.text && <span>{msg.text}</span>}
-                                        </>
-                                    )}
+                                        )}
+
+                                        {isCall ? (
+                                            <div
+                                                onClick={() => {
+                                                    const isVideo = msg.text.toLowerCase().includes('video');
+                                                    initiateCall(activeThread.withUserId, activeThread.withUser, activeThread.withUserAvatar, isVideo);
+                                                }}
+                                                style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}
+                                            >
+                                                <div style={{
+                                                    width: '32px', height: '32px', borderRadius: '50%',
+                                                    background: isMe ? 'rgba(255,255,255,0.2)' : (() => {
+                                                        if (msg.text.includes('SUCCESS')) return 'rgba(34, 197, 94, 0.1)';
+                                                        if (msg.text.includes('REJECTED')) return 'rgba(239, 68, 68, 0.1)';
+                                                        return 'rgba(16, 185, 129, 0.1)';
+                                                    })(),
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                                }}>
+                                                    {(() => {
+                                                        const isVideo = msg.text.toLowerCase().includes('video');
+                                                        if (msg.text.includes('SUCCESS')) {
+                                                            return isVideo ? <Video size={16} color={isMe ? 'white' : '#22c55e'} /> : <Phone size={16} color={isMe ? 'white' : '#22c55e'} />;
+                                                        }
+                                                        if (msg.text.includes('REJECTED')) {
+                                                            return <PhoneOff size={16} color={isMe ? 'white' : '#ef4444'} />;
+                                                        }
+                                                        return isVideo ? <Video size={16} color={isMe ? 'white' : 'var(--primary)'} /> : <Phone size={16} color={isMe ? 'white' : 'var(--primary)'} />;
+                                                    })()}
+                                                </div>
+                                                <div style={{ flex: 1 }}>
+                                                    <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>
+                                                        {(() => {
+                                                            const isVideo = msg.text.toLowerCase().includes('video');
+                                                            const type = isVideo ? 'Video' : 'Voice';
+                                                            if (msg.text.includes('SUCCESS')) return `${type} Call`;
+                                                            if (msg.text.includes('MISSED')) return 'Missed Call';
+                                                            if (msg.text.includes('REJECTED')) return isMe ? 'Canceled Call' : 'Refused Call';
+                                                            if (msg.text.includes('CANCELLED')) return isMe ? 'Canceled Call' : 'Missed Call';
+                                                            return 'Call';
+                                                        })()}
+                                                    </div>
+                                                    <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>
+                                                        {msg.text.includes('SUCCESS') ? (msg.text.split('•')[1]?.trim() || 'Call ended') : 'Tap to call back'}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                {msg.fileUrl && (
+                                                    isAudio ? (
+                                                        <AudioBubble
+                                                            id={msg.id}
+                                                            url={msg.fileUrl}
+                                                            isMe={isMe}
+                                                            currentlyPlayingId={currentlyPlayingId}
+                                                            onTogglePlay={() => setCurrentlyPlayingId(currentlyPlayingId === msg.id ? null : msg.id)}
+                                                        />
+                                                    ) : (
+                                                        <MessageAttachment fileUrl={msg.fileUrl} fileType={msg.fileType} onView={setViewingFile} />
+                                                    )
+                                                )}
+                                                {msg.text && <span>{msg.text}</span>}
+                                            </>
+                                        )}
+                                    </div>
+
                                 </div>
 
+                                {/* Reactions stack below the main row */}
+                                <ReactionsDisplay
+                                    reactions={msg.reactions}
+                                    onToggle={(emoji) => toggleReaction(msg.id, emoji)}
+                                    currentUserId={activeThread.senderId}
+                                />
                             </div>
 
-                            {/* Reactions stack below the main row */}
-                            <ReactionsDisplay
-                                reactions={msg.reactions}
-                                onToggle={(emoji) => toggleReaction(msg.id, emoji)}
-                                currentUserId={activeThread.senderId}
-                            />
-                        </div>
+                            {/* Date Separator (rendered "above" in column-reverse) */}
+                            {showDateSeparator && (
+                                <div className="date-separator">
+                                    <span>{dateLabel}</span>
+                                </div>
+                            )}
+                        </React.Fragment>
                     );
                 })}
             </div>
