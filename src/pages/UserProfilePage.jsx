@@ -397,7 +397,7 @@ export const UserProfilePage = () => {
             </div>
 
             {/* Profile Info */}
-            <div style={{ padding: '0 1.5rem 1.5rem 1.5rem', position: 'relative' }}>
+            <div style={{ padding: '0 1.5rem 0 1.5rem', position: 'relative' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div className="profile-avatar" style={{
                         borderRadius: '50%',
@@ -504,17 +504,17 @@ export const UserProfilePage = () => {
                         <h1 className="h1" style={{ fontSize: '1.5rem', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{profile.display_name}</h1>
                         {profile.id === '31080433-1e29-4eee-9b6f-673b1e159802' && <ShieldCheck size={18} color="var(--primary)" style={{ flexShrink: 0 }} />}
                     </div>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '1rem', margin: '0 0 1rem 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '1rem', margin: '0 0 .25rem 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         @{profile.username}
                     </p>
 
                     {profile.bio && (
-                        <p style={{ fontSize: '0.95rem', color: 'var(--text-primary)', marginBottom: '1rem', whiteSpace: 'pre-wrap' }}>
+                        <p style={{ fontSize: '0.95rem', color: 'var(--text-primary)', marginBottom: '.25rem', whiteSpace: 'pre-wrap' }}>
                             {profile.bio}
                         </p>
                     )}
 
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1rem' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '.25rem' }}>
                         {profile.location && (
                             <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                 <MapPin size={16} /> {profile.location}
