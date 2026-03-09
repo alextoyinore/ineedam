@@ -63,7 +63,7 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachmen
                         {reply.is_private && (
                             <span style={{
                                 display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.75rem',
-                                background: 'rgba(99, 102, 241, 0.1)', color: 'var(--primary)',
+                                background: 'rgba(16, 185, 129, 0.1)', color: 'var(--primary)',
                                 padding: '0.1rem 0.5rem', borderRadius: '12px', marginLeft: 'auto'
                             }}>
                                 <Lock size={12} />
@@ -359,7 +359,7 @@ export const EndorsementDetailPage = () => {
                                 padding: '0.4rem 0.8rem', borderRadius: '9999px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem',
                                 color: isPrivateReply ? 'var(--primary)' : 'var(--text-muted)',
                                 border: isPrivateReply ? '1px solid var(--primary)' : '1px solid var(--border-glass)',
-                                background: isPrivateReply ? 'rgba(99, 102, 241, 0.1)' : 'transparent'
+                                background: isPrivateReply ? 'rgba(16, 185, 129, 0.1)' : 'transparent'
                             }}
                         >
                             {isPrivateReply ? <Lock size={14} /> : <Globe size={14} />}

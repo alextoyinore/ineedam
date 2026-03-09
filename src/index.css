@@ -119,7 +119,7 @@ body {
   min-height: 100vh;
   /* Subtle Background gradient based on theme variables - DISABLED FOR PERFORMANCE TEST */
   /* background-image:
-    radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.05) 0%, transparent 40%),
+    radial-gradient(circle at 15% 50%, rgba(16, 185, 129, 0.05) 0%, transparent 40%),
     radial-gradient(circle at 85% 30%, rgba(236, 72, 153, 0.05) 0%, transparent 40%);
   background-attachment: fixed; */
   /* transition: background-color 0.3s ease, color 0.3s ease; */
@@ -501,7 +501,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4), 0 4px 6px -2px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4), 0 4px 6px -2px rgba(16, 185, 129, 0.1);
   z-index: 150;
   border: none;
   cursor: pointer;
@@ -599,7 +599,8 @@ button {
 
   .social-sidebar-left .nav-text,
   .social-sidebar-left .btn-primary span,
-  .full-text-logo {
+  .full-text-logo,
+  .hide-on-iconic {
     display: none !important;
   }
 

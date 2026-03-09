@@ -179,7 +179,7 @@ export const SettingsPage = () => {
                                 >
                                     <div style={{
                                         width: '38px', height: '38px', borderRadius: '10px',
-                                        background: 'linear-gradient(135deg, rgba(22, 163, 74, 0.05), rgba(16, 185, 129, 0.05))',
+                                        background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(16, 185, 129, 0.05))',
                                         display: 'flex', alignItems: 'center',
                                         justifyContent: 'center', color: 'var(--primary)', opacity: 0.8, flexShrink: 0
                                     }}>

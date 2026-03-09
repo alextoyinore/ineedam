@@ -165,7 +165,7 @@ export const MessagePinOverlay = ({ children }) => {
                     >
                         <div style={{
                             width: '64px', height: '64px', borderRadius: '50%',
-                            background: isSetup ? 'rgba(16, 185, 129, 0.1)' : 'rgba(99, 102, 241, 0.1)',
+                            background: isSetup ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.1)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem',
                             color: isSetup ? '#10b981' : 'var(--primary)'
                         }}>

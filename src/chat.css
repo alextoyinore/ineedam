@@ -1,6 +1,6 @@
 /* Chat Enhancements: Replies & Reactions */
 .reply-preview {
-    background: rgba(99, 102, 241, 0.05);
+    background: rgba(16, 185, 129, 0.05);
     border-left: 3px solid var(--primary);
     padding: 0.5rem 1rem;
     margin-bottom: 0.5rem;
@@ -13,7 +13,7 @@
 }
 
 .reply-context {
-    background: rgba(99, 102, 241, 0.1);
+    background: rgba(16, 185, 129, 0.1);
     border-radius: 8px;
     padding: 0.4rem 0.6rem;
     margin-bottom: 0.4rem;
@@ -92,7 +92,7 @@
 
 .message-action-btn:hover {
     color: var(--primary);
-    background: rgba(99, 102, 241, 0.1);
+    background: rgba(16, 185, 129, 0.12);
 }
 
 .reactions-display {
@@ -116,7 +116,7 @@
 }
 
 .reaction-badge.is-mine {
-    background: rgba(99, 102, 241, 0.1);
+    background: rgba(16, 185, 129, 0.12);
     border-color: var(--primary);
 }
 
@@ -174,7 +174,7 @@
 
 .emoji-btn:hover {
     transform: scale(1.2);
-    background: rgba(99, 102, 241, 0.1);
+    background: rgba(16, 185, 129, 0.1);
 }
 
 @keyframes fadeInScale {
@@ -207,16 +207,16 @@
 
 @keyframes highlightPulse {
     0% {
-        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
-        background: rgba(99, 102, 241, 0.2);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+        background: rgba(16, 185, 129, 0.2);
     }
 
     70% {
-        box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
+        box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
     }
 
     100% {
-        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
         background: transparent;
     }
 }

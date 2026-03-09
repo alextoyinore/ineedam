@@ -30,7 +30,7 @@ const FAQItem = ({ question, answer, icon: Icon }) => {
             >
                 <div style={{
                     width: '32px', height: '32px', borderRadius: '8px',
-                    background: 'rgba(99, 102, 241, 0.1)',
+                    background: 'rgba(16, 185, 129, 0.1)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     color: 'var(--primary)', flexShrink: 0
                 }}>
@@ -152,7 +152,7 @@ export const FAQPage = () => {
                     marginTop: '4rem',
                     padding: '2rem',
                     borderRadius: '24px',
-                    background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(236, 72, 153, 0.05) 100%)',
+                    background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(236, 72, 153, 0.05) 100%)',
                     border: '1px solid var(--border-glass)',
                     textAlign: 'center'
                 }}>

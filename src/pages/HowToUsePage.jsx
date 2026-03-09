@@ -7,7 +7,7 @@ const UseCaseSection = ({ title, items, icon: Icon, color = 'var(--primary)' }) 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
             <div style={{
                 width: '40px', height: '40px', borderRadius: '12px',
-                background: `rgba(${color === 'var(--primary)' ? '99, 102, 241' : '236, 72, 153'}, 0.1)`,
+                background: `rgba(${color === 'var(--primary)' ? '16, 185, 129' : '236, 72, 153'}, 0.1)`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 color: color
             }}>

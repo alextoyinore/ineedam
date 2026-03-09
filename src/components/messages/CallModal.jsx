@@ -226,9 +226,9 @@ export const CallModal = ({
                                         animate={isConnected || callStatus === 'calling' || callStatus === 'incoming' ? {
                                             scale: [1, 1.05, 1],
                                             boxShadow: [
-                                                '0 0 20px rgba(99, 102, 241, 0.2)',
-                                                '0 0 60px rgba(99, 102, 241, 0.4)',
-                                                '0 0 20px rgba(99, 102, 241, 0.2)'
+                                                '0 0 20px rgba(16, 185, 129, 0.2)',
+                                                '0 0 60px rgba(16, 185, 129, 0.4)',
+                                                '0 0 20px rgba(16, 185, 129, 0.2)'
                                             ]
                                         } : {}}
                                         transition={{ repeat: Infinity, duration: 2 }}
@@ -264,7 +264,7 @@ export const CallModal = ({
                                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                         />
                                     ) : (
-                                        <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', background: 'rgba(99, 102, 241, 0.1)' }}>
+                                        <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', background: 'rgba(16, 185, 129, 0.1)' }}>
                                             <div style={{
                                                 width: '120px', height: '120px', borderRadius: '50%',
                                                 background: callerAvatar ? `url(${callerAvatar}) center/cover` : 'rgba(255,255,255,0.1)',
@@ -338,9 +338,9 @@ export const CallModal = ({
                                         animate={{
                                             scale: [1, 1.05, 1],
                                             boxShadow: [
-                                                '0 0 20px rgba(99, 102, 241, 0.2)',
-                                                '0 0 60px rgba(99, 102, 241, 0.4)',
-                                                '0 0 20px rgba(99, 102, 241, 0.2)'
+                                                '0 0 20px rgba(16, 185, 129, 0.2)',
+                                                '0 0 60px rgba(16, 185, 129, 0.4)',
+                                                '0 0 20px rgba(16, 185, 129, 0.2)'
                                             ]
                                         }}
                                         transition={{ repeat: Infinity, duration: 2 }}

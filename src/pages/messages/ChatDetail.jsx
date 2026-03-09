@@ -542,7 +542,7 @@ export const ChatDetail = () => {
                                                 background: isMe ? 'rgba(255,255,255,0.2)' : (() => {
                                                     if (msg.text.includes('SUCCESS')) return 'rgba(34, 197, 94, 0.1)';
                                                     if (msg.text.includes('REJECTED')) return 'rgba(239, 68, 68, 0.1)';
-                                                    return 'rgba(99, 102, 241, 0.1)';
+                                                    return 'rgba(16, 185, 129, 0.1)';
                                                 })(),
                                                 display: 'flex', alignItems: 'center', justifyContent: 'center'
                                             }}>

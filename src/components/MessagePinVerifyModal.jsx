@@ -101,7 +101,7 @@ export const MessagePinVerifyModal = ({ isOpen, onClose, onSuccess }) => {
 
                     <div style={{
                         width: '64px', height: '64px', borderRadius: '50%',
-                        background: 'rgba(99, 102, 241, 0.1)',
+                        background: 'rgba(16, 185, 129, 0.1)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem',
                         color: 'var(--primary)'
                     }}>

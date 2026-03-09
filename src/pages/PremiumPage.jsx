@@ -59,7 +59,7 @@ export const PremiumPage = () => {
                         width: '80px',
                         height: '80px',
                         borderRadius: '24px',
-                        background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(236, 72, 153, 0.15))',
+                        background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(236, 72, 153, 0.15))',
                         marginBottom: '1.5rem',
                         position: 'relative'
                     }}>
@@ -109,7 +109,7 @@ export const PremiumPage = () => {
                         >
                             <div style={{
                                 width: 'clamp(40px, 10vw, 48px)', height: 'clamp(40px, 10vw, 48px)', borderRadius: '14px',
-                                background: 'rgba(99, 102, 241, 0.08)',
+                                background: 'rgba(16, 185, 129, 0.08)',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 flexShrink: 0
                             }}>

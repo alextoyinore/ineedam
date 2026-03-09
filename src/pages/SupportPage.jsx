@@ -124,7 +124,7 @@ export const SupportPage = () => {
                                     padding: '0.5rem 1rem', borderRadius: '9999px', cursor: 'pointer',
                                     fontSize: '0.85rem', fontWeight: 600, transition: 'all 0.2s',
                                     border: form.category === value ? '1px solid var(--primary)' : '1px solid var(--border-glass)',
-                                    background: form.category === value ? 'rgba(99, 102, 241, 0.12)' : 'var(--bg-surface)',
+                                    background: form.category === value ? 'rgba(16, 185, 129, 0.12)' : 'var(--bg-surface)',
                                     color: form.category === value ? 'var(--primary)' : 'var(--text-muted)',
                                 }}
                             >

@@ -312,7 +312,7 @@ export const PostNeedModal = ({ isOpen, onClose }) => {
                                                         }}
                                                         style={{
                                                             padding: '0.7rem 1rem', cursor: 'pointer', fontSize: '0.9rem',
-                                                            background: formData.category === cat ? 'rgba(99, 102, 241, 0.1)' : 'transparent',
+                                                            background: formData.category === cat ? 'rgba(16, 185, 129, 0.12)' : 'transparent',
                                                             borderLeft: formData.category === cat ? '3px solid var(--primary)' : '3px solid transparent'
                                                         }}
                                                         className="nav-link-hover"

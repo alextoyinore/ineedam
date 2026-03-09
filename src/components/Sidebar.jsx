@@ -88,10 +88,12 @@ export const Sidebar = ({ onPostClick, onInviteClick }) => {
                             backdropFilter: 'blur(10px)',
                             boxShadow: 'none' // Ensure no shadow
                         }}>
-                            <div style={{ padding: '0.5rem 0.5rem', marginBottom: '0.25rem' }}>
-                                <ThemeToggle />
+                            <div className="hide-on-iconic" style={{ padding: '0.5rem 0.5rem', marginBottom: '0.25rem', display: 'flex', justifyContent: 'center' }}>
+                                <div className="theme-toggle-container" style={{ width: '100%', overflow: 'hidden' }}>
+                                    <ThemeToggle />
+                                </div>
                             </div>
-                            <div style={{ height: '1px', background: 'var(--border-glass)', margin: '0 0 0.4rem 0' }} />
+                            <div className="hide-on-iconic" style={{ height: '1px', background: 'var(--border-glass)', margin: '0 0 0.4rem 0' }} />
                             <Link
                                 to="/settings"
                                 onClick={() => setShowLogout(false)}
@@ -103,8 +105,8 @@ export const Sidebar = ({ onPostClick, onInviteClick }) => {
                                 }}
                                 className="glass-panel-hover"
                             >
-                                <Settings size={18} />
-                                Settings
+                                <Settings size={18} style={{ flexShrink: 0 }} />
+                                <span className="nav-text">Settings</span>
                             </Link>
                             <div style={{ height: '1px', background: 'var(--border-glass)', margin: '0.4rem 0' }} />
                             <button
@@ -116,8 +118,8 @@ export const Sidebar = ({ onPostClick, onInviteClick }) => {
                                 }}
                                 className="glass-panel-hover"
                             >
-                                <LogOut size={18} />
-                                Sign out
+                                <LogOut size={18} style={{ flexShrink: 0 }} />
+                                <span className="nav-text">Sign out</span>
                             </button>
                         </div>
                     )}
