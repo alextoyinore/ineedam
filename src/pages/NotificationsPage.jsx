@@ -15,7 +15,7 @@ export const NotificationsPage = () => {
 
     const getIcon = (type) => {
         switch (type) {
-            case 'follow': return <UserPlus size={18} color="#3b82f6" />;
+            case 'follow': return <UserPlus size={18} color="var(--primary)" />;
             case 'reply':
             case 'reply_message': return <MessageCircle size={18} color="#10b981" />;
             case 'like': return <Heart size={18} color="#ef4444" />;
@@ -79,7 +79,7 @@ export const NotificationsPage = () => {
                                 padding: '1.25rem 1rem',
                                 borderBottom: '1px solid var(--border-glass)',
                                 display: 'flex', gap: '0.75rem',
-                                background: notif.read ? 'transparent' : 'rgba(59, 130, 246, 0.05)',
+                                background: notif.read ? 'transparent' : 'color-mix(in srgb, var(--primary), transparent 95%)',
                                 cursor: 'pointer', position: 'relative',
                                 width: '100%'
                             }}
@@ -87,7 +87,7 @@ export const NotificationsPage = () => {
                             {!notif.read && (
                                 <div style={{
                                     position: 'absolute', left: '0.4rem', top: '50%', transform: 'translateY(-50%)',
-                                    width: '6px', height: '6px', borderRadius: '50%', background: '#3b82f6'
+                                    width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary)'
                                 }} />
                             )}
                             <div style={{
