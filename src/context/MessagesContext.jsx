@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { useAuth } from './AuthContext';
 import { supabase } from '../lib/supabase';
-import { fetchUserThreads, getOrCreateThread, createMessage, markThreadAsReadInDb, toggleMessageBookmark, toggleMessageReaction } from '../lib/messageService';
+import { fetchUserThreads, getOrCreateThread, createMessage, markThreadAsReadInDb, toggleMessageBookmark, toggleMessageReaction, editChatMessage, deleteChatMessage } from '../lib/messageService';
 import { soundService } from '../lib/soundService';
 import { createNotification } from '../lib/notificationService';
 import { uploadFileToCloudinary } from '../lib/needsService';
@@ -642,6 +642,54 @@ export const MessagesProvider = ({ children }) => {
         }
     };
 
+    const editMessage = async (messageId, newText) => {
+        if (!user) return;
+
+        // Optimistic UI update
+        setThreads(prev => prev.map(thread => ({
+            ...thread,
+            messages: thread.messages.map(m => m.id === messageId ? { ...m, text: newText } : m),
+            lastMessage: thread.messages[thread.messages.length - 1]?.id === messageId
+                ? newText
+                : thread.lastMessage
+        })));
+
+        try {
+            await editChatMessage(messageId, user.id, newText);
+        } catch (err) {
+            console.error("Failed to edit message", err);
+            loadThreads(true); // Revert on failure
+            throw err;
+        }
+    };
+
+    const deleteMessage = async (messageId) => {
+        if (!user) return;
+
+        // Optimistic UI update
+        setThreads(prev => prev.map(thread => {
+            const hasMessage = thread.messages.some(m => m.id === messageId);
+            if (!hasMessage) return thread;
+
+            const newMessages = thread.messages.filter(m => m.id !== messageId);
+            return {
+                ...thread,
+                messages: newMessages,
+                lastMessage: newMessages.length > 0
+                    ? (newMessages[newMessages.length - 1].text || (newMessages[newMessages.length - 1].fileUrl ? '📎 Attachment' : ''))
+                    : ''
+            };
+        }));
+
+        try {
+            await deleteChatMessage(messageId, user.id);
+        } catch (err) {
+            console.error("Failed to delete message", err);
+            loadThreads(true); // Revert on failure
+            throw err;
+        }
+    };
+
     const markThreadAsRead = async (threadId) => {
         if (!user) return;
 
@@ -680,7 +728,9 @@ export const MessagesProvider = ({ children }) => {
             replyingTo,
             setReplyingTo,
             toggleReaction,
-            toggleBookmark
+            toggleBookmark,
+            editMessage,
+            deleteMessage
         }}>
             {children}
         </MessagesContext.Provider>

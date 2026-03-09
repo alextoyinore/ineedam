@@ -216,3 +216,29 @@ export const toggleMessageBookmark = async (messageId, userId) => {
         return { action: 'added' };
     }
 };
+
+/**
+ * Edit a specific message
+ */
+export const editChatMessage = async (messageId, userId, newText) => {
+    const { error } = await supabase
+        .from('messages')
+        .update({ text: newText })
+        .eq('id', messageId)
+        .eq('sender_id', userId);
+    if (error) throw error;
+    return true;
+};
+
+/**
+ * Delete a specific message
+ */
+export const deleteChatMessage = async (messageId, userId) => {
+    const { error } = await supabase
+        .from('messages')
+        .delete()
+        .eq('id', messageId)
+        .eq('sender_id', userId);
+    if (error) throw error;
+    return true;
+};

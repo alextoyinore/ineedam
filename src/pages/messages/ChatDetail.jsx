@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Phone, Video, MoreVertical, Send, Paperclip, X, FileText, Image as ImageIcon, Mic, PhoneOff, Reply, Smile, MessageSquare, Bookmark, Check } from 'lucide-react';
+import { ArrowLeft, Phone, Video, MoreVertical, Send, Paperclip, X, FileText, Image as ImageIcon, Mic, PhoneOff, Reply, Smile, MessageSquare, Bookmark, Check, Edit2, Trash2 } from 'lucide-react';
 import { useMessages } from '../../context/MessagesContext';
 import { VoiceRecorder } from '../../components/messages/VoiceRecorder';
 import { AudioBubble } from '../../components/messages/AudioBubble';
@@ -48,8 +48,8 @@ const MessageStatus = ({ isRead }) => (
         {isRead ? (
             // Double tick — blue when read
             <span style={{ display: 'inline-flex', position: 'relative', width: '18px', height: '12px' }}>
-                <Check size={11} strokeWidth={3} style={{ position: 'absolute', left: 0, color: '#4fc3f7' }} />
-                <Check size={11} strokeWidth={3} style={{ position: 'absolute', left: '5px', color: '#4fc3f7' }} />
+                <Check size={11} strokeWidth={3} style={{ position: 'absolute', left: 0, color: 'var(--primary)' }} />
+                <Check size={11} strokeWidth={3} style={{ position: 'absolute', left: '5px', color: 'var(--primary)' }} />
             </span>
         ) : (
             // Single tick — grey when just sent
@@ -208,7 +208,7 @@ export const ChatDetail = () => {
     const navigate = useNavigate();
     const {
         threads, sendMessage, markThreadAsRead, loadingThreads, setActiveThreadId, initiateCall,
-        replyingTo, setReplyingTo, toggleReaction, toggleBookmark
+        replyingTo, setReplyingTo, toggleReaction, toggleBookmark, editMessage, deleteMessage
     } = useMessages();
     const [messageText, setMessageText] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
@@ -218,10 +218,13 @@ export const ChatDetail = () => {
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const [currentlyPlayingId, setCurrentlyPlayingId] = useState(null);
     const [activeEmojiMessageId, setActiveEmojiMessageId] = useState(null);
+    const [editingMessageId, setEditingMessageId] = useState(null);
     const fileInputRef = useRef(null);
     const messagesEndRef = useRef(null);
     const messageContainerRef = useRef(null);
     const emojiPickerRef = useRef(null);
+
+    const activeThread = threads.find(t => String(t.id) === String(threadId));
 
     // Global click listener to close emoji picker
     useEffect(() => {
@@ -246,8 +249,6 @@ export const ChatDetail = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    const activeThread = threads.find(t => String(t.id) === String(threadId));
-
     useEffect(() => {
         if (threadId) setActiveThreadId(threadId);
         return () => setActiveThreadId(null);
@@ -256,6 +257,18 @@ export const ChatDetail = () => {
     useEffect(() => {
         if (activeThread?.unread) markThreadAsRead(activeThread.id);
     }, [activeThread, markThreadAsRead]);
+
+    useEffect(() => {
+        if (activeThread?.messages?.length > 0) {
+            // Wait for DOM updates
+            setTimeout(() => {
+                window.scrollTo({
+                    top: document.documentElement.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }, 100);
+        }
+    }, [activeThread?.messages?.length]);
 
     if (loadingThreads && !activeThread) {
         return (
@@ -287,6 +300,17 @@ export const ChatDetail = () => {
     const handleSendMessage = async (e) => {
         e.preventDefault();
         if (!messageText.trim() && !selectedFile) return;
+
+        if (editingMessageId) {
+            try {
+                await editMessage(editingMessageId, messageText.trim());
+                setEditingMessageId(null);
+                setMessageText('');
+            } catch (err) {
+                console.error("Failed to edit", err);
+            }
+            return;
+        }
 
         setIsUploading(true);
         const fileToSend = selectedFile;
@@ -323,18 +347,6 @@ export const ChatDetail = () => {
         setIsUploading(false);
         setIsRecording(false);
     };
-
-    useEffect(() => {
-        if (activeThread?.messages?.length > 0) {
-            // Wait for DOM updates
-            setTimeout(() => {
-                window.scrollTo({
-                    top: document.documentElement.scrollHeight,
-                    behavior: 'smooth'
-                });
-            }, 100);
-        }
-    }, [activeThread?.messages?.length]);
 
     const canSend = (messageText.trim() || selectedFile) && !isUploading;
 
@@ -428,6 +440,7 @@ export const ChatDetail = () => {
                     const isCall = msg.text?.startsWith('[CALL_');
                     const isMissedCall = msg.text?.includes('MISSED') || msg.text?.includes('REJECTED') || msg.text?.includes('CANCELLED');
                     const replyMsg = msg.replyTo ? activeThread.messages.find(m => m.id === msg.replyTo) : null;
+                    const isRead = !!(activeThread.recipientLastReadAt && new Date(activeThread.recipientLastReadAt) >= new Date(msg.timestamp));
 
                     return (
                         <div
@@ -478,6 +491,32 @@ export const ChatDetail = () => {
                                                 >
                                                     <Smile size={14} />
                                                 </button>
+                                                {isMe && !isRead && !isCall && (
+                                                    <>
+                                                        <button
+                                                            className="message-action-btn"
+                                                            onClick={() => {
+                                                                setEditingMessageId(msg.id);
+                                                                setMessageText(msg.text);
+                                                            }}
+                                                            title="Edit"
+                                                        >
+                                                            <Edit2 size={14} />
+                                                        </button>
+                                                        <button
+                                                            className="message-action-btn"
+                                                            onClick={async () => {
+                                                                if (window.confirm("Delete this unread message?")) {
+                                                                    await deleteMessage(msg.id);
+                                                                }
+                                                            }}
+                                                            title="Delete"
+                                                            style={{ color: '#ef4444' }}
+                                                        >
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    </>
+                                                )}
                                             </div>
                                             {activeEmojiMessageId === msg.id && (
                                                 <EmojiPicker
@@ -494,9 +533,7 @@ export const ChatDetail = () => {
                                             {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         </span>
                                         {isMe && !isCall && (
-                                            <MessageStatus
-                                                isRead={!!(activeThread.recipientLastReadAt && new Date(activeThread.recipientLastReadAt) >= new Date(msg.timestamp))}
-                                            />
+                                            <MessageStatus isRead={isRead} />
                                         )}
                                     </div>
                                 </div>
@@ -630,6 +667,22 @@ export const ChatDetail = () => {
                             </div>
                         </div>
                         <button onClick={() => setReplyingTo(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                            <X size={16} />
+                        </button>
+                    </div>
+                )}
+
+                {editingMessageId && (
+                    <div className="reply-preview" style={{ borderLeftColor: '#f59e0b' }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontWeight: 600, color: '#f59e0b', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <Edit2 size={12} /> Editing message
+                            </div>
+                            <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {activeThread.messages.find(m => m.id === editingMessageId)?.text}
+                            </div>
+                        </div>
+                        <button onClick={() => { setEditingMessageId(null); setMessageText(''); }} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
                             <X size={16} />
                         </button>
                     </div>
