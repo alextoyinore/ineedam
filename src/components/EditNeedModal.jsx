@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, MapPin, Clock, Search, Loader } from 'lucide-react';
+import { X, Send, MapPin, Clock, Search, Loader, UploadCloud } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CATEGORIES } from '../data/categories';
+import { uploadImageToCloudinary } from '../lib/needsService';
 
 export const EditNeedModal = ({ isOpen, onClose, need, onUpdate }) => {
     const [formData, setFormData] = useState({
@@ -18,8 +19,12 @@ export const EditNeedModal = ({ isOpen, onClose, need, onUpdate }) => {
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 435);
     const [categorySearch, setCategorySearch] = useState('');
     const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+    const [imageFile, setImageFile] = useState(null);
+    const [imagePreview, setImagePreview] = useState('');
+    const [uploadingImage, setUploadingImage] = useState(false);
 
     const categoryRef = useRef(null);
+    const fileInputRef = useRef(null);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth <= 435);
@@ -50,13 +55,40 @@ export const EditNeedModal = ({ isOpen, onClose, need, onUpdate }) => {
                 location: need.location === 'Remote' ? '' : (need.location || ''),
                 flexibility: need.flexibility || 'Flexible start'
             });
+            setImagePreview(need.imageUrl || '');
+            setImageFile(null);
         }
     }, [need, isOpen]);
+
+    const handleImageChange = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Check file size (10MB limit)
+        if (file.size > 10 * 1024 * 1024) {
+            alert('File size must be less than 10MB');
+            e.target.value = '';
+            return;
+        }
+
+        setImageFile(file);
+        setImagePreview(URL.createObjectURL(file));
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         try {
+            let imageUrl = need.imageUrl || '';
+            if (imageFile) {
+                setUploadingImage(true);
+                imageUrl = await uploadImageToCloudinary(imageFile);
+                setUploadingImage(false);
+            } else if (!imagePreview) {
+                // If image was cleared
+                imageUrl = null;
+            }
+
             await onUpdate(need.id, {
                 title: formData.title,
                 category: formData.category,
@@ -65,7 +97,8 @@ export const EditNeedModal = ({ isOpen, onClose, need, onUpdate }) => {
                 budget_min: parseFloat(formData.budgetMin) || 0,
                 budget_max: parseFloat(formData.budgetMax) || null,
                 location: formData.location || null,
-                flexibility: formData.flexibility
+                flexibility: formData.flexibility,
+                image_url: imageUrl
             });
             onClose();
         } catch (err) {
@@ -208,12 +241,40 @@ export const EditNeedModal = ({ isOpen, onClose, need, onUpdate }) => {
                                             <option value="fixed">Fixed</option>
                                             <option value="range">Range</option>
                                             <option value="hourly">Hourly</option>
+                                            <option value="trade">Trade</option>
                                         </select>
                                     </div>
-                                    <div>
-                                        <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Amount ({formData.budgetMode === 'range' ? 'Min' : 'Price'})</label>
-                                        <input type="number" name="budgetMin" value={formData.budgetMin} onChange={handleChange} style={inputStyles} />
-                                    </div>
+                                    {formData.budgetMode !== 'trade' && (
+                                        <div>
+                                            <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Amount ({formData.budgetMode === 'range' ? 'Min' : 'Price'})</label>
+                                            <input type="number" name="budgetMin" value={formData.budgetMin} onChange={handleChange} style={inputStyles} />
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Photo Upload */}
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Photo (Optional)</label>
+                                    <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} />
+                                    {imagePreview ? (
+                                        <div style={{ position: 'relative', borderRadius: '10px', overflow: 'hidden', border: '1px solid var(--border-glass)' }}>
+                                            <img src={imagePreview} alt="preview" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', display: 'block' }} />
+                                            <button type="button" onClick={() => { setImageFile(null); setImagePreview(''); }} style={{
+                                                position: 'absolute', top: '0.5rem', right: '0.5rem',
+                                                background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%',
+                                                color: 'white', width: '28px', height: '28px',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer'
+                                            }}><X size={14} /></button>
+                                        </div>
+                                    ) : (
+                                        <button type="button" onClick={() => fileInputRef.current?.click()} style={{
+                                            ...inputStyles, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            gap: '0.5rem', cursor: 'pointer', padding: '1.25rem',
+                                            color: 'var(--text-muted)', width: '100%', border: '1px dashed var(--border-glass)'
+                                        }}>
+                                            <UploadCloud size={18} /> Upload or Change Image
+                                        </button>
+                                    )}
                                 </div>
                             </div>
 

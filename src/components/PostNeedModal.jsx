@@ -353,21 +353,24 @@ export const PostNeedModal = ({ isOpen, onClose }) => {
                                             <option value="fixed">Fixed</option>
                                             <option value="range">Range</option>
                                             <option value="hourly">Hourly</option>
+                                            <option value="trade">Trade</option>
                                         </select>
-                                        <div style={{ position: 'relative', flex: 1 }}>
-                                            <span style={{ position: 'absolute', left: '0.6rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: 'bold' }}>
-                                                {formData.currency}
-                                            </span>
-                                            <input
-                                                required
-                                                type="number"
-                                                name="budgetMin"
-                                                value={formData.budgetMin}
-                                                onChange={handleChange}
-                                                placeholder={formData.budgetMode === 'range' ? 'Min' : 'Amount'}
-                                                style={{ ...inputStyles, paddingLeft: '1.75rem' }}
-                                            />
-                                        </div>
+                                        {formData.budgetMode !== 'trade' && (
+                                            <div style={{ position: 'relative', flex: 1 }}>
+                                                <span style={{ position: 'absolute', left: '0.6rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                                                    {formData.currency}
+                                                </span>
+                                                <input
+                                                    required
+                                                    type="number"
+                                                    name="budgetMin"
+                                                    value={formData.budgetMin}
+                                                    onChange={handleChange}
+                                                    placeholder={formData.budgetMode === 'range' ? 'Min' : 'Amount'}
+                                                    style={{ ...inputStyles, paddingLeft: '1.75rem' }}
+                                                />
+                                            </div>
+                                        )}
                                         {formData.budgetMode === 'range' && (
                                             <>
                                                 <span style={{ display: 'flex', alignItems: 'center', color: 'var(--text-muted)' }}>-</span>

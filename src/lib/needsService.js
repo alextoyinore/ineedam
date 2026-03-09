@@ -141,6 +141,8 @@ export const shapeNeed = (row) => {
         budget = `${row.currency}${row.budget_min?.toLocaleString()} – ${row.currency}${row.budget_max?.toLocaleString()}`;
     } else if (row.budget_mode === 'hourly') {
         budget = `${row.currency}${row.budget_min}/hr`;
+    } else if (row.budget_mode === 'trade') {
+        budget = 'Trade';
     } else {
         budget = `${row.currency}${row.budget_min?.toLocaleString()}`;
     }
