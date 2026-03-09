@@ -68,7 +68,7 @@ export const EndorseModal = ({ isOpen, onClose, need, onSuccess }) => {
         <AnimatePresence>
             {isOpen && (
                 <div style={{
-                    position: 'fixed', inset: 0, zIndex: 1100,
+                    position: 'fixed', inset: 0, zIndex: 2000,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     padding: '1rem', background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)'
                 }} onClick={handleClose}>

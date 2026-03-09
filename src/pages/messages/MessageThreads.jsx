@@ -62,14 +62,14 @@ export const MessageThreads = () => {
     };
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', background: 'var(--bg-base)', height: '100%', width: '100%' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', background: 'var(--bg-base)', width: '100%' }}>
             <header style={{
                 padding: '1.5rem',
                 borderBottom: '1px solid var(--border-glass)',
                 position: 'sticky',
-                top: 0,
+                top: 'var(--sticky-offset, 0px)',
                 background: 'var(--bg-base)',
-                zIndex: 10
+                zIndex: 100
             }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                     <h2 className="h2" style={{ fontSize: '1.5rem', margin: 0 }}>Messages</h2>
@@ -131,7 +131,7 @@ export const MessageThreads = () => {
                 )}
             </header>
 
-            <div style={{ flex: 1, overflowY: 'auto' }}>
+            <div style={{ flex: 1 }}>
                 {isSearching ? (
                     <div style={{ padding: '1rem' }}>
                         {isSearchingLoading ? (

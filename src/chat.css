@@ -30,6 +30,11 @@
     position: relative;
     display: flex;
     width: 100%;
+    z-index: 1;
+}
+
+.message-bubble-row:has(.is-active) {
+    z-index: 10002 !important;
 }
 
 .message-bubble-row.is-me {

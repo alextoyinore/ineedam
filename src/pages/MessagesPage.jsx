@@ -21,9 +21,8 @@ export const MessagesPage = () => {
     return (
         <div style={{
             display: 'flex',
-            height: isMobile ? (isDetail ? '100dvh' : 'calc(100dvh - var(--mobile-nav-height))') : 'calc(100vh - 2px)',
+            minHeight: isMobile ? (isDetail ? '100dvh' : 'calc(100dvh - var(--mobile-nav-height))') : 'calc(100vh - 2px)',
             width: '100%',
-            overflow: 'hidden',
             position: 'relative'
         }}>
             <MessagePinOverlay>

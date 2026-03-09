@@ -104,7 +104,7 @@ export const EditProfileModal = ({ isOpen, onClose, currentProfile, onProfileUpd
             <motion.div
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 style={{
-                    position: 'fixed', inset: 0, zIndex: 1000,
+                    position: 'fixed', inset: 0, zIndex: 2000,
                     background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem'
                 }}

@@ -99,7 +99,7 @@ export const EditNeedModal = ({ isOpen, onClose, need, onUpdate }) => {
                 <div style={{
                     position: 'fixed', top: 0, left: 0, right: 0,
                     bottom: isMobile ? 'var(--mobile-nav-height)' : 0,
-                    zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center',
                     padding: isMobile ? 0 : '1rem',
                     background: isMobile ? 'transparent' : 'rgba(0, 0, 0, 0.5)',
                     backdropFilter: isMobile ? 'none' : 'blur(4px)'

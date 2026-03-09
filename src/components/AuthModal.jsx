@@ -114,7 +114,7 @@ export const AuthModal = ({ isOpen, onClose, defaultTab = 'signin' }) => {
         <div
             onClick={onClose}
             style={{
-                position: 'fixed', inset: 0, zIndex: 1000,
+                position: 'fixed', inset: 0, zIndex: 2000,
                 background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 padding: '1rem',

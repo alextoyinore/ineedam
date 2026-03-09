@@ -168,7 +168,7 @@ export const PostNeedModal = ({ isOpen, onClose }) => {
                 left: 0,
                 right: 0,
                 bottom: isMobile ? 'var(--mobile-nav-height)' : 0,
-                zIndex: 1200,
+                zIndex: 2000,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',

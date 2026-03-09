@@ -36,7 +36,7 @@ export const ReportModal = ({ isOpen, onClose, reportedProfile, onSuccess }) => 
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 style={{
-                    position: 'fixed', inset: 0, zIndex: 1200,
+                    position: 'fixed', inset: 0, zIndex: 2000,
                     background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem'
                 }}

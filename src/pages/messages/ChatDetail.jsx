@@ -324,6 +324,18 @@ export const ChatDetail = () => {
         setIsRecording(false);
     };
 
+    useEffect(() => {
+        if (activeThread?.messages?.length > 0) {
+            // Wait for DOM updates
+            setTimeout(() => {
+                window.scrollTo({
+                    top: document.documentElement.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }, 100);
+        }
+    }, [activeThread?.messages?.length]);
+
     const canSend = (messageText.trim() || selectedFile) && !isUploading;
 
     return (
@@ -331,14 +343,31 @@ export const ChatDetail = () => {
             initial={{ opacity: 0, x: isMobile ? 20 : 0 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: isMobile ? 20 : 0 }}
-            style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--bg-base)', height: '100%', width: '100%', maxWidth: '100vw', overflow: 'hidden' }}
+            style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'stretch',
+                background: 'var(--bg-base)',
+                width: '100%',
+                maxWidth: '100%',
+                position: 'relative'
+            }}
         >
             {/* Header */}
             <header style={{
-                padding: isMobile ? '0.75rem 1rem' : '1rem 1.5rem', borderBottom: '1px solid var(--border-glass)',
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                background: 'var(--bg-surface)', zIndex: 30, flexShrink: 0,
-                position: 'sticky', top: 0
+                padding: isMobile ? '0.75rem 1rem' : '1rem 1.5rem',
+                borderBottom: '1px solid var(--border-glass)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                background: 'var(--bg-surface)',
+                zIndex: 40,
+                flexShrink: 0,
+                position: 'sticky',
+                top: 'var(--sticky-offset, 0px)',
+                width: '100%',
+                boxSizing: 'border-box'
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <button
@@ -386,10 +415,12 @@ export const ChatDetail = () => {
             <div
                 className={`messages-scroll-area ${activeEmojiMessageId ? 'has-active-picker' : ''}`}
                 style={{
-                    flex: 1, overflowY: 'auto', padding: isMobile ? '1rem' : '1.5rem',
-                    display: 'flex', flexDirection: 'column-reverse', gap: '0.4rem',
-                    WebkitOverflowScrolling: 'touch',
-                    backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Cg stroke='%236366f1' stroke-opacity='0.02' fill='none' stroke-width='1.5'%3E%3Cpath d='M40 40h60c8 0 15 7 15 15v40c0 8-7 15-15 15h-20l-15 15v-15h-25c-8 0-15-7-15-15v-40c0-8 7-15 15-15z'/%3E%3Cpath d='M160 160l30-30 15 15-30 30z M195 125l15-15 15 15-15 15z M155 165l5 25-25-5z'/%3E%3Cpath d='M160 40h30c4 0 8 4 8 8v15c0 4-4 8-8 8h-5l-10 10v-10h-15c-4 0-8-4-8-8v-15c0-4 4-8 8-8z'/%3E%3C/g%3E%3C/svg%3E\")"
+                    flex: 1,
+                    padding: isMobile ? '1rem' : '1.5rem',
+                    display: 'flex',
+                    flexDirection: 'column-reverse',
+                    gap: '0.4rem',
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Cg stroke='%236366f1' stroke-opacity='0.02' fill='none' stroke-width='1.5'%3E%3Cpath d='M40 40h60c8 0 15 7 15 15v40c0 8-7 15-15 15h-20l-15 15v-15h-25c-8 0-15-7-15-15v-40c0-8 7-15 15-15z'/%3E%3Cpath d='M160 160l30-30 15 15-30 30z M195 125l15-15 15 15-15 15z M155 165l5 25-25-5z'/%3E%3Cpath d='M160 40h30c4 0 8 4 8 8v15c0 4-4 8-8 8h-5l-10 10v-10h-15c-4 0-8-4-8-8v-15c0-4 4-8 8-8z'/%3E%3C/g%3E%3C/svg%3E")`
                 }}>
                 {[...activeThread.messages].reverse().map(msg => {
                     const isMe = msg.sender === 'Me';
@@ -511,7 +542,7 @@ export const ChatDetail = () => {
                                                 background: isMe ? 'rgba(255,255,255,0.2)' : (() => {
                                                     if (msg.text.includes('SUCCESS')) return 'rgba(34, 197, 94, 0.1)';
                                                     if (msg.text.includes('REJECTED')) return 'rgba(239, 68, 68, 0.1)';
-                                                    return 'rgba(99, 102, 241, 0.1)'; // Missed or Cancelled
+                                                    return 'rgba(99, 102, 241, 0.1)';
                                                 })(),
                                                 display: 'flex', alignItems: 'center', justifyContent: 'center'
                                             }}>
@@ -523,7 +554,6 @@ export const ChatDetail = () => {
                                                     if (msg.text.includes('REJECTED')) {
                                                         return <PhoneOff size={16} color={isMe ? 'white' : '#ef4444'} />;
                                                     }
-                                                    // Missed or Cancelled
                                                     return isVideo ? <Video size={16} color={isMe ? 'white' : 'var(--primary)'} /> : <Phone size={16} color={isMe ? 'white' : 'var(--primary)'} />;
                                                 })()}
                                             </div>
@@ -578,7 +608,17 @@ export const ChatDetail = () => {
             </div>
 
             {/* Footer */}
-            <footer style={{ padding: '0.75rem 1rem', borderTop: '1px solid var(--border-glass)', background: 'var(--bg-surface)', zIndex: 30, flexShrink: 0 }}>
+            <footer style={{
+                padding: '0.75rem 1rem',
+                borderTop: '1px solid var(--border-glass)',
+                background: 'var(--bg-surface)',
+                zIndex: 40,
+                flexShrink: 0,
+                position: 'sticky',
+                bottom: 0,
+                width: '100%',
+                boxSizing: 'border-box'
+            }}>
                 {replyingTo && (
                     <div className="reply-preview">
                         <div style={{ flex: 1, minWidth: 0 }}>
@@ -626,36 +666,55 @@ export const ChatDetail = () => {
                             style={{
                                 width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
                                 background: 'var(--bg-base)', border: '1px solid var(--border-glass)',
-                                color: selectedFile ? 'var(--primary)' : 'var(--text-muted)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                                transition: 'color 0.2s'
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                color: 'var(--text-muted)', cursor: 'pointer'
                             }}
                         >
-                            <Paperclip size={18} />
+                            {isUploading ? (
+                                <div style={{ width: '18px', height: '18px', border: '2px solid var(--border-glass)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                            ) : (
+                                <Paperclip size={20} />
+                            )}
                         </button>
 
-                        <input
-                            type="text"
-                            value={messageText}
-                            onChange={(e) => setMessageText(e.target.value)}
-                            placeholder={selectedFile ? 'Add a caption...' : 'Start a new message'}
-                            style={{
-                                flex: 1, padding: '0.75rem 1.25rem', borderRadius: '9999px',
-                                background: 'var(--bg-base)', border: '1px solid var(--border-glass)',
-                                color: 'var(--text-primary)', outline: 'none'
-                            }}
-                        />
+                        <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center' }}>
+                            <textarea
+                                value={messageText}
+                                onChange={(e) => setMessageText(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                        e.preventDefault();
+                                        handleSendMessage(e);
+                                    }
+                                }}
+                                placeholder="Message..."
+                                style={{
+                                    width: '100%',
+                                    minHeight: '40px',
+                                    maxHeight: '120px',
+                                    padding: '0.6rem 1rem',
+                                    paddingRight: '3rem',
+                                    borderRadius: '20px',
+                                    background: 'var(--bg-base)',
+                                    border: '1px solid var(--border-glass)',
+                                    color: 'var(--text-primary)',
+                                    fontSize: '0.95rem',
+                                    resize: 'none',
+                                    lineHeight: '1.4',
+                                    outline: 'none'
+                                }}
+                            />
+                        </div>
 
-                        {/* Voice Note button - only if no text/file */}
                         {!messageText.trim() && !selectedFile ? (
                             <button
                                 type="button"
                                 onClick={() => setIsRecording(true)}
                                 style={{
-                                    width: '45px', height: '45px', borderRadius: '50%', flexShrink: 0,
-                                    background: 'var(--bg-base)', color: 'var(--primary)', border: '1px solid var(--border-glass)',
+                                    width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
+                                    background: 'var(--bg-base)', border: '1px solid var(--border-glass)',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    cursor: 'pointer', transition: 'all 0.2s'
+                                    color: 'var(--text-muted)', cursor: 'pointer', transition: 'all 0.2s'
                                 }}
                             >
                                 <Mic size={18} />
@@ -692,6 +751,6 @@ export const ChatDetail = () => {
                     />
                 )}
             </AnimatePresence>
-        </motion.div >
+        </motion.div>
     );
 };

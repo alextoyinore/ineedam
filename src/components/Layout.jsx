@@ -28,7 +28,7 @@ export const Layout = ({ children }) => {
 
   return (
     <div className="layout-container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {(!isChatDetail || isLocked) && <MobileTopHeader />}
+      <MobileTopHeader />
 
 
 

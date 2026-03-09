@@ -166,7 +166,7 @@ export const toggleMessageReaction = async (messageId, userId, emoji) => {
         .eq('message_id', messageId)
         .eq('user_id', userId)
         .eq('emoji', emoji)
-        .single();
+        .maybeSingle();
 
     if (existing) {
         // Remove it

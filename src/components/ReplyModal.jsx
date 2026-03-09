@@ -76,7 +76,7 @@ export const ReplyModal = ({ isOpen, onClose, need, parentId = null, replyingTo 
         <AnimatePresence>
             <div style={{
                 position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                zIndex: 1000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+                zIndex: 2000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
                 padding: '4rem 1rem', background: 'rgba(0, 0, 0, 0.5)', backdropFilter: 'blur(4px)'
             }} onClick={onClose}>
                 <motion.div

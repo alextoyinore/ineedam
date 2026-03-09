@@ -60,7 +60,7 @@ export const MarkMetModal = ({ isOpen, onClose, need, onConfirm }) => {
         <AnimatePresence>
             {isOpen && (
                 <div style={{
-                    position: 'fixed', inset: 0, zIndex: 1100,
+                    position: 'fixed', inset: 0, zIndex: 2000,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     padding: '1rem', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)'
                 }}>
