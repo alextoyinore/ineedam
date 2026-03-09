@@ -257,24 +257,9 @@ button {
   width: 100%;
 }
 
-/* Chat Layout Constraint */
-.is-chat-detail {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  min-height: auto;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  /* Ensures inner flex areas do the scrolling */
-}
 
-@media (max-width: 768px) {
-  .is-chat-detail {
-    top: 0;
-    height: 100dvh;
-  }
-}
+
+
 
 
 /* Navigation Links */
