@@ -14,6 +14,7 @@ import { MarkMetModal } from '../components/MarkMetModal';
 import { EndorseModal } from '../components/EndorseModal';
 import { EndorsementFeedCard } from '../components/EndorsementFeedCard';
 import { ReportModal } from '../components/ReportModal';
+import { MentionText } from '../components/MentionText';
 
 import { useSocial } from '../context/SocialContext';
 import { useAuth } from '../context/AuthContext';
@@ -509,9 +510,10 @@ export const UserProfilePage = () => {
                     </p>
 
                     {profile.bio && (
-                        <p style={{ fontSize: '0.95rem', color: 'var(--text-primary)', marginBottom: '.25rem', whiteSpace: 'pre-wrap' }}>
-                            {profile.bio}
-                        </p>
+                        <MentionText
+                            text={profile.bio}
+                            style={{ fontSize: '0.95rem', color: 'var(--text-primary)', marginBottom: '.25rem' }}
+                        />
                     )}
 
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '.25rem' }}>

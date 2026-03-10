@@ -27,9 +27,7 @@ export const ReplyModal = ({ isOpen, onClose, need, parentId = null, replyingTo 
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
-            // Pre-fill with mention if replying to a specific user
-            const mention = targetUser.authorUsername ? `@${targetUser.authorUsername} ` : '';
-            setReplyText(mention);
+            setReplyText('');
             setReplyFile(null);
         } else {
             document.body.style.overflow = 'auto';
@@ -37,7 +35,8 @@ export const ReplyModal = ({ isOpen, onClose, need, parentId = null, replyingTo 
         return () => {
             document.body.style.overflow = 'auto';
         };
-    }, [isOpen, targetUser.authorUsername]);
+    }, [isOpen]);
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -149,9 +148,16 @@ export const ReplyModal = ({ isOpen, onClose, need, parentId = null, replyingTo 
                                 rows={4}
                                 className="need-description"
                                 style={{
-                                    width: '100%', background: 'transparent', border: 'none', color: 'var(--text-primary)',
-                                    outline: 'none', resize: 'vertical', paddingTop: '0.5rem',
-                                    fontFamily: 'inherit'
+                                    width: '100%',
+                                    background: 'transparent',
+                                    border: 'none',
+                                    color: 'var(--text-primary)',
+                                    outline: 'none',
+                                    resize: 'vertical',
+                                    paddingTop: '0.5rem',
+                                    fontFamily: 'var(--font-family)',
+                                    fontSize: '1rem',
+                                    lineHeight: 1.5
                                 }}
                             />
 

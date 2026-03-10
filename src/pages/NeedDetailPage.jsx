@@ -156,6 +156,7 @@ export const NeedDetailPage = () => {
     // For viewing attachments
     const [attachmentToView, setAttachmentToView] = useState(null);
 
+
     useEffect(() => {
         window.scrollTo(0, 0);
         const load = async () => {
@@ -163,15 +164,14 @@ export const NeedDetailPage = () => {
             try {
                 const [needData, repliesData] = await Promise.all([
                     getNeedById(id),
-                    fetchRepliesForNeed(id) // fetchRepliesForNeed(id) now implicitly filters for endorsement_id IS NULL
+                    fetchRepliesForNeed(id)
                 ]);
                 const shaped = shapeNeed(needData);
                 setNeed(shaped);
                 setReplies((repliesData || []).filter(r => r.status !== 'archived'));
 
-                // Pre-fill mention if the user is replying to the author
                 if (shaped.authorUsername) {
-                    setReplyText(`@${shaped.authorUsername} `);
+                    setReplyText('');
                 }
             } catch (err) {
                 console.error("Failed to load need or replies:", err);
@@ -219,7 +219,7 @@ export const NeedDetailPage = () => {
             // Re-fetch to get profile joins and proper order since RT might be complex here
             const repliesData = await fetchRepliesForNeed(id);
             setReplies(repliesData || []);
-            setReplyText(need.authorUsername ? `@${need.authorUsername} ` : '');
+            setReplyText('');
             setIsPrivateReply(false);
             setReplyFile(null);
         } catch (err) {
@@ -384,15 +384,26 @@ export const NeedDetailPage = () => {
                     </div>
                 </div>
                 <form style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.75rem' }} onSubmit={handleSubmitReply}>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                        Replying to <span style={{ color: 'var(--primary)', fontWeight: 600 }}>@{need.authorUsername || 'author'}</span>
+                    </div>
                     <textarea
+                        disabled={!user || submittingReply}
                         value={replyText}
                         onChange={(e) => setReplyText(e.target.value)}
-                        placeholder={`Replying to @${need.authorUsername || 'author'}...`}
-                        disabled={!user || submittingReply}
+                        placeholder="Post your reply or proposal..."
                         className="need-description"
                         style={{
-                            width: '100%', background: 'transparent', border: 'none', color: 'var(--text-primary)',
-                            outline: 'none', resize: 'vertical', minHeight: '60px'
+                            width: '100%',
+                            background: 'transparent',
+                            border: 'none',
+                            color: 'var(--text-primary)',
+                            outline: 'none',
+                            resize: 'vertical',
+                            minHeight: '80px',
+                            fontFamily: 'var(--font-family)',
+                            fontSize: '1rem',
+                            lineHeight: 1.5
                         }}
                     />
 

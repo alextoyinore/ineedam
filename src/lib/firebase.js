@@ -19,13 +19,18 @@ const messaging = getMessaging(app);
  */
 export const getFCMToken = async () => {
     if (!('Notification' in window)) return null;
+    if (!('serviceWorker' in navigator)) return null;
 
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') return null;
 
     try {
+        // Wait for the PWA service worker to be ready
+        const registration = await navigator.serviceWorker.ready;
+
         const token = await getToken(messaging, {
             vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
+            serviceWorkerRegistration: registration,
         });
         return token || null;
     } catch (err) {
