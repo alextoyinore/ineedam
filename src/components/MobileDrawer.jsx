@@ -73,7 +73,7 @@ export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false, onInvit
                         exit={{ opacity: 0 }}
                         onClick={onClose}
                         style={{
-                            position: 'fixed', inset: 0, zIndex: 1100,
+                            position: 'fixed', inset: 0, zIndex: 1200,
                             background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)'
                         }}
                     />
@@ -85,7 +85,7 @@ export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false, onInvit
                         exit={{ x: '100%' }}
                         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                         style={{
-                            position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 1102,
+                            position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 1202,
                             width: '80%', maxWidth: '300px',
                             background: 'var(--bg-surface)',
                             borderLeft: '1px solid var(--border-glass)',

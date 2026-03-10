@@ -6,6 +6,7 @@ import { PostNeedModal } from './PostNeedModal';
 import { BottomNav } from './BottomNav';
 import { Plus } from 'lucide-react';
 import { MobileTopHeader } from './MobileTopHeader';
+import { MobileDrawer } from './MobileDrawer';
 import { CallModal } from './messages/CallModal';
 import { InviteModal } from './InviteModal';
 import { useMessages } from '../context/MessagesContext';
@@ -15,6 +16,8 @@ import { useAuth } from '../context/AuthContext';
 export const Layout = ({ children }) => {
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [shouldFocusSearch, setShouldFocusSearch] = useState(false);
   const { user, profile } = useAuth();
   const { isLocked } = useMessageSecurity();
   const {
@@ -36,8 +39,14 @@ export const Layout = ({ children }) => {
         {/* Left Navigation */}
         <div style={{ width: '250px' }}>
           <Sidebar
-            onPostClick={() => setIsPostModalOpen(true)}
-            onInviteClick={() => setIsInviteModalOpen(true)}
+            onPostClick={() => {
+              setIsPostModalOpen(true);
+              setIsDrawerOpen(false);
+            }}
+            onInviteClick={() => {
+              setIsInviteModalOpen(true);
+              setIsDrawerOpen(false);
+            }}
           />
         </div>
 
@@ -58,7 +67,10 @@ export const Layout = ({ children }) => {
       {!isChatDetail && (
         <button
           className="mobile-fab mobile-only"
-          onClick={() => setIsPostModalOpen(true)}
+          onClick={() => {
+            setIsPostModalOpen(true);
+            setIsDrawerOpen(false);
+          }}
           aria-label="Post a Need"
         >
           <Plus size={32} />
@@ -66,11 +78,36 @@ export const Layout = ({ children }) => {
       )}
 
       {/* Mobile Bottom Navigation */}
-      {!isChatDetail && <BottomNav onInviteClick={() => setIsInviteModalOpen(true)} />}
+      {!isChatDetail && (
+        <BottomNav
+          onInviteClick={() => {
+            setIsInviteModalOpen(true);
+            setIsDrawerOpen(false);
+          }}
+          isDrawerOpen={isDrawerOpen}
+          setIsDrawerOpen={setIsDrawerOpen}
+          shouldFocusSearch={shouldFocusSearch}
+          setShouldFocusSearch={setShouldFocusSearch}
+        />
+      )}
 
       {/* Modals */}
       {isPostModalOpen && <PostNeedModal isOpen={isPostModalOpen} onClose={() => setIsPostModalOpen(false)} />}
       <InviteModal isOpen={isInviteModalOpen} onClose={() => setIsInviteModalOpen(false)} />
+
+      {/* Mobile Drawer */}
+      <MobileDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => {
+          setIsDrawerOpen(false);
+          setShouldFocusSearch(false);
+        }}
+        autoFocusSearch={shouldFocusSearch}
+        onInviteClick={() => {
+          setIsInviteModalOpen(true);
+          setIsDrawerOpen(false);
+        }}
+      />
 
       {/* Global Call Modal */}
       {call && (
