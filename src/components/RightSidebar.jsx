@@ -214,7 +214,7 @@ export const RightSidebar = () => {
                         padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1.25rem',
                         background: 'var(--bg-surface)', border: '1px solid var(--border-glass)', borderRadius: '16px'
                     }}>
-                        <h3 className="h3" style={{ fontSize: '1.1rem' }}>Who to follow</h3>
+                        <h3 className="h3" style={{ fontSize: '1.1rem' }}>Community</h3>
                         {suggestedUsers.map(profile => (
                             <div key={profile.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'space-between' }}>
                                 <div

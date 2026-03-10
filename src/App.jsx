@@ -34,7 +34,6 @@ const ServerErrorPage = lazy(() => import('./pages/ServerErrorPage').then(module
 const BlockedAccountsPage = lazy(() => import('./pages/BlockedAccountsPage').then(module => ({ default: module.BlockedAccountsPage })));
 const ArchivedContentPage = lazy(() => import('./pages/ArchivedContentPage').then(module => ({ default: module.ArchivedContentPage })));
 const EndorsementDetailPage = lazy(() => import('./pages/EndorsementDetailPage').then(module => ({ default: module.EndorsementDetailPage })));
-const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage').then(module => ({ default: module.LeaderboardPage })));
 const HelpPage = lazy(() => import('./pages/HelpPage').then(module => ({ default: module.HelpPage })));
 const SupportPage = lazy(() => import('./pages/SupportPage').then(module => ({ default: module.SupportPage })));
 
@@ -81,7 +80,6 @@ function App() {
                 <Routes>
                   <Route path="/" element={<ExplorePage />} />
                   <Route path="/bookmarks" element={<BookmarksPage />} />
-                  <Route path="/leaderboard" element={<LeaderboardPage />} />
                   <Route path="/notifications" element={<NotificationsPage />} />
                   <Route path="/messages" element={<MessagesPage />}>
                     <Route index element={<MessageThreads />} />

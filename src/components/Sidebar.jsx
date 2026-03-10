@@ -36,7 +36,6 @@ export const Sidebar = ({ onPostClick, onInviteClick, forceIconic = false }) => 
                         { to: '/bookmarks', label: 'Bookmarks', Icon: Bookmark, isActive: location.pathname === '/bookmarks', fillable: true },
                         { to: '/notifications', label: 'Notifications', Icon: Bell, isActive: location.pathname === '/notifications', badge: unreadCount, fillable: true },
                         { to: '/messages', label: 'Messages', Icon: Mail, isActive: location.pathname === '/messages', badge: unreadThreadsCount, fillable: false },
-                        { to: '/leaderboard', label: 'Leaderboard', Icon: Trophy, isActive: location.pathname === '/leaderboard', fillable: true },
                         { to: profile?.username ? `/${profile.username}` : '#', label: 'Profile', Icon: User, isActive: !!(profile?.username && location.pathname === `/${profile.username}`), fillable: true },
                         { to: '#', label: 'Invite Friends', Icon: Share2, isAction: true, onClick: onInviteClick },
                     ].map(({ to, label, Icon, isActive, badge, fillable, isAction, onClick }) => (
