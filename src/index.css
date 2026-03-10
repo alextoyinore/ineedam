@@ -234,6 +234,19 @@ button {
   min-height: 100vh;
 }
 
+.social-layout-grid.is-messages-route {
+  grid-template-columns: 64px 1fr;
+  gap: 0;
+}
+
+.sidebar-spacer {
+  width: 250px;
+}
+
+.sidebar-spacer.is-messages-route {
+  width: 64px;
+}
+
 .social-sidebar-left {
   position: fixed;
   top: 0;
@@ -322,13 +335,13 @@ button {
 
 .social-main-wrapper.is-messages-route {
   max-width: none;
-  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
 }
 
 .social-main-content.is-messages-route {
-  height: 100vh;
-  max-height: 100vh;
+  height: 100dvh;
+  max-height: 100dvh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -815,7 +828,8 @@ button {
   }
 
   .social-main-content.is-chat-detail {
-    min-height: 100vh;
+    min-height: 100dvh;
+    height: 100dvh;
     background: var(--bg-surface);
     display: flex;
     flex-direction: column;
@@ -858,6 +872,10 @@ button {
     display: none;
   }
 
+  .sidebar-spacer {
+    display: none;
+  }
+
   .social-main-wrapper {
     max-width: 100vw;
     width: 100%;
@@ -868,6 +886,10 @@ button {
     border: none;
     padding-bottom: 5rem;
     /* Space for BottomNav */
+  }
+
+  .social-layout-grid.is-messages-route {
+    grid-template-columns: 1fr;
   }
 }
 

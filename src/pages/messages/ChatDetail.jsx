@@ -674,7 +674,7 @@ export const ChatDetail = () => {
 
             {/* Footer */}
             <footer style={{
-                padding: '0.75rem 1rem',
+                padding: isMobile ? '0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom)) 1rem' : '1rem 1.5rem',
                 borderTop: '1px solid var(--border-glass)',
                 background: 'var(--bg-surface)',
                 zIndex: 40,

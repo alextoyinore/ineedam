@@ -32,13 +32,13 @@ export const Layout = ({ children }) => {
 
   return (
     <div className="layout-container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <MobileTopHeader />
+      {!isChatDetail && <MobileTopHeader />}
 
 
 
-      <div className="social-layout-grid" style={isMessagesRoute ? { gridTemplateColumns: '64px 1fr', gap: 0 } : {}}>
+      <div className={`social-layout-grid ${isMessagesRoute ? 'is-messages-route' : ''}`}>
         {/* Left Navigation */}
-        <div style={{ width: isMessagesRoute ? '64px' : '250px' }}>
+        <div className={`sidebar-spacer ${isMessagesRoute ? 'is-messages-route' : ''}`}>
           <Sidebar
             forceIconic={isMessagesRoute}
             onPostClick={() => {
