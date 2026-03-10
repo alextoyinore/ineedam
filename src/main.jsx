@@ -19,6 +19,7 @@ import { MessagesProvider } from './context/MessagesContext.jsx'
 import { LikesProvider } from './context/LikesContext.jsx'
 import { SettingsProvider } from './context/SettingsContext.jsx'
 import { BroadcastsProvider } from './context/BroadcastsContext.jsx'
+import { InterestProvider } from './context/InterestContext.jsx'
 import { HelmetProvider } from 'react-helmet-async'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -35,7 +36,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
                       <MessagesProvider>
                         <LikesProvider>
                           <BroadcastsProvider>
-                            <App />
+                            <InterestProvider>
+                              <App />
+                            </InterestProvider>
                           </BroadcastsProvider>
                         </LikesProvider>
                       </MessagesProvider>

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Send, Loader, Lock, Globe, MessageSquare, Archive, Paperclip, FileText, Download, X } from 'lucide-react';
 import { NeedCard } from '../components/NeedCard';
 import { getNeedById, shapeNeed, uploadFileToCloudinary, updateNeed, updateNeedStatus } from '../lib/needsService';
-import { fetchRepliesForNeed, createReply, formatTimeAgo, updateReplyStatus } from '../lib/replyService';
+import { fetchRepliesForNeed, createReply, formatTimeAgo, updateReplyStatus, getFirstReplyTime, formatResponseTime } from '../lib/replyService';
 import { useAuth } from '../context/AuthContext';
 import { ProfileHoverCard } from '../components/ProfileHoverCard';
 import { ReplyModal } from '../components/ReplyModal';
@@ -142,6 +142,7 @@ export const NeedDetailPage = () => {
     const [need, setNeed] = useState(null);
     const [replies, setReplies] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [firstResponseTime, setFirstResponseTime] = useState(null);
 
     // For nested replies via modal
     const [isReplyModalOpen, setIsReplyModalOpen] = useState(false);
@@ -162,16 +163,29 @@ export const NeedDetailPage = () => {
         const load = async () => {
             setLoading(true);
             try {
-                const [needData, repliesData] = await Promise.all([
-                    getNeedById(id),
-                    fetchRepliesForNeed(id)
-                ]);
-                const shaped = shapeNeed(needData);
-                setNeed(shaped);
-                setReplies((repliesData || []).filter(r => r.status !== 'archived'));
+                const needData = await getNeedById(id);
+                if (needData) {
+                    const shaped = shapeNeed(needData);
+                    setNeed(shaped);
+                    if (user) {
+                        // Mark interaction
+                        const { getOrCreateThread } = await import('../lib/messageService');
+                        // just to preload or track something if needed, left as is
+                    }
+                    // Fetch first reply time
+                    const firstReplyTs = await getFirstReplyTime(needData.id, needData.user_id);
+                    if (firstReplyTs) {
+                        setFirstResponseTime(formatResponseTime(needData.created_at, firstReplyTs));
+                    }
 
-                if (shaped.authorUsername) {
-                    setReplyText('');
+                    const repliesData = await fetchRepliesForNeed(id);
+                    setReplies((repliesData || []).filter(r => r.status !== 'archived'));
+
+                    if (shaped.authorUsername) {
+                        setReplyText('');
+                    }
+                } else {
+                    navigate('/404', { replace: true });
                 }
             } catch (err) {
                 console.error("Failed to load need or replies:", err);
@@ -181,7 +195,7 @@ export const NeedDetailPage = () => {
             }
         };
         load();
-    }, [id]);
+    }, [id, user, navigate]);
 
     const replyTree = useMemo(() => {
         const map = {};
@@ -368,6 +382,7 @@ export const NeedDetailPage = () => {
                     isFullDetail={true}
                     onEdit={() => setIsEditModalOpen(true)}
                     onMarkMet={() => setIsMarkMetModalOpen(true)}
+                    firstResponseTime={firstResponseTime} // Pass firstResponseTime as a prop
                 />
             </div>
 

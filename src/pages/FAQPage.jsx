@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HelpCircle, ChevronDown, MessageCircle, Shield, CreditCard, User } from 'lucide-react';
+import { HelpCircle, ChevronDown, MessageCircle, Shield, CreditCard, User, Hand, Award } from 'lucide-react';
 
 const FAQItem = ({ question, answer, icon: Icon }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -130,6 +130,21 @@ export const FAQPage = () => {
             question: "How do I invite friends to Ineedam?",
             answer: "Tap 'Invite Friends' in the sidebar (desktop) or the menu drawer (mobile). You can share an invite via WhatsApp, Telegram, Email, SMS, or by copying the link directly."
         },
+        {
+            icon: Hand,
+            question: "How do I show interest in a need without messaging?",
+            answer: "Click the 'Raised Hand' icon on any need to privately signal to the poster that you are interested and able to help. They will receive an instant notification."
+        },
+        {
+            icon: Award,
+            question: "How does the Leaderboard work?",
+            answer: "The Leaderboard ranks our most engaged community members. You earn points and climb the ranks when someone endorses you for fulfilling a need, and when you reply to help others."
+        },
+        {
+            icon: MessageCircle,
+            question: "What does the Response Rate on a profile mean?",
+            answer: "The Response Rate badge shows how reliably a user replies to helpers on their posts within 48 hours. A high percentage means they are active and communicate well with the community."
+        }
     ];
 
     return (

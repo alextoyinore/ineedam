@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Tag, MapPin, Banknote, Clock, MessageSquare, Bookmark, Heart, MessageCircle, Repeat2, Award, Trash2, MoreVertical, Archive, Flag, UserPlus, UserMinus, VolumeX, Share2, FileText, Download, Edit3, CheckCircle } from 'lucide-react';
+import { Tag, MapPin, Banknote, Clock, MessageSquare, Bookmark, Heart, MessageCircle, Repeat2, Award, Trash2, MoreVertical, Archive, Flag, UserPlus, UserMinus, VolumeX, Share2, FileText, Download, Edit3, CheckCircle, Hand } from 'lucide-react';
 import { ReplyModal } from './ReplyModal';
 import { supabase } from '../lib/supabase';
 import { useBookmarks } from '../context/BookmarksContext';
 import { useLikes } from '../context/LikesContext';
 import { useBroadcasts } from '../context/BroadcastsContext';
 import { getLikeCount } from '../lib/likesService';
-import { getReplyCount } from '../lib/replyService';
+import { getReplyCount, getFirstReplyTime, formatResponseTime } from '../lib/replyService';
 import { getBroadcastCount } from '../lib/broadcastService';
 import { useAuth } from '../context/AuthContext';
 import { useSocial } from '../context/SocialContext';
@@ -15,6 +15,8 @@ import { useNotifications } from '../context/NotificationsContext';
 import { ProfileHoverCard } from './ProfileHoverCard';
 import { updateNeedStatus } from '../lib/needsService';
 import { MentionText } from './MentionText';
+import { useInterest } from '../context/InterestContext';
+import { getInterestCount } from '../lib/interestService';
 
 export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onEdit = null, onMarkMet = null }) => {
     const { user } = useAuth();
@@ -25,13 +27,16 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
     const { isBroadcasted: checkIsBroadcasted, toggleBroadcast: toggleBroadcastInContext } = useBroadcasts();
     const { isFollowing: checkIsFollowing, toggleFollow } = useSocial();
     const { addNotification } = useNotifications();
+    const { isInterested: checkIsInterested, toggleInterest: toggleInterestInContext } = useInterest();
 
     const [likeCount, setLikeCount] = useState(0);
     const [replyCount, setReplyCount] = useState(0);
     const [broadcastCount, setBroadcastCount] = useState(0);
+    const [interestCount, setInterestCount] = useState(0);
     const [hasLoadedCount, setHasLoadedCount] = useState(false);
     const [endorsementCount, setEndorsementCount] = useState(0);
     const [isArchived, setIsArchived] = useState(false);
+    const [firstResponseTime, setFirstResponseTime] = useState(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [shareCopied, setShareCopied] = useState(false);
 
@@ -43,23 +48,28 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
     const following = checkIsFollowing(need.authorId);
     const liked = checkIsLiked(need.id);
     const broadcasted = checkIsBroadcasted(need.id);
+    const interested = checkIsInterested(need.id);
 
     React.useEffect(() => {
         const loadCounts = async () => {
             try {
-                const [likes, replies, broadcasts, { count, error }] = await Promise.all([
+                const [likes, replies, broadcasts, { count, error }, interests, firstReplyTs] = await Promise.all([
                     getLikeCount(need.id),
                     getReplyCount(need.id),
                     getBroadcastCount(need.id),
                     supabase
                         .from('endorsements')
                         .select('*', { count: 'exact', head: true })
-                        .eq('endorsed_id', need.authorId)
+                        .eq('endorsed_id', need.authorId),
+                    getInterestCount(need.id),
+                    getFirstReplyTime(need.id, need.authorId)
                 ]);
                 setLikeCount(likes);
                 setReplyCount(replies);
                 setBroadcastCount(broadcasts);
                 setEndorsementCount(error ? 0 : (count || 0));
+                setInterestCount(interests);
+                setFirstResponseTime(firstReplyTs ? formatResponseTime(need.created_at, firstReplyTs) : null);
                 setHasLoadedCount(true);
             } catch (err) {
                 console.error("Error loading counts for needcard", err);
@@ -90,6 +100,26 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
     const handleFollow = (e) => {
         e.stopPropagation();
         toggleFollow(need.authorId);
+    };
+
+    const handleInterest = async (e) => {
+        e.stopPropagation();
+        const wasInterested = interested;
+        await toggleInterestInContext(need.id);
+        setInterestCount(prev => wasInterested ? prev - 1 : prev + 1);
+
+        // Notify the need owner the first time someone expresses interest
+        if (!wasInterested && user && need.authorId && need.authorId !== user.id) {
+            try {
+                await addNotification(
+                    need.authorId,
+                    'interest',
+                    user.id,
+                    `expressed interest in helping with your need`,
+                    need.id
+                );
+            } catch (_) { /* silent */ }
+        }
     };
 
     const handleArchive = async (e) => {
@@ -251,6 +281,12 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                                     <span>@{need.authorUsername}</span>
                                 )}
                                 <span>• {need.postedAt}</span>
+                                {firstResponseTime && (
+                                    <>
+                                        <span>•</span>
+                                        <span style={{ color: 'var(--text-secondary)' }} title="Time to first response">{firstResponseTime}</span>
+                                    </>
+                                )}
                                 {endorsementCount > 0 && (
                                     <>
                                         <span>•</span>
@@ -469,8 +505,8 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                 </div>
 
                 {/* Footer Actions */}
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                    <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center', flexWrap: 'wrap' }}>
                         <button onClick={(e) => { e.stopPropagation(); setIsReplyOpen(true); }} className="nav-link-hover" style={{
                             display: 'flex', alignItems: 'center', gap: '0.4rem',
                             color: 'var(--text-muted)', fontSize: '0.9rem', background: 'transparent',
@@ -504,6 +540,27 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                                 <span>{broadcastCount}</span>
                             )}
                         </button>
+
+                        {/* Interested Button — only for non-owners on open needs */}
+                        {user && need.authorId !== user.id && need.status !== 'archived' && need.status !== 'met' && (
+                            <button
+                                onClick={handleInterest}
+                                className="nav-link-hover"
+                                title={interested ? 'Remove interest signal' : 'Signal you can help'}
+                                style={{
+                                    display: 'flex', alignItems: 'center', gap: '0.4rem',
+                                    color: interested ? 'var(--primary)' : 'var(--text-muted)',
+                                    fontSize: '0.9rem', background: 'transparent',
+                                    transition: 'all 0.2s', padding: '0.25rem 0.5rem', borderRadius: '4px',
+                                    cursor: 'pointer', fontWeight: interested ? 600 : 400
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
+                                onMouseLeave={(e) => e.currentTarget.style.color = interested ? 'var(--primary)' : 'var(--text-muted)'}
+                            >
+                                <Hand size={16} />
+                                {interestCount > 0 && <span>{interestCount}</span>}
+                            </button>
+                        )}
 
                         <button onClick={handleLike} className="nav-link-hover" style={{
                             display: 'flex', alignItems: 'center', gap: '0.4rem',

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Home, Bookmark, Search, User, MessageSquare, Sparkles, HelpCircle, Info } from 'lucide-react';
+import { Home, Bookmark, Search, User, MessageSquare, Sparkles, HelpCircle, Info, Hand, Award, Clock } from 'lucide-react';
 
 const HelpSection = ({ title, icon: Icon, children }) => (
     <div style={{ marginBottom: '2.5rem' }}>
@@ -52,6 +52,18 @@ export const HelpPage = () => {
 
                 <HelpSection title="Your Profile" icon={User}>
                     <p>Access your <strong>Profile</strong> to see your own needs, your history of helping others, and who you are following. You can also edit your bio and avatar from here.</p>
+                </HelpSection>
+
+                <HelpSection title="Interested Signals" icon={Hand}>
+                    <p>Instead of typing out a message, you can tap the <strong>Raised Hand</strong> icon on any active need to privately let the poster know you are interested in helping. They will be notified instantly.</p>
+                </HelpSection>
+
+                <HelpSection title="Leaderboard" icon={Award}>
+                    <p>The <strong>Leaderboard</strong> (<a href="/leaderboard" style={{ color: 'var(--primary)', textDecoration: 'none' }}>view here</a>) highlights the top helpers in our community. Points are awarded when you reply to needs and when you receive Endorsements for fulfilling them.</p>
+                </HelpSection>
+
+                <HelpSection title="Response Metrics" icon={Clock}>
+                    <p>You may notice a <strong>Response Rate</strong> badge on profiles or a <strong>Time-to-First-Response</strong> indicator on needs. These metrics help the community understand how actively members engage with one another. A high response rate builds trust!</p>
                 </HelpSection>
 
                 <div style={{

@@ -148,3 +148,47 @@ export const updateReplyStatus = async (replyId, status) => {
         .eq('id', replyId);
     if (error) throw error;
 };
+
+/**
+ * Get the first reply to a need from someone other than the need's author.
+ * Returns the created_at timestamp string, or null if no replies yet.
+ */
+export const getFirstReplyTime = async (needId, authorId) => {
+    if (!needId) return null;
+
+    const query = supabase
+        .from('replies')
+        .select('created_at, need_id, user_id')
+        .eq('need_id', needId)
+        .is('endorsement_id', null)
+        .eq('is_private', false)
+        .order('created_at', { ascending: true })
+        .limit(1);
+
+    // Exclude the need owner's own replies if we have their ID
+    if (authorId) {
+        query.neq('user_id', authorId);
+    }
+
+    const { data, error } = await query;
+
+    if (error || !data?.length) return null;
+    return data[0].created_at;
+};
+
+/**
+ * Format time-to-first-response as a human-readable string.
+ * e.g. "First response in 5m", "First response in 2h", "First response in 3d"
+ */
+export const formatResponseTime = (needCreatedAt, firstReplyAt) => {
+    if (!needCreatedAt || !firstReplyAt) return null;
+    const diff = new Date(firstReplyAt).getTime() - new Date(needCreatedAt).getTime();
+    if (diff < 0) return null;
+    const mins = Math.floor(diff / 60000);
+    if (mins < 60) return `First response in ${mins}m`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `First response in ${hrs}h`;
+    const days = Math.floor(hrs / 24);
+    return `First response in ${days}d`;
+};
+

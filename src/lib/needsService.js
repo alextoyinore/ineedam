@@ -73,7 +73,70 @@ export const createNeed = async (needData, userId) => {
     // Handle Mentions asynchronously
     handleMentions(needData.description, userId, 'mention', data.id, 'mentioned you in a need');
 
+    // Notify potential helpers asynchronously (non-blocking)
+    notifyPotentialHelpers(data.id, needData.category, needData.location || null, userId).catch(() => { });
+
     return data;
+};
+
+/**
+ * Find users who might be able to help with a new need and notify them.
+ * Matches on category (required) and optionally location.
+ * Caps at 10 notifications to avoid spam.
+ */
+export const notifyPotentialHelpers = async (needId, category, location, posterUserId) => {
+    if (!needId || !category) return;
+
+    try {
+        // Find users who have previously replied to or been endorsed for needs in the same category
+        // We do this via replies joined to needs filtered by category
+        const { data: repliers } = await supabase
+            .from('replies')
+            .select('user_id, needs!inner(category)')
+            .eq('needs.category', category)
+            .neq('user_id', posterUserId)
+            .limit(50);
+
+        if (!repliers?.length) return;
+
+        // Deduplicate user ids
+        const uniqueUserIds = [...new Set(repliers.map(r => r.user_id))];
+
+        // Optionally filter by location — fetch their profiles and check
+        let candidates = uniqueUserIds;
+        if (location) {
+            const { data: profiles } = await supabase
+                .from('profiles')
+                .select('id, location')
+                .in('id', uniqueUserIds);
+
+            if (profiles?.length) {
+                const locationLower = location.toLowerCase();
+                const locationMatched = profiles
+                    .filter(p => p.location && p.location.toLowerCase().includes(locationLower))
+                    .map(p => p.id);
+                // Use location-matched first, fall back to all if none match
+                candidates = locationMatched.length > 0 ? locationMatched : uniqueUserIds;
+            }
+        }
+
+        // Cap at 10 notifications
+        const toNotify = candidates.slice(0, 10);
+
+        // Insert notifications (ignore duplicates via upsert pattern)
+        const notifications = toNotify.map(uid => ({
+            user_id: uid,
+            actor_id: posterUserId,
+            type: 'match',
+            reference_id: needId,
+            message: `A new ${category} need was posted that matches your profile`,
+            read: false
+        }));
+
+        await supabase.from('notifications').insert(notifications);
+    } catch (err) {
+        console.error('Failed to notify potential helpers:', err);
+    }
 };
 
 /**
