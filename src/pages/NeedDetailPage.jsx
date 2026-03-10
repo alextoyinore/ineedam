@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Send, Loader, Lock, Globe, MessageSquare, Archive, Paperclip, FileText, Download, X } from 'lucide-react';
 import { NeedCard } from '../components/NeedCard';
-import { getNeedById, shapeNeed, uploadFileToCloudinary } from '../lib/needsService';
+import { getNeedById, shapeNeed, uploadFileToCloudinary, updateNeed, updateNeedStatus } from '../lib/needsService';
 import { fetchRepliesForNeed, createReply, formatTimeAgo, updateReplyStatus } from '../lib/replyService';
 import { useAuth } from '../context/AuthContext';
 import { ProfileHoverCard } from '../components/ProfileHoverCard';
