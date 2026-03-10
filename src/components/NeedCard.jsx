@@ -432,7 +432,7 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                 )}
 
                 {/* Constraints Tags */}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginBottom: '.5rem', marginTop: '.5rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.85rem', color: 'var(--text-primary)' }}>
                         <Banknote size={14} color="var(--accent)" />
                         <span style={{ fontWeight: 600 }}>{need.budget}</span>
