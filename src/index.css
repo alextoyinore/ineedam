@@ -247,6 +247,24 @@ button {
   width: 64px !important;
 }
 
+.social-sidebar-left.force-iconic .post-btn-container {
+  padding: 0 0.5rem !important;
+}
+
+.social-sidebar-left.force-iconic .post-btn {
+  width: 48px !important;
+  height: 48px !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.social-sidebar-left.force-iconic .post-btn svg {
+  margin: 0 !important;
+}
+
 .social-sidebar-left.force-iconic .nav-link {
   width: 100% !important;
   padding-right: 0 !important;
@@ -753,6 +771,24 @@ button {
 
   :root {
     --sidebar-width: 64px;
+  }
+
+  .social-sidebar-left .post-btn-container {
+    padding: 0 0.5rem !important;
+  }
+
+  .social-sidebar-left .post-btn {
+    width: 48px !important;
+    height: 48px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .social-sidebar-left .post-btn svg {
+    margin: 0 !important;
   }
 
   /* Iconic rules already applied by 1280px breakpoint – just refine padding */

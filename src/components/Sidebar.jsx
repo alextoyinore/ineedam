@@ -67,9 +67,9 @@ export const Sidebar = ({ onPostClick, onInviteClick, forceIconic = false }) => 
                 </nav>
 
                 {/* Post Button */}
-                <div style={{ padding: '0 1rem', marginTop: '1rem' }}>
+                <div className="post-btn-container" style={{ padding: '0 1rem', marginTop: '1rem' }}>
                     <button
-                        className="btn btn-primary"
+                        className="btn btn-primary post-btn"
                         style={{ width: '100%', padding: '1rem', fontSize: '1.1rem', borderRadius: '9999px', display: 'flex', justifyContent: 'center', gap: '0.5rem' }}
                         onClick={onPostClick}
                     >
