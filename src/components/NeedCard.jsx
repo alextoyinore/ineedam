@@ -143,7 +143,28 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
         }
     };
 
-    if (isArchived) return null;
+    const isUnavailable = isArchived || !need || !need.id || need.status === 'archived' || need.status === 'deleted';
+
+    if (isUnavailable) return (
+        <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            padding: '1rem 1.5rem',
+            borderBottom: '1px solid var(--border-glass)',
+            color: 'var(--text-muted)',
+            fontSize: '0.9rem',
+        }}>
+            {broadcastedBy && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--accent)', fontSize: '0.82rem', fontWeight: 600, marginRight: '0.5rem' }}>
+                    <Repeat2 size={14} />
+                    <span>{broadcastedBy.display_name} broadcasted</span>
+                </div>
+            )}
+            <Archive size={16} style={{ flexShrink: 0, opacity: 0.5 }} />
+            <span style={{ fontStyle: 'italic' }}>This need is no longer available</span>
+        </div>
+    );
     return (
         <div
             onClick={() => !isFullDetail && navigate(`/need/${need.id}`)}

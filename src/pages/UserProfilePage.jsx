@@ -118,8 +118,7 @@ export const UserProfilePage = () => {
                 const followingData = results[7].status === 'fulfilled' ? results[7].value : [];
 
                 const shapedNeeds = (needsData || [])
-                    .filter(n => n.status !== 'archived')
-                    .map(shapeNeed)
+                    .map(n => ({ ...shapeNeed(n), status: n.status }))
                     .map(n => ({ ...n, type: 'need' }));
 
                 const filteredReplies = (repliesData || []).filter(r => r.status !== 'archived');
