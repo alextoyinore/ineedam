@@ -9,17 +9,18 @@ import { useSettings } from '../context/SettingsContext';
 import { useTheme } from '../context/ThemeContext';
 
 
-export const Sidebar = ({ onPostClick, onInviteClick }) => {
+export const Sidebar = ({ onPostClick, onInviteClick, forceIconic = false }) => {
     const location = useLocation();
     const { profile, signOut } = useAuth();
     const { settings } = useSettings();
     const { isDark } = useTheme();
+
     const { unreadCount } = useNotifications();
     const { unreadThreadsCount } = useMessages();
     const [showLogout, setShowLogout] = useState(false);
 
     return (
-        <aside className="social-sidebar-left">
+        <aside className={`social-sidebar-left ${forceIconic ? 'force-iconic' : ''}`}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', height: '100%', padding: '1.25rem 0' }}>
 
                 {/* Logo */}

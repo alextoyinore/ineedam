@@ -242,6 +242,42 @@ button {
   width: 250px;
 }
 
+/* Force Iconic Mode for Sidebar */
+.social-sidebar-left.force-iconic {
+  width: 64px !important;
+}
+
+.social-sidebar-left.force-iconic .nav-link {
+  width: 100% !important;
+  padding-right: 0 !important;
+}
+
+.social-sidebar-left.force-iconic .nav-link,
+.social-sidebar-left.force-iconic a:not(.sidebar-logo-container),
+.social-sidebar-left.force-iconic .btn-primary,
+.social-sidebar-left.force-iconic .nav-link-hover,
+.social-sidebar-left.force-iconic .sidebar-logo-container {
+  justify-content: center !important;
+  padding: 1rem 0 !important;
+  gap: 0 !important;
+}
+
+.social-sidebar-left.force-iconic .nav-text,
+.social-sidebar-left.force-iconic .btn-primary span,
+.social-sidebar-left.force-iconic .full-text-logo,
+.social-sidebar-left.force-iconic .hide-on-iconic {
+  display: none !important;
+}
+
+.social-sidebar-left.force-iconic .icon-only-logo {
+  display: block !important;
+  margin: 0 auto;
+}
+
+.social-sidebar-left.force-iconic .nav-link-hover>div:first-child {
+  margin: 0 auto !important;
+}
+
 .social-sidebar-right {
   position: sticky;
   top: 1rem;
@@ -265,6 +301,21 @@ button {
   padding: 0;
   width: 100%;
 }
+
+.social-main-wrapper.is-messages-route {
+  max-width: none;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.social-main-content.is-messages-route {
+  height: 100vh;
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 
 
 

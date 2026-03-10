@@ -28,6 +28,7 @@ export const Layout = ({ children }) => {
   // Hide FAB and potentially other logic for chat detail view
   // Hide branding header and FAB for any deep messaging routes on mobile
   const isChatDetail = location.pathname.includes('/messages/') && location.pathname.split('/').filter(Boolean).length >= 2;
+  const isMessagesRoute = location.pathname.startsWith('/messages');
 
   return (
     <div className="layout-container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -35,10 +36,11 @@ export const Layout = ({ children }) => {
 
 
 
-      <div className="social-layout-grid">
+      <div className="social-layout-grid" style={isMessagesRoute ? { gridTemplateColumns: '64px 1fr', gap: 0 } : {}}>
         {/* Left Navigation */}
-        <div style={{ width: '250px' }}>
+        <div style={{ width: isMessagesRoute ? '64px' : '250px' }}>
           <Sidebar
+            forceIconic={isMessagesRoute}
             onPostClick={() => {
               setIsPostModalOpen(true);
               setIsDrawerOpen(false);
@@ -51,16 +53,18 @@ export const Layout = ({ children }) => {
         </div>
 
         {/* Main Feed Activity */}
-        <div className="social-main-wrapper">
-          <main className={`social-main-content ${isChatDetail ? 'is-chat-detail' : ''}`}>
+        <div className={`social-main-wrapper ${isMessagesRoute ? 'is-messages-route' : ''}`}>
+          <main className={`social-main-content ${isChatDetail ? 'is-chat-detail' : ''} ${isMessagesRoute ? 'is-messages-route' : ''}`}>
             {children}
           </main>
         </div>
 
-        {/* Right Widgets */}
-        <div style={{ width: '300px' }} className="desktop-only">
-          <RightSidebar />
-        </div>
+        {/* Right Widgets - Hidden on messages route to make room for chat */}
+        {!isMessagesRoute && (
+          <div style={{ width: '300px' }} className="desktop-only">
+            <RightSidebar />
+          </div>
+        )}
       </div>
 
       {/* Mobile Floating Action Button */}

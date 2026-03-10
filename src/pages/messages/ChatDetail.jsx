@@ -363,7 +363,9 @@ export const ChatDetail = () => {
                 background: 'var(--bg-base)',
                 width: '100%',
                 maxWidth: '100%',
-                position: 'relative'
+                position: 'relative',
+                height: '100%',
+                overflow: 'hidden'
             }}
         >
             {/* Header */}
@@ -428,10 +430,12 @@ export const ChatDetail = () => {
                 className={`messages-scroll-area ${activeEmojiMessageId ? 'has-active-picker' : ''}`}
                 style={{
                     flex: 1,
+                    overflowY: 'auto',
+                    minHeight: 0,
                     padding: isMobile ? '1rem' : '1.5rem',
                     display: 'flex',
                     flexDirection: 'column-reverse',
-                    gap: '0.4rem',
+                    gap: '0.15rem',
                     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Cg stroke='%236366f1' stroke-opacity='0.02' fill='none' stroke-width='1.5'%3E%3Cpath d='M40 40h60c8 0 15 7 15 15v40c0 8-7 15-15 15h-20l-15 15v-15h-25c-8 0-15-7-15-15v-40c0-8 7-15 15-15z'/%3E%3Cpath d='M160 160l30-30 15 15-30 30z M195 125l15-15 15 15-15 15z M155 165l5 25-25-5z'/%3E%3Cpath d='M160 40h30c4 0 8 4 8 8v15c0 4-4 8-8 8h-5l-10 10v-10h-15c-4 0-8-4-8-8v-15c0-4 4-8 8-8z'/%3E%3C/g%3E%3C/svg%3E")`
                 }}>
                 {[...activeThread.messages].reverse().map((msg, index, allMsgs) => {
@@ -470,7 +474,6 @@ export const ChatDetail = () => {
                                     display: 'flex',
                                     flexDirection: 'column',
                                     alignItems: isMe ? 'flex-end' : 'flex-start',
-                                    marginBottom: '0.2rem',
                                     position: 'relative'
                                 }}
                             >

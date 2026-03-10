@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Search, MailPlus, X, Loader } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useMessages } from '../../context/MessagesContext';
 import { useAuth } from '../../context/AuthContext';
 import { searchProfiles } from '../../lib/profileService';
 import { getOrCreateThread } from '../../lib/messageService';
 
-export const MessageThreads = () => {
+export const MessageThreads = ({ isSplitView = false }) => {
     const { threads, startChat } = useMessages();
     const { user } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
     const [isSearching, setIsSearching] = useState(false);
     const [threadSearch, setThreadSearch] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
@@ -168,43 +169,48 @@ export const MessageThreads = () => {
                         )}
                     </div>
                 ) : filteredThreads.length > 0 ? (
-                    filteredThreads.map(thread => (
-                        <div
-                            key={thread.id}
-                            onClick={() => navigate(`/messages/${thread.id}`)}
-                            className="feed-item-hover"
-                            style={{
-                                padding: '1rem 1.5rem', display: 'flex', gap: '1rem', alignItems: 'center',
-                                cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.05)',
-                                position: 'relative'
-                            }}
-                        >
-                            {thread.unread && (
-                                <div style={{ position: 'absolute', left: '0.4rem', top: '50%', transform: 'translateY(-50%)', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary)' }} />
-                            )}
-                            <div className="avatar-lg" style={{
-                                borderRadius: '50%', flexShrink: 0,
-                                background: thread.withUserAvatar ? `url(${thread.withUserAvatar}) center/cover` : 'linear-gradient(135deg, var(--primary), var(--secondary))',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'white',
-                                overflow: 'hidden'
-                            }}>
-                                {!thread.withUserAvatar && (thread.withUser?.charAt(0) || '?')}
-                            </div>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
-                                    <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)' }}>{thread.withUser}</span>
-                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{new Date(thread.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                </div>
-                                <p style={{
-                                    margin: 0, fontSize: '0.85rem', color: thread.unread ? 'var(--text-primary)' : 'var(--text-muted)',
-                                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                                    fontWeight: thread.unread ? 600 : 400
+                    filteredThreads.map(thread => {
+                        const isActive = isSplitView && location.pathname === `/messages/${thread.id}`;
+                        return (
+                            <div
+                                key={thread.id}
+                                onClick={() => navigate(`/messages/${thread.id}`)}
+                                className={`feed-item-hover ${isActive ? 'active-thread' : ''}`}
+                                style={{
+                                    padding: '1rem 1.5rem', display: 'flex', gap: '1rem', alignItems: 'center',
+                                    cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.05)',
+                                    position: 'relative',
+                                    background: isActive ? 'var(--bg-surface-glass)' : 'transparent',
+                                    borderLeft: isActive ? '3px solid var(--primary)' : '3px solid transparent'
+                                }}
+                            >
+                                {thread.unread && (
+                                    <div style={{ position: 'absolute', left: '0.4rem', top: '50%', transform: 'translateY(-50%)', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary)' }} />
+                                )}
+                                <div className="avatar-lg" style={{
+                                    borderRadius: '50%', flexShrink: 0,
+                                    background: thread.withUserAvatar ? `url(${thread.withUserAvatar}) center/cover` : 'linear-gradient(135deg, var(--primary), var(--secondary))',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'white',
+                                    overflow: 'hidden'
                                 }}>
-                                    {thread.lastMessage}
-                                </p>
+                                    {!thread.withUserAvatar && (thread.withUser?.charAt(0) || '?')}
+                                </div>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
+                                        <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)' }}>{thread.withUser}</span>
+                                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{new Date(thread.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                    </div>
+                                    <p style={{
+                                        margin: 0, fontSize: '0.85rem', color: thread.unread ? 'var(--text-primary)' : 'var(--text-muted)',
+                                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                                        fontWeight: thread.unread ? 600 : 400
+                                    }}>
+                                        {thread.lastMessage}
+                                    </p>
+                                </div>
                             </div>
-                        </div>
-                    ))
+                        )
+                    })
                 ) : (
                     <p style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '3rem' }}>
                         {threadSearch ? `No conversations found for "${threadSearch}"` : "No messages yet."}

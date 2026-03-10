@@ -23,6 +23,11 @@ export const VoiceRecorder = ({ onSend, onCancel, onStartRecording }) => {
         };
     }, []);
 
+    useEffect(() => {
+        // Auto-start recording when the component mounts
+        startRecording();
+    }, []);
+
     const startRecording = async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -52,6 +57,7 @@ export const VoiceRecorder = ({ onSend, onCancel, onStartRecording }) => {
         } catch (err) {
             console.error("Error accessing microphone:", err);
             alert("Could not access microphone. Please check permissions.");
+            if (onCancel) onCancel();
         }
     };
 
