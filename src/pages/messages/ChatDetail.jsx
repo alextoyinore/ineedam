@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, Bookmark, Check, Edit2, Trash2 } from 'lucide-react';
+import { MessageSquare, Bookmark, Check, Edit2, Trash2, ArrowLeft, Phone, Video, MoreVertical, Paperclip, Mic, Send, Reply, Smile, PhoneOff, X, FileText } from 'lucide-react';
 import { useMessages } from '../../context/MessagesContext';
 import { OnlineBadge } from '../../components/OnlineBadge';
 import { VoiceRecorder } from '../../components/messages/VoiceRecorder';
