@@ -182,7 +182,7 @@ export const ExplorePage = () => {
                             }}
                             className="nav-link-hover"
                         >
-                            {tab === 'foryou' ? 'For You' : tab === 'following' ? 'Following' : 'Who to Follow'}
+                            {tab === 'foryou' ? 'For You' : tab === 'following' ? 'Following' : 'Community'}
                             {feedTab === tab && (
                                 <motion.div
                                     layoutId="activeTab"
@@ -201,6 +201,24 @@ export const ExplorePage = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
                 {feedTab === 'whotofollow' ? (
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <div
+                            onClick={() => navigate('/who-to-follow')}
+                            style={{
+                                padding: '1rem 1.5rem',
+                                borderBottom: '1px solid var(--border-glass)',
+                                color: 'var(--primary)',
+                                fontWeight: 600,
+                                fontSize: '0.9rem',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem'
+                            }}
+                            className="nav-link-hover"
+                        >
+                            <Users size={18} />
+                            See full Community & Leaderboard →
+                        </div>
                         {loadingSuggestions ? (
                             <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem', color: 'var(--primary)' }}>
                                 <Loader size={32} className="animate-spin" />

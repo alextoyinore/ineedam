@@ -47,5 +47,7 @@ export const CATEGORIES = [
     "Fitness",
     "Security",
     "Safety",
+    "Friendship",
+    "Relationship",
     "Other"
 ].sort();
