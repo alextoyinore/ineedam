@@ -12,6 +12,9 @@ import { InviteModal } from './InviteModal';
 import { useMessages } from '../context/MessagesContext';
 import { useMessageSecurity } from '../context/MessageSecurityContext';
 import { useAuth } from '../context/AuthContext';
+import { useProfileCompletion } from '../hooks/useProfileCompletion';
+import { ProfileCompletionPopup } from './ProfileCompletionPopup';
+import { EditProfileModal } from './EditProfileModal';
 
 export const Layout = ({ children }) => {
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
@@ -23,6 +26,8 @@ export const Layout = ({ children }) => {
   const {
     call, endCall, acceptCall, localStream, remoteStream, toggleVideo
   } = useMessages();
+  const { isPromptOpen, setIsPromptOpen } = useProfileCompletion();
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const location = useLocation();
 
   // Hide FAB and potentially other logic for chat detail view
@@ -98,6 +103,25 @@ export const Layout = ({ children }) => {
       {/* Modals */}
       {isPostModalOpen && <PostNeedModal isOpen={isPostModalOpen} onClose={() => setIsPostModalOpen(false)} />}
       <InviteModal isOpen={isInviteModalOpen} onClose={() => setIsInviteModalOpen(false)} />
+
+      <ProfileCompletionPopup
+        isOpen={isPromptOpen}
+        onClose={(shouldEdit) => {
+          setIsPromptOpen(false);
+          if (shouldEdit === true) setIsEditProfileOpen(true);
+        }}
+      />
+
+      {isEditProfileOpen && profile && (
+        <EditProfileModal
+          isOpen={isEditProfileOpen}
+          onClose={() => setIsEditProfileOpen(false)}
+          currentProfile={profile}
+          onProfileUpdate={() => {
+            setIsEditProfileOpen(false);
+          }}
+        />
+      )}
 
       {/* Mobile Drawer */}
       <MobileDrawer

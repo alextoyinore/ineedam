@@ -32,6 +32,34 @@ import { fetchBroadcastedNeeds } from '../lib/broadcastService';
 import { fetchEndorsementsForUser } from '../lib/endorsementService';
 import { checkBlockStatus, blockUser, unblockUser } from '../lib/moderationService';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
+import { useProfileCompletion } from '../hooks/useProfileCompletion';
+
+const ProfileCompletionBannerPrompt = () => {
+    const { completionItems, isComplete } = useProfileCompletion();
+    if (isComplete) return null;
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            style={{
+                position: 'absolute', bottom: '1rem', right: '1rem',
+                background: 'var(--bg-surface-glass)', backdropFilter: 'blur(10px)',
+                padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border-glass)',
+                maxWidth: '240px', boxShadow: 'none'
+            }}
+        >
+            <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', fontWeight: 700 }}>Complete your Profile</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                {completionItems.filter(i => !i.completed).map(item => (
+                    <span key={item.id} style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <CheckCircle size={10} /> {item.label}
+                    </span>
+                ))}
+            </div>
+        </motion.div>
+    );
+};
 
 export const UserProfilePage = () => {
     const { username } = useParams();
@@ -380,26 +408,7 @@ export const UserProfilePage = () => {
                 position: 'relative'
             }}>
                 {/* Profile Completion Prompt (Owner Only) */}
-                {isOwnProfile && (!profile.username || !profile.bio || !profile.location || !profile.avatar_url) && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        style={{
-                            position: 'absolute', bottom: '1rem', right: '1rem',
-                            background: 'var(--bg-surface-glass)', backdropFilter: 'blur(10px)',
-                            padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border-glass)',
-                            maxWidth: '240px', boxShadow: 'none'
-                        }}
-                    >
-                        <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', fontWeight: 700 }}>Complete your Profile</h4>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                            {!profile.username && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}><CheckCircle size={10} /> Set a username</span>}
-                            {!profile.bio && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}><CheckCircle size={10} /> Add a bio</span>}
-                            {!profile.location && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}><CheckCircle size={10} /> Set your location</span>}
-                            {!profile.avatar_url && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}><CheckCircle size={10} /> Upload an avatar</span>}
-                        </div>
-                    </motion.div>
-                )}
+                {isOwnProfile && <ProfileCompletionBannerPrompt />}
             </div>
 
             {/* Profile Info */}

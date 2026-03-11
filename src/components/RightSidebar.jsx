@@ -6,6 +6,7 @@ import { useSocial } from '../context/SocialContext';
 import { getSuggestedProfiles } from '../lib/profileService';
 import { getCategoryStats } from '../lib/needsService';
 import { OnlineBadge } from './OnlineBadge';
+import { ProfileCompletionList } from './ProfileCompletionList';
 
 export const RightSidebar = () => {
     const { user } = useAuth();
@@ -130,6 +131,9 @@ export const RightSidebar = () => {
     return (
         <aside ref={sidebarRef} className="social-sidebar-right" style={{ top: `${stickyTop}px` }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', height: '100%', padding: '1.5rem 0' }}>
+
+                {/* Profile Completion Checklist */}
+                <ProfileCompletionList />
 
                 {/* Search */}
                 <div style={{ position: 'relative' }}>
