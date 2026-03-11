@@ -122,6 +122,17 @@ export const AuthProvider = ({ children }) => {
     // Handle auto-subscription for verified/logged-in users
     useEffect(() => {
         if (user && profile) {
+            // Update last_seen_at every 2 minutes
+            const updateLastSeen = async () => {
+                await supabase
+                    .from('profiles')
+                    .update({ last_seen_at: new Date().toISOString() })
+                    .eq('id', user.id);
+            };
+
+            updateLastSeen(); // Initial update
+            const heartbeat = setInterval(updateLastSeen, 2 * 60 * 1000);
+
             if (Notification.permission === 'default' || Notification.permission === 'granted') {
                 const timer = setTimeout(() => {
                     /* Existing Web Push (VAPID) subscription - Commented out
@@ -134,8 +145,12 @@ export const AuthProvider = ({ children }) => {
                         subscribeToFCM();
                     }
                 }, 3000);
-                return () => clearTimeout(timer);
+                return () => {
+                    clearTimeout(timer);
+                    clearInterval(heartbeat);
+                };
             }
+            return () => clearInterval(heartbeat);
         }
     }, [user, profile]);
 

@@ -145,7 +145,7 @@ export const notifyPotentialHelpers = async (needId, category, location, posterU
 export const fetchNeeds = async (from = 0, to = 9) => {
     const { data, error } = await supabase
         .from('needs')
-        .select('*, profiles!needs_user_id_fkey(display_name, avatar_url, username, banner_url, bio)')
+        .select('*, profiles!needs_user_id_fkey(display_name, avatar_url, username, banner_url, bio, last_seen_at)')
         .neq('status', 'archived')
         .order('created_at', { ascending: false })
         .range(from, to);
@@ -160,7 +160,7 @@ export const fetchNeeds = async (from = 0, to = 9) => {
 export const fetchNeedsByUser = async (userId, from = 0, to = 9) => {
     const { data, error } = await supabase
         .from('needs')
-        .select('*, profiles!needs_user_id_fkey(display_name, avatar_url, username, banner_url, bio)')
+        .select('*, profiles!needs_user_id_fkey(display_name, avatar_url, username, banner_url, bio, last_seen_at)')
         .eq('user_id', userId)
         .neq('status', 'archived')
         .order('created_at', { ascending: false })
@@ -176,7 +176,7 @@ export const fetchNeedsByUser = async (userId, from = 0, to = 9) => {
 export const getNeedById = async (id) => {
     const { data, error } = await supabase
         .from('needs')
-        .select('*, profiles!needs_user_id_fkey(display_name, avatar_url, username, banner_url, bio)')
+        .select('*, profiles!needs_user_id_fkey(display_name, avatar_url, username, banner_url, bio, last_seen_at)')
         .eq('id', id)
         .single();
 
@@ -228,6 +228,7 @@ export const shapeNeed = (row) => {
         authorBio: row.profiles?.bio || null,
         authorAvatar: row.profiles?.avatar_url || null,
         authorBanner: row.profiles?.banner_url || null,
+        authorLastSeenAt: row.profiles?.last_seen_at || null,
         imageUrl: row.image_url || undefined,
         status: row.status || 'open',
         metById: row.met_by_id || null,
@@ -333,7 +334,7 @@ export const getCategoryStats = async (since = null) => {
 export const searchNeeds = async ({ query, category, minBudget, maxBudget }) => {
     let supabaseQuery = supabase
         .from('needs')
-        .select('*, profiles!needs_user_id_fkey(display_name, avatar_url, username, banner_url, bio)');
+        .select('*, profiles!needs_user_id_fkey(display_name, avatar_url, username, banner_url, bio, last_seen_at)');
 
     if (query) {
         supabaseQuery = supabaseQuery.or(`title.ilike.%${query}%,description.ilike.%${query}%`);

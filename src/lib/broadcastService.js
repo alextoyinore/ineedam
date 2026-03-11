@@ -58,18 +58,18 @@ export const fetchBroadcastedNeeds = async (userId) => {
         .from('broadcasts')
         .select(`
             id, created_at,
-            profiles (id, display_name, username, avatar_url),
+            profiles (id, display_name, username, avatar_url, last_seen_at),
             needs (
                 id, title, description, category, budget_mode, budget_min, budget_max,
                 currency, location, flexibility, image_url, status, created_at,
                 profiles!needs_user_id_fkey (
-                    id, display_name, username, avatar_url
+                    id, display_name, username, avatar_url, last_seen_at
                 )
             ),
             endorsements (
                 id, message, created_at,
-                endorser:profiles!endorsements_endorser_id_fkey(id, display_name, username, avatar_url, bio),
-                endorsed:profiles!endorsements_endorsed_id_fkey(id, display_name, username, avatar_url, bio),
+                endorser:profiles!endorsements_endorser_id_fkey(id, display_name, username, avatar_url, bio, last_seen_at),
+                endorsed:profiles!endorsements_endorsed_id_fkey(id, display_name, username, avatar_url, bio, last_seen_at),
                 needs:needs(id, title, category, budget_min, status)
             )
         `)
@@ -115,18 +115,18 @@ export const fetchAllBroadcasts = async (from = 0, to = 9) => {
         .from('broadcasts')
         .select(`
             id, created_at,
-            profiles (id, display_name, username, avatar_url),
+            profiles (id, display_name, username, avatar_url, last_seen_at),
             needs (
                 id, title, description, category, budget_mode, budget_min, budget_max,
                 currency, location, flexibility, image_url, status, created_at,
                 profiles!needs_user_id_fkey (
-                    id, display_name, username, avatar_url
+                    id, display_name, username, avatar_url, last_seen_at
                 )
             ),
             endorsements (
                 id, message, created_at,
-                endorser:profiles!endorsements_endorser_id_fkey(id, display_name, username, avatar_url, bio),
-                endorsed:profiles!endorsements_endorsed_id_fkey(id, display_name, username, avatar_url, bio),
+                endorser:profiles!endorsements_endorser_id_fkey(id, display_name, username, avatar_url, bio, last_seen_at),
+                endorsed:profiles!endorsements_endorsed_id_fkey(id, display_name, username, avatar_url, bio, last_seen_at),
                 needs:needs(id, title, category, budget_min, status)
             )
         `)

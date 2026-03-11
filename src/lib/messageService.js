@@ -23,7 +23,7 @@ export const fetchUserThreads = async (userId) => {
         .select(`
             id,
             updated_at,
-            thread_participants(user_id, last_read_at, profiles!inner(display_name, avatar_url, username)),
+            thread_participants(user_id, last_read_at, profiles!inner(display_name, avatar_url, username, last_seen_at)),
             messages(
                 id, text, file_url, file_type, created_at, sender_id, reply_to,
                 message_reactions(id, emoji, user_id),
@@ -60,6 +60,7 @@ export const fetchUserThreads = async (userId) => {
             withUser: otherParticipant?.profiles?.display_name || 'Anonymous',
             withUserAvatar: otherParticipant?.profiles?.avatar_url,
             withUserUsername: otherParticipant?.profiles?.username,
+            withUserLastSeenAt: otherParticipant?.profiles?.last_seen_at,
             lastMessage: lastMessage?.text || '',
             timestamp: thread.updated_at,
             unread: isUnread,

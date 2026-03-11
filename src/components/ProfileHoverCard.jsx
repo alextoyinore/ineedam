@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useSocial } from '../context/SocialContext';
 import { getFollowStats } from '../lib/socialService';
+import { OnlineBadge } from './OnlineBadge';
 
 export const ProfileHoverCard = ({ userData, children }) => {
     const [isVisible, setIsVisible] = useState(false);
@@ -93,10 +94,15 @@ export const ProfileHoverCard = ({ userData, children }) => {
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
                                 <div style={{
                                     width: '60px', height: '60px', borderRadius: '50%',
+                                    border: '1px solid var(--border-glass)',
+                                    position: 'relative',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     background: userData.authorAvatar ? `url(${userData.authorAvatar}) center/cover` : 'var(--primary)',
-                                    border: '1px solid var(--border-glass)', overflow: 'hidden'
                                 }}>
                                     {!userData.authorAvatar && (userData.author?.charAt(0) || '?')}
+                                    <div style={{ position: 'absolute', bottom: '0', right: '0' }}>
+                                        <OnlineBadge lastSeenAt={userData.author_last_seen_at || userData.authorLastSeenAt} size="14px" />
+                                    </div>
                                 </div>
                                 {currentUser && userData.id !== currentUser.id && (
                                     <button

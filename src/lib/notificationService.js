@@ -13,7 +13,8 @@ export const fetchNotifications = async (userId) => {
             actorProfile:profiles!notifications_actor_id_fkey (
                 display_name,
                 avatar_url,
-                username
+                username,
+                last_seen_at
             )
         `)
         .eq('user_id', userId)

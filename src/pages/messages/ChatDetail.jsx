@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Phone, Video, MoreVertical, Send, Paperclip, X, FileText, Image as ImageIcon, Mic, PhoneOff, Reply, Smile, MessageSquare, Bookmark, Check, Edit2, Trash2 } from 'lucide-react';
+import { MessageSquare, Bookmark, Check, Edit2, Trash2 } from 'lucide-react';
 import { useMessages } from '../../context/MessagesContext';
+import { OnlineBadge } from '../../components/OnlineBadge';
 import { VoiceRecorder } from '../../components/messages/VoiceRecorder';
 import { AudioBubble } from '../../components/messages/AudioBubble';
 
@@ -400,12 +401,23 @@ export const ChatDetail = () => {
                             borderRadius: '50%',
                             background: activeThread.withUserAvatar ? `url(${activeThread.withUserAvatar}) center/cover` : 'var(--bg-base)',
                             border: '1px solid var(--border-glass)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '600', overflow: 'hidden'
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '600', overflow: 'visible',
+                            position: 'relative'
                         }}>
                             {!activeThread.withUserAvatar && activeThread.withUser.charAt(0)}
+                            <div style={{ position: 'absolute', bottom: '0', right: '0' }}>
+                                <OnlineBadge lastSeenAt={activeThread.withUserLastSeenAt} size="10px" />
+                            </div>
                         </div>
                         <div>
-                            <h3 style={{ margin: 0, fontSize: '1rem' }}>{activeThread.withUser}</h3>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <h3 style={{ margin: 0, fontSize: '1rem' }}>{activeThread.withUser}</h3>
+                                {activeThread.withUserLastSeenAt && (
+                                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                                        • {new Date(activeThread.withUserLastSeenAt) > new Date(Date.now() - 5 * 60 * 1000) ? 'Online' : 'Away'}
+                                    </span>
+                                )}
+                            </div>
                             {activeThread.withUserUsername && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>@{activeThread.withUserUsername}</span>}
                         </div>
                     </Link>

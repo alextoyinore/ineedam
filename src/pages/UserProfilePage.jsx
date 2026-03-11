@@ -15,6 +15,7 @@ import { EndorseModal } from '../components/EndorseModal';
 import { EndorsementFeedCard } from '../components/EndorsementFeedCard';
 import { ReportModal } from '../components/ReportModal';
 import { MentionText } from '../components/MentionText';
+import { OnlineBadge } from '../components/OnlineBadge';
 
 import { useSocial } from '../context/SocialContext';
 import { useAuth } from '../context/AuthContext';
@@ -532,6 +533,10 @@ export const UserProfilePage = () => {
                     <p style={{ color: 'var(--text-muted)', fontSize: '1rem', margin: '0 0 .25rem 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         @{profile.username}
                     </p>
+
+                    <div style={{ marginBottom: '0.75rem' }}>
+                        <OnlineBadge lastSeenAt={profile.last_seen_at} showText={true} />
+                    </div>
 
                     {profile.bio && (
                         <MentionText

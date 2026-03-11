@@ -15,6 +15,7 @@ import { useNotifications } from '../context/NotificationsContext';
 import { ProfileHoverCard } from './ProfileHoverCard';
 import { updateNeedStatus } from '../lib/needsService';
 import { MentionText } from './MentionText';
+import { OnlineBadge } from './OnlineBadge';
 import { useInterest } from '../context/InterestContext';
 import { getInterestCount } from '../lib/interestService';
 
@@ -242,7 +243,8 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                         author: need.author,
                         authorUsername: need.authorUsername,
                         authorAvatar: need.authorAvatar,
-                        authorBio: need.authorBio
+                        authorBio: need.authorBio,
+                        authorLastSeenAt: need.authorLastSeenAt
                     }}>
                         <div
                             onClick={(e) => { e.stopPropagation(); navigate(`/${need.authorUsername}`); }}
@@ -252,13 +254,16 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                                 background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 fontWeight: 'bold', color: 'white', overflow: 'hidden',
-                                cursor: 'pointer'
+                                cursor: 'pointer', position: 'relative'
                             }}>
                             {need.authorAvatar ? (
                                 <img src={need.authorAvatar} alt={need.author || 'User'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                            ) : (
+                                ) : (
                                 (need.author || '?').charAt(0).toUpperCase()
                             )}
+                            <div style={{ position: 'absolute', bottom: '0', right: '0' }}>
+                                <OnlineBadge lastSeenAt={need.author_last_seen_at || need.authorLastSeenAt} size="12px" />
+                            </div>
                         </div>
                     </ProfileHoverCard>
                     <div style={{ minWidth: 0 }}>

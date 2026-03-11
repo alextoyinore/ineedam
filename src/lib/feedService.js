@@ -14,8 +14,8 @@ export const fetchAllEndorsements = async (from = 0, to = 9) => {
             endorser_id,
             endorsed_id,
             need_id,
-            endorser:profiles!endorsements_endorser_id_fkey(id, display_name, username, avatar_url, bio),
-            endorsed:profiles!endorsements_endorsed_id_fkey(id, display_name, username, avatar_url, bio),
+            endorser:profiles!endorsements_endorser_id_fkey(id, display_name, username, avatar_url, bio, last_seen_at),
+            endorsed:profiles!endorsements_endorsed_id_fkey(id, display_name, username, avatar_url, bio, last_seen_at),
             needs(id, title, category, budget_min, status)
         `)
         .order('created_at', { ascending: false })
@@ -42,7 +42,7 @@ export const fetchMixedFeed = async (from = 0, to = 5) => {
     const [{ data: needsData, error: needsError }, endorsements, broadcasts] = await Promise.all([
         supabase
             .from('needs')
-            .select('*, profiles!needs_user_id_fkey(display_name, avatar_url, username, banner_url, bio)')
+            .select('*, profiles!needs_user_id_fkey(display_name, avatar_url, username, banner_url, bio, last_seen_at)')
             .neq('status', 'archived')
             .order('created_at', { ascending: false })
             .range(from, to),
@@ -76,7 +76,7 @@ export const fetchMixedFeed = async (from = 0, to = 5) => {
 export const searchMixedFeed = async ({ query, category, minBudget, maxBudget }, from = 0, to = 9) => {
     let supabaseQuery = supabase
         .from('needs')
-        .select('*, profiles!needs_user_id_fkey(display_name, avatar_url, username, banner_url, bio)');
+        .select('*, profiles!needs_user_id_fkey(display_name, avatar_url, username, banner_url, bio, last_seen_at)');
 
     if (query) {
         supabaseQuery = supabaseQuery.or(`title.ilike.%${query}%,description.ilike.%${query}%`);

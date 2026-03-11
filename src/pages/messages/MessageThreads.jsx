@@ -5,6 +5,7 @@ import { useMessages } from '../../context/MessagesContext';
 import { useAuth } from '../../context/AuthContext';
 import { searchProfiles } from '../../lib/profileService';
 import { getOrCreateThread } from '../../lib/messageService';
+import { OnlineBadge } from '../../components/OnlineBadge';
 
 export const MessageThreads = ({ isSplitView = false }) => {
     const { threads, startChat } = useMessages();
@@ -152,9 +153,12 @@ export const MessageThreads = ({ isSplitView = false }) => {
                                         background: profile.avatar_url ? `url(${profile.avatar_url}) center/cover` : 'var(--bg-surface)',
                                         border: '1px solid var(--border-glass)',
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        fontWeight: 'bold', overflow: 'hidden'
+                                        fontWeight: 'bold', position: 'relative'
                                     }}>
                                         {!profile.avatar_url && (profile.display_name?.charAt(0) || '?')}
+                                        <div style={{ position: 'absolute', bottom: '0', right: '0' }}>
+                                            <OnlineBadge lastSeenAt={profile.last_seen_at} size="10px" />
+                                        </div>
                                     </div>
                                     <div style={{ flex: 1 }}>
                                         <p style={{ fontWeight: 600, fontSize: '0.95rem', margin: 0 }}>{profile.display_name}</p>
@@ -191,9 +195,12 @@ export const MessageThreads = ({ isSplitView = false }) => {
                                     borderRadius: '50%', flexShrink: 0,
                                     background: thread.withUserAvatar ? `url(${thread.withUserAvatar}) center/cover` : 'linear-gradient(135deg, var(--primary), var(--secondary))',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'white',
-                                    overflow: 'hidden'
+                                    position: 'relative'
                                 }}>
                                     {!thread.withUserAvatar && (thread.withUser?.charAt(0) || '?')}
+                                    <div style={{ position: 'absolute', bottom: '2px', right: '2px' }}>
+                                        <OnlineBadge lastSeenAt={thread.withUserLastSeenAt} size="12px" />
+                                    </div>
                                 </div>
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.2rem' }}>

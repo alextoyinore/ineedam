@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Bell, Check, Trash2, UserPlus, MessageCircle, Info, Heart, PhoneOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '../context/NotificationsContext';
+import { OnlineBadge } from '../components/OnlineBadge';
 
 export const NotificationsPage = () => {
     const { notifications, markAsRead, markAllAsRead, clearNotifications } = useNotifications();
@@ -90,12 +91,31 @@ export const NotificationsPage = () => {
                                     width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary)'
                                 }} />
                             )}
-                            <div style={{
-                                width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
-                                background: 'var(--bg-surface)', border: '1px solid var(--border-glass)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center'
-                            }}>
-                                {getIcon(notif.type)}
+                            <div style={{ position: 'relative', flexShrink: 0 }}>
+                                <div style={{
+                                    width: '44px', height: '44px', borderRadius: '50%', flexShrink: 0,
+                                    background: notif.actorProfile?.avatar_url ? `url(${notif.actorProfile.avatar_url}) center/cover` : 'var(--bg-surface)',
+                                    border: '1px solid var(--border-glass)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    position: 'relative', overflow: 'visible'
+                                }}>
+                                    {!notif.actorProfile?.avatar_url && !notif.actorProfile?.display_name && getIcon(notif.type)}
+                                    {!notif.actorProfile?.avatar_url && notif.actorProfile?.display_name && notif.actorProfile.display_name.charAt(0).toUpperCase()}
+                                    <div style={{ position: 'absolute', bottom: '-2px', right: '-2px' }}>
+                                        <OnlineBadge lastSeenAt={notif.actorProfile?.last_seen_at} size="10px" />
+                                    </div>
+                                    {/* Small icon overlay for notification type */}
+                                    {notif.actorProfile?.avatar_url && (
+                                        <div style={{
+                                            position: 'absolute', top: '-4px', right: '-4px',
+                                            background: 'var(--bg-base)', borderRadius: '50%',
+                                            padding: '2px', border: '1px solid var(--border-glass)',
+                                            lineHeight: 0
+                                        }}>
+                                            {React.cloneElement(getIcon(notif.type), { size: 10 })}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                             <div style={{ flex: 1 }}>
                                 <div style={{ fontSize: '0.95rem', color: 'var(--text-primary)', lineHeight: 1.4 }}>

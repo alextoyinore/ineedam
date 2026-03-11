@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Send, Loader, Lock, Globe, MessageSquare, Archive, Paperclip, FileText, Download, X } from 'lucide-react';
+import { OnlineBadge } from '../components/OnlineBadge';
 import { NeedCard } from '../components/NeedCard';
 import { getNeedById, shapeNeed, uploadFileToCloudinary, updateNeed, updateNeedStatus } from '../lib/needsService';
 import { fetchRepliesForNeed, createReply, formatTimeAgo, updateReplyStatus, getFirstReplyTime, formatResponseTime } from '../lib/replyService';
@@ -37,16 +38,20 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachmen
                     author: authorName,
                     authorUsername: authorUsername,
                     authorAvatar: authorAvatar,
-                    authorBio: reply.profiles?.bio
+                    authorBio: reply.profiles?.bio,
+                    authorLastSeenAt: reply.profiles?.last_seen_at
                 }}>
                     <div className="avatar-md" style={{
                         borderRadius: '50%', flexShrink: 0,
                         background: authorAvatar ? `url(${authorAvatar}) center / cover` : (isMe ? 'linear-gradient(135deg, var(--primary), var(--secondary))' : 'var(--bg-surface)'),
                         border: (isMe || authorAvatar) ? 'none' : '1px solid var(--border-glass)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: isMe ? 'white' : 'var(--text-primary)',
-                        overflow: 'hidden', cursor: 'pointer'
+                        cursor: 'pointer', position: 'relative'
                     }}>
                         {!authorAvatar && authorName.charAt(0).toUpperCase()}
+                        <div style={{ position: 'absolute', bottom: '0', right: '0' }}>
+                            <OnlineBadge lastSeenAt={reply.profiles?.last_seen_at} size="12px" />
+                        </div>
                     </div>
                 </ProfileHoverCard>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -56,7 +61,8 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachmen
                             author: authorName,
                             authorUsername: authorUsername,
                             authorAvatar: authorAvatar,
-                            authorBio: reply.profiles?.bio
+                            authorBio: reply.profiles?.bio,
+                            authorLastSeenAt: reply.profiles?.last_seen_at
                         }}>
                             <span style={{ fontWeight: 700, color: 'var(--text-primary)', cursor: 'pointer' }}>{authorName}</span>
                         </ProfileHoverCard>

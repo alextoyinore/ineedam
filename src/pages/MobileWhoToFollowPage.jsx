@@ -6,6 +6,7 @@ import { useSocial } from '../context/SocialContext';
 import { getSuggestedProfiles } from '../lib/profileService';
 import { supabase } from '../lib/supabase';
 import { motion } from 'framer-motion';
+import { OnlineBadge } from '../components/OnlineBadge';
 
 const MEDAL_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32'];
 
@@ -38,7 +39,7 @@ export const MobileWhoToFollowPage = () => {
             try {
                 const { data: endorsements, error } = await supabase
                     .from('endorsements')
-                    .select('endorsed_id, profiles:endorsed_id(id, display_name, username, avatar_url, bio, location)');
+                    .select('endorsed_id, profiles:endorsed_id(id, display_name, username, avatar_url, bio, location, last_seen_at)');
 
                 if (error) throw error;
 
@@ -152,9 +153,13 @@ export const MobileWhoToFollowPage = () => {
                                     <div style={{
                                         width: '48px', height: '48px', borderRadius: '50%', flexShrink: 0,
                                         background: profile.avatar_url ? `url(${profile.avatar_url}) center/cover` : 'var(--primary)',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'white'
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'white',
+                                        position: 'relative'
                                     }}>
                                         {!profile.avatar_url && profile.display_name.charAt(0).toUpperCase()}
+                                        <div style={{ position: 'absolute', bottom: '0', right: '0' }}>
+                                            <OnlineBadge lastSeenAt={profile.last_seen_at} size="12px" />
+                                        </div>
                                     </div>
                                     <div style={{ flex: 1, minWidth: 0 }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -232,9 +237,13 @@ export const MobileWhoToFollowPage = () => {
                                                     : 'linear-gradient(135deg, var(--primary), var(--secondary))',
                                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                 color: 'white', fontWeight: 700, fontSize: '1.1rem',
-                                                border: '2px solid var(--border-glass)'
+                                                border: '2px solid var(--border-glass)',
+                                                position: 'relative'
                                             }}>
                                                 {!leader.avatar_url && (leader.display_name || '?').charAt(0).toUpperCase()}
+                                                <div style={{ position: 'absolute', bottom: '0', right: '0' }}>
+                                                    <OnlineBadge lastSeenAt={leader.last_seen_at} size="12px" />
+                                                </div>
                                             </div>
                                             <div style={{ flex: 1, minWidth: 0 }}>
                                                 <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>

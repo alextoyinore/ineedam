@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useSocial } from '../context/SocialContext';
 import { getSuggestedProfiles } from '../lib/profileService';
 import { getCategoryStats } from '../lib/needsService';
+import { OnlineBadge } from './OnlineBadge';
 
 export const RightSidebar = () => {
     const { user } = useAuth();
@@ -225,9 +226,13 @@ export const RightSidebar = () => {
                                     <div style={{
                                         width: '40px', height: '40px', borderRadius: '50%',
                                         background: profile.avatar_url ? `url(${profile.avatar_url}) center/cover` : 'var(--primary)',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'white', flexShrink: 0
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'white', flexShrink: 0,
+                                        position: 'relative'
                                     }}>
                                         {!profile.avatar_url && profile.display_name.charAt(0).toUpperCase()}
+                                        <div style={{ position: 'absolute', bottom: '0', right: '0' }}>
+                                            <OnlineBadge lastSeenAt={profile.last_seen_at} size="10px" />
+                                        </div>
                                     </div>
                                     <div style={{ flex: 1, minWidth: 0 }}>
                                         <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{profile.display_name}</p>

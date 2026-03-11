@@ -11,6 +11,7 @@ import { ReplyModal } from '../components/ReplyModal';
 import { AttachmentModal } from '../components/AttachmentModal';
 import { Lock, Globe, MessageSquare, Archive, Send, Paperclip, FileText, Download, X } from 'lucide-react';
 import { uploadFileToCloudinary } from '../lib/needsService';
+import { OnlineBadge } from '../components/OnlineBadge';
 
 const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachment }) => {
     const { user } = useAuth();
@@ -34,16 +35,20 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachmen
                     author: authorName,
                     authorUsername: authorUsername,
                     authorAvatar: authorAvatar,
-                    authorBio: reply.profiles?.bio
+                    authorBio: reply.profiles?.bio,
+                    authorLastSeenAt: reply.profiles?.last_seen_at
                 }}>
                     <div className="avatar-md" style={{
                         borderRadius: '50%', flexShrink: 0,
                         background: authorAvatar ? `url(${authorAvatar}) center / cover` : (isMe ? 'linear-gradient(135deg, var(--primary), var(--secondary))' : 'var(--bg-surface)'),
                         border: (isMe || authorAvatar) ? 'none' : '1px solid var(--border-glass)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: isMe ? 'white' : 'var(--text-primary)',
-                        overflow: 'hidden', cursor: 'pointer'
+                        cursor: 'pointer', position: 'relative'
                     }}>
                         {!authorAvatar && authorName.charAt(0).toUpperCase()}
+                        <div style={{ position: 'absolute', bottom: '0', right: '0' }}>
+                            <OnlineBadge lastSeenAt={reply.profiles?.last_seen_at} size="12px" />
+                        </div>
                     </div>
                 </ProfileHoverCard>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -53,7 +58,8 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachmen
                             author: authorName,
                             authorUsername: authorUsername,
                             authorAvatar: authorAvatar,
-                            authorBio: reply.profiles?.bio
+                            authorBio: reply.profiles?.bio,
+                            authorLastSeenAt: reply.profiles?.last_seen_at
                         }}>
                             <span style={{ fontWeight: 700, color: 'var(--text-primary)', cursor: 'pointer' }}>{authorName}</span>
                         </ProfileHoverCard>
