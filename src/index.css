@@ -46,12 +46,12 @@ html {
 }
 
 [data-theme='dark'] {
-  /* Color Palette - Vibrant Dark Mode (Original) */
-  --bg-base: #0f1115;
-  --bg-base-rgb: 15, 17, 21;
-  --bg-surface: #1a1d24;
-  --bg-surface-glass: rgba(26, 29, 36, 0.6);
-  --bg-surface-glass-hover: rgba(26, 29, 36, 0.8);
+  /* Color Palette - AMOLED Black Dark Mode */
+  --bg-base: #000000;
+  --bg-base-rgb: 0, 0, 0;
+  --bg-surface: #000000;
+  --bg-surface-glass: rgba(0, 0, 0, 0.7);
+  --bg-surface-glass-hover: rgba(10, 10, 10, 0.8);
 
   --primary: #22C55E;
   --primary-hover: #16A34A;
