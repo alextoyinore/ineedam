@@ -4,7 +4,7 @@ import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import {
     ArrowLeft, Calendar, MapPin, Users, Mail, UserPlus, UserMinus,
     ShieldCheck, Edit3, CheckCircle, Trash2, Archive, Settings, Repeat2, Loader,
-    MoreVertical, Flag, Ban
+    MoreVertical, Flag, Ban, MessageSquare
 } from 'lucide-react';
 
 import { NeedCard } from '../components/NeedCard';
@@ -421,7 +421,7 @@ export const UserProfilePage = () => {
                                 <button onClick={() => setIsEditModalOpen(true)} className="btn btn-secondary" style={{ padding: '0.5rem 1.5rem', borderRadius: '9999px', fontWeight: 600 }}>
                                     Edit Profile
                                 </button>
-                                <button onClick={() => navigate('/settings')} style={{ padding: '0.5rem', borderRadius: '50%', border: '1px solid var(--border-glass)', color: 'var(--text-primary)', background: 'var(--bg-surface)', cursor: 'pointer' }} className="glass-panel-hover" title="Settings">
+                                <button onClick={() => navigate('/settings')} style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, borderRadius: '50%', border: '1px solid var(--border-glass)', color: 'var(--text-primary)', background: 'var(--bg-surface)', cursor: 'pointer' }} className="glass-panel-hover" title="Settings">
                                     <Settings size={20} />
                                 </button>
                             </div>
@@ -447,7 +447,8 @@ export const UserProfilePage = () => {
                                     <button
                                         onClick={handleMessage}
                                         style={{
-                                            padding: '0.5rem', borderRadius: '50%', border: '1px solid var(--border-glass)',
+                                            width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                                            borderRadius: '50%', border: '1px solid var(--border-glass)',
                                             color: 'var(--text-primary)', background: 'var(--bg-surface)', cursor: 'pointer'
                                         }}
                                         className="glass-panel-hover"
@@ -466,7 +467,8 @@ export const UserProfilePage = () => {
                                         <button
                                             onClick={() => setIsMenuOpen(!isMenuOpen)}
                                             style={{
-                                                padding: '0.5rem', borderRadius: '50%', border: '1px solid var(--border-glass)',
+                                                width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                                                borderRadius: '50%', border: '1px solid var(--border-glass)',
                                                 color: 'var(--text-primary)', background: 'var(--bg-surface)', cursor: 'pointer'
                                             }}
                                             className="glass-panel-hover"
