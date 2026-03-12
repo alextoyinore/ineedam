@@ -62,20 +62,30 @@ export const ReportModal = ({ isOpen, onClose, reportedProfile, onSuccess }) => 
                         background: 'var(--bg-surface)', 
                         width: '100%', 
                         maxWidth: isMobile ? '100%' : '400px',
+                        maxHeight: isMobile ? '90vh' : 'auto',
                         borderRadius: isMobile ? '24px 24px 0 0' : '24px', 
                         border: '1px solid var(--border-glass)',
-                        overflow: 'hidden', 
-                        paddingBottom: isMobile ? 'env(safe-area-inset-bottom)' : 0
+                        overflow: 'hidden',
+                        display: 'flex',
+                        flexDirection: 'column'
                     }}
                 >
                     {/* Handle for mobile bottom sheet */}
                     {isMobile && (
-                        <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '0.75rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '0.75rem', flexShrink: 0 }}>
                             <div style={{ width: '40px', height: '4px', background: 'var(--border-glass)', borderRadius: '2px' }} />
                         </div>
                     )}
 
-                    <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border-glass)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    {/* Header - Sticky */}
+                    <div style={{ 
+                        padding: '1.25rem 1.5rem', 
+                        borderBottom: '1px solid var(--border-glass)', 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center',
+                        flexShrink: 0
+                    }}>
                         <h3 className="h3" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.25rem' }}>
                             <AlertTriangle size={20} color="#ef4444" />
                             Report User
@@ -85,46 +95,58 @@ export const ReportModal = ({ isOpen, onClose, reportedProfile, onSuccess }) => 
                         </button>
                     </div>
 
-                    <form onSubmit={handleSubmit} style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                        <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                            Why are you reporting <strong>{reportedProfile.display_name}</strong>?
-                        </p>
+                    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+                        {/* Scrollable Content */}
+                        <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', overflowY: 'auto', flex: 1 }}>
+                            <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                                Why are you reporting <strong>{reportedProfile.display_name}</strong>?
+                            </p>
 
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 600 }}>Reason</label>
-                            <select
-                                value={reason}
-                                onChange={e => setReason(e.target.value)}
-                                style={{
-                                    width: '100%', padding: '0.75rem', borderRadius: '12px',
-                                    background: 'var(--bg-base)', border: '1px solid var(--border-glass)',
-                                    color: 'var(--text-primary)', outline: 'none'
-                                }}
-                            >
-                                <option value="spam">Spam or misleading</option>
-                                <option value="harassment">Harassment or bullying</option>
-                                <option value="inappropriate">Inappropriate content</option>
-                                <option value="scam">Scam or fraud</option>
-                                <option value="other">Other</option>
-                            </select>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 600 }}>Reason</label>
+                                <select
+                                    value={reason}
+                                    onChange={e => setReason(e.target.value)}
+                                    style={{
+                                        width: '100%', padding: '0.75rem', borderRadius: '12px',
+                                        background: 'var(--bg-base)', border: '1px solid var(--border-glass)',
+                                        color: 'var(--text-primary)', outline: 'none'
+                                    }}
+                                >
+                                    <option value="spam">Spam or misleading</option>
+                                    <option value="harassment">Harassment or bullying</option>
+                                    <option value="inappropriate">Inappropriate content</option>
+                                    <option value="scam">Scam or fraud</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 600 }}>Additional Notes (Optional)</label>
+                                <textarea
+                                    value={notes}
+                                    onChange={e => setNotes(e.target.value)}
+                                    placeholder="Provide more context to help us understand..."
+                                    rows={4}
+                                    style={{
+                                        width: '100%', padding: '0.75rem', borderRadius: '12px',
+                                        background: 'var(--bg-base)', border: '1px solid var(--border-glass)',
+                                        color: 'var(--text-primary)', outline: 'none', resize: 'vertical'
+                                    }}
+                                />
+                            </div>
                         </div>
 
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 600 }}>Additional Notes (Optional)</label>
-                            <textarea
-                                value={notes}
-                                onChange={e => setNotes(e.target.value)}
-                                placeholder="Provide more context to help us understand..."
-                                rows={4}
-                                style={{
-                                    width: '100%', padding: '0.75rem', borderRadius: '12px',
-                                    background: 'var(--bg-base)', border: '1px solid var(--border-glass)',
-                                    color: 'var(--text-primary)', outline: 'none', resize: 'vertical'
-                                }}
-                            />
-                        </div>
-
-                        <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
+                        {/* Footer - Sticky */}
+                        <div style={{ 
+                            display: 'flex', 
+                            gap: '1rem', 
+                            padding: '1.25rem 1.5rem',
+                            borderTop: '1px solid var(--border-glass)',
+                            background: 'var(--bg-surface)',
+                            paddingBottom: isMobile ? 'calc(1.25rem + env(safe-area-inset-bottom))' : '1.25rem',
+                            flexShrink: 0
+                        }}>
                             <button
                                 type="button"
                                 onClick={onClose}
