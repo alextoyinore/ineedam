@@ -4,7 +4,7 @@ import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import {
     ArrowLeft, Calendar, MapPin, Users, Mail, UserPlus, UserMinus,
     ShieldCheck, Edit3, CheckCircle, Trash2, Archive, Settings, Repeat2, Loader,
-    MoreVertical, Flag, Ban, MessageSquare
+    MoreVertical, Flag, Ban, MessageSquare, Share2, Clock
 } from 'lucide-react';
 
 import { NeedCard } from '../components/NeedCard';
@@ -89,6 +89,7 @@ export const UserProfilePage = () => {
         followingCount: 0
     });
     const [responseRate, setResponseRate] = useState(null);
+    const [shareCopied, setShareCopied] = useState(false);
 
     const { scrollY } = useScroll();
     // Animate tabs background relative to typical scroll position for profile details
@@ -198,7 +199,25 @@ export const UserProfilePage = () => {
         if (username) {
             loadProfile();
         }
-    }, [username]);
+    }, [username, currentUser]);
+
+    const handleShareProfile = async () => {
+        try {
+            const url = window.location.href;
+            if (navigator.share) {
+                await navigator.share({
+                    title: `${profile?.display_name || 'User'} (@${profile?.username || 'user'}) on ineedam`,
+                    url: url
+                });
+            } else {
+                await navigator.clipboard.writeText(url);
+                setShareCopied(true);
+                setTimeout(() => setShareCopied(false), 2000);
+            }
+        } catch (err) {
+            console.error("Error sharing profile:", err);
+        }
+    };
 
     const handleProfileUpdate = (updatedProfile) => {
         setProfile(updatedProfile);
@@ -425,110 +444,159 @@ export const UserProfilePage = () => {
                         {!profile.avatar_url && profile.display_name.charAt(0).toUpperCase()}
                     </div>
 
-                    <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginTop: '1rem' }}>
                         {isOwnProfile ? (
-                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                            <>
                                 <button onClick={() => setIsEditModalOpen(true)} className="btn btn-secondary" style={{ padding: '0.5rem 1.5rem', borderRadius: '9999px', fontWeight: 600 }}>
                                     Edit Profile
                                 </button>
-                                <button onClick={() => navigate('/settings')} style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, borderRadius: '50%', border: '1px solid var(--border-glass)', color: 'var(--text-primary)', background: 'var(--bg-surface)', cursor: 'pointer' }} className="glass-panel-hover" title="Settings">
-                                    <Settings size={20} />
-                                </button>
-                            </div>
-                        ) : (
-                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                                {/* Response Rate Badge */}
-                                {responseRate && responseRate.total > 0 && responseRate.rate !== null && (
-                                    <div style={{
-                                        display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
-                                        padding: '0.35rem 0.75rem',
-                                        background: 'var(--bg-surface)', borderRadius: '999px',
-                                        border: '1px solid var(--border-glass)'
-                                    }}>
-                                        <MessageSquare size={14} style={{ color: responseRate.rate >= 70 ? 'var(--primary)' : 'var(--text-muted)' }} />
-                                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                                            Responds to {responseRate.rate}% of helpers
-                                        </span>
-                                    </div>
-                                )}
-
-                                {/* Action Buttons */}
-                                <>
+                                
+                                <div style={{ position: 'relative' }}>
                                     <button
-                                        onClick={handleMessage}
+                                        onClick={() => setIsMenuOpen(!isMenuOpen)}
                                         style={{
                                             width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                                             borderRadius: '50%', border: '1px solid var(--border-glass)',
                                             color: 'var(--text-primary)', background: 'var(--bg-surface)', cursor: 'pointer'
                                         }}
                                         className="glass-panel-hover"
+                                        title="More"
                                     >
-                                        <Mail size={20} />
-                                    </button>
-                                    <button
-                                        onClick={() => toggleFollow(profile.id)}
-                                        className={isFollowing ? "btn btn-secondary" : "btn btn-primary"}
-                                        style={{ padding: '0.5rem 1.5rem', borderRadius: '9999px', fontWeight: 600, minWidth: '100px' }}
-                                    >
-                                        {isFollowing ? 'Following' : 'Follow'}
+                                        <MoreVertical size={20} />
                                     </button>
 
-                                    <div style={{ position: 'relative' }}>
-                                        <button
-                                            onClick={() => setIsMenuOpen(!isMenuOpen)}
-                                            style={{
-                                                width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                                                borderRadius: '50%', border: '1px solid var(--border-glass)',
-                                                color: 'var(--text-primary)', background: 'var(--bg-surface)', cursor: 'pointer'
-                                            }}
-                                            className="glass-panel-hover"
-                                        >
-                                            <MoreVertical size={20} />
-                                        </button>
-
-                                        <AnimatePresence>
-                                            {isMenuOpen && (
-                                                <>
-                                                    <div style={{ position: 'fixed', inset: 0, zIndex: 90 }} onClick={() => setIsMenuOpen(false)} />
-                                                    <motion.div
-                                                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                                                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                                                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    <AnimatePresence>
+                                        {isMenuOpen && (
+                                            <>
+                                                <div style={{ position: 'fixed', inset: 0, zIndex: 90 }} onClick={() => setIsMenuOpen(false)} />
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                    style={{
+                                                        position: 'absolute', top: 'calc(100% + 0.5rem)', right: 0, zIndex: 100,
+                                                        background: 'var(--bg-surface-glass)', backdropFilter: 'blur(16px)',
+                                                        border: '1px solid var(--border-glass)', borderRadius: '12px',
+                                                        padding: '0.5rem', minWidth: '180px', boxShadow: 'none'
+                                                    }}
+                                                >
+                                                    <button
+                                                        onClick={() => { setIsMenuOpen(false); navigate('/settings'); }}
                                                         style={{
-                                                            position: 'absolute', top: 'calc(100% + 0.5rem)', right: 0, zIndex: 100,
-                                                            background: 'var(--bg-surface-glass)', backdropFilter: 'blur(16px)',
-                                                            border: '1px solid var(--border-glass)', borderRadius: '12px',
-                                                            padding: '0.5rem', minWidth: '160px', boxShadow: 'none'
+                                                            width: '100%', padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                                            background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer',
+                                                            textAlign: 'left', borderRadius: '8px'
                                                         }}
+                                                        className="nav-link-hover"
                                                     >
-                                                        <button
-                                                            onClick={() => { setIsMenuOpen(false); setIsReportModalOpen(true); }}
-                                                            style={{
-                                                                width: '100%', padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem',
-                                                                background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer',
-                                                                textAlign: 'left', borderRadius: '8px'
-                                                            }}
-                                                            className="nav-link-hover"
-                                                        >
-                                                            <Flag size={16} /> Report User
-                                                        </button>
-                                                        <button
-                                                            onClick={handleToggleBlock}
-                                                            style={{
-                                                                width: '100%', padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem',
-                                                                background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer',
-                                                                textAlign: 'left', borderRadius: '8px'
-                                                            }}
-                                                            className="nav-link-hover"
-                                                        >
-                                                            <Ban size={16} /> {blockStatus.hasBlocked ? 'Unblock User' : 'Block User'}
-                                                        </button>
-                                                    </motion.div>
-                                                </>
-                                            )}
-                                        </AnimatePresence>
-                                    </div>
-                                </>
+                                                        <Settings size={16} /> Account Settings
+                                                    </button>
+                                                    <button
+                                                        onClick={() => { setIsMenuOpen(false); handleShareProfile(); }}
+                                                        style={{
+                                                            width: '100%', padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                                            background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer',
+                                                            textAlign: 'left', borderRadius: '8px'
+                                                        }}
+                                                        className="nav-link-hover"
+                                                    >
+                                                        <Share2 size={16} /> {shareCopied ? 'Link Copied!' : 'Share Profile'}
+                                                    </button>
+                                                </motion.div>
+                                            </>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                            </>
+                        ) : (
+                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                                <button
+                                    onClick={handleMessage}
+                                    style={{
+                                        width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                                        borderRadius: '50%', border: '1px solid var(--border-glass)',
+                                        color: 'var(--text-primary)', background: 'var(--bg-surface)', cursor: 'pointer'
+                                    }}
+                                    className="glass-panel-hover"
+                                    title="Message"
+                                >
+                                    <Mail size={20} />
+                                </button>
+                                <button
+                                    onClick={() => toggleFollow(profile.id)}
+                                    className={isFollowing ? "btn btn-secondary" : "btn btn-primary"}
+                                    style={{ padding: '0.5rem 1.5rem', borderRadius: '9999px', fontWeight: 600, minWidth: '100px' }}
+                                >
+                                    {isFollowing ? 'Following' : 'Follow'}
+                                </button>
+
+                                <div style={{ position: 'relative' }}>
+                                    <button
+                                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                        style={{
+                                            width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                                            borderRadius: '50%', border: '1px solid var(--border-glass)',
+                                            color: 'var(--text-primary)', background: 'var(--bg-surface)', cursor: 'pointer'
+                                        }}
+                                        className="glass-panel-hover"
+                                        title="More"
+                                    >
+                                        <MoreVertical size={20} />
+                                    </button>
+
+                                    <AnimatePresence>
+                                        {isMenuOpen && (
+                                            <>
+                                                <div style={{ position: 'fixed', inset: 0, zIndex: 90 }} onClick={() => setIsMenuOpen(false)} />
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                    style={{
+                                                        position: 'absolute', top: 'calc(100% + 0.5rem)', right: 0, zIndex: 100,
+                                                        background: 'var(--bg-surface-glass)', backdropFilter: 'blur(16px)',
+                                                        border: '1px solid var(--border-glass)', borderRadius: '12px',
+                                                        padding: '0.5rem', minWidth: '180px', boxShadow: 'none'
+                                                    }}
+                                                >
+                                                    <button
+                                                        onClick={() => { setIsMenuOpen(false); handleShareProfile(); }}
+                                                        style={{
+                                                            width: '100%', padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                                            background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer',
+                                                            textAlign: 'left', borderRadius: '8px'
+                                                        }}
+                                                        className="nav-link-hover"
+                                                    >
+                                                        <Share2 size={16} /> {shareCopied ? 'Link Copied!' : 'Share Profile'}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => { setIsMenuOpen(false); setIsReportModalOpen(true); }}
+                                                        style={{
+                                                            width: '100%', padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                                            background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer',
+                                                            textAlign: 'left', borderRadius: '8px'
+                                                        }}
+                                                        className="nav-link-hover"
+                                                    >
+                                                        <Flag size={16} /> Report User
+                                                    </button>
+                                                    <button
+                                                        onClick={handleToggleBlock}
+                                                        style={{
+                                                            width: '100%', padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                                            background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer',
+                                                            textAlign: 'left', borderRadius: '8px'
+                                                        }}
+                                                        className="nav-link-hover"
+                                                    >
+                                                        <Ban size={16} /> {blockStatus.hasBlocked ? 'Unblock User' : 'Block User'}
+                                                    </button>
+                                                </motion.div>
+                                            </>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
                             </div>
                         )}
                     </div>
@@ -539,37 +607,66 @@ export const UserProfilePage = () => {
                         <h1 className="h1" style={{ fontSize: '1.5rem', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{profile.display_name}</h1>
                         {profile.id === '31080433-1e29-4eee-9b6f-673b1e159802' && <ShieldCheck size={18} color="var(--primary)" style={{ flexShrink: 0 }} />}
                     </div>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '1rem', margin: '0 0 .25rem 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        @{profile.username}
-                    </p>
-
-                    <div style={{ marginBottom: '0.75rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', margin: '0 0 .25rem 0' }}>
                         <OnlineBadge lastSeenAt={profile.last_seen_at} showText={true} />
+                        <p style={{ color: 'var(--text-muted)', fontSize: '1rem', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            @{profile.username}
+                        </p>
                     </div>
 
-                    {profile.bio && (
-                        <MentionText
-                            text={profile.bio}
-                            style={{ fontSize: '0.95rem', color: 'var(--text-primary)', marginBottom: '.25rem' }}
-                        />
-                    )}
-
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '.25rem' }}>
-                        {profile.location && (
-                            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                                <MapPin size={16} /> {profile.location}
-                            </span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '0.5rem' }}>
+                        {profile.bio && (
+                            <MentionText
+                                text={profile.bio}
+                                style={{ fontSize: '0.95rem', color: 'var(--text-primary)', margin: 0 }}
+                            />
                         )}
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                            <Calendar size={16} /> Joined {new Date(profile.created_at).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
-                        </span>
-                    </div>
 
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', fontSize: '0.95rem' }}>
-                        <span style={{ color: 'var(--text-muted)' }}><strong style={{ color: 'var(--text-primary)' }}>{stats.followingCount}</strong> Following</span>
-                        <span style={{ color: 'var(--text-muted)' }}><strong style={{ color: 'var(--text-primary)' }}>{stats.followersCount}</strong> Followers</span>
-                        <span style={{ color: 'var(--text-muted)' }}><strong style={{ color: 'var(--text-primary)' }}>{stats.needsMet}</strong> Given</span>
-                        <span style={{ color: 'var(--text-muted)' }}><strong style={{ color: 'var(--text-primary)' }}>{stats.fulfilledRequests}</strong> Received</span>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                            {profile.location && (
+                                <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                    <MapPin size={16} /> {profile.location}
+                                </span>
+                            )}
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                <Calendar size={16} /> Joined {new Date(profile.created_at).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
+                            </span>
+                        </div>
+
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', fontSize: '0.95rem' }}>
+                            <span style={{ color: 'var(--text-muted)' }}><strong style={{ color: 'var(--text-primary)' }}>{stats.followingCount}</strong> Following</span>
+                            <span style={{ color: 'var(--text-muted)' }}><strong style={{ color: 'var(--text-primary)' }}>{stats.followersCount}</strong> Followers</span>
+                            <span style={{ color: 'var(--text-muted)' }}><strong style={{ color: 'var(--text-primary)' }}>{stats.needsMet}</strong> Given</span>
+                            <span style={{ color: 'var(--text-muted)' }}><strong style={{ color: 'var(--text-primary)' }}>{stats.fulfilledRequests}</strong> Received</span>
+                        </div>
+
+                        {/* Responsiveness Metrics */}
+                        {responseRate && responseRate.total > 0 && responseRate.rate !== null && (
+                            <div style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: '1rem', 
+                                marginTop: '0.25rem',
+                                padding: '0.5rem 0',
+                                borderTop: '1px solid var(--border-glass)',
+                                width: 'fit-content'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                                    <MessageSquare size={16} style={{ color: responseRate.rate >= 70 ? 'var(--primary)' : 'var(--text-muted)' }} />
+                                    <span>
+                                        Responds to <strong style={{ color: 'var(--text-primary)' }}>{responseRate.rate}%</strong> of helpers
+                                    </span>
+                                </div>
+                                {responseRate.averageResponseTime && (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                                        <Clock size={16} style={{ color: 'var(--primary)' }} />
+                                        <span>
+                                            Usually responds in <strong style={{ color: 'var(--text-primary)' }}>{responseRate.averageResponseTime}</strong>
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

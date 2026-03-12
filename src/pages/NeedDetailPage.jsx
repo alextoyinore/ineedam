@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Send, Loader, Lock, Globe, MessageSquare, Archive, Paperclip, FileText, Download, X } from 'lucide-react';
+import { ArrowLeft, Send, Loader, Lock, Globe, MessageSquare, Archive, Paperclip, FileText, Download, X, Image } from 'lucide-react';
 import { OnlineBadge } from '../components/OnlineBadge';
 import { NeedCard } from '../components/NeedCard';
-import { getNeedById, shapeNeed, uploadFileToCloudinary, updateNeed, updateNeedStatus } from '../lib/needsService';
+import { getNeedById, shapeNeed, uploadFileToCloudinary, uploadImageToCloudinary, updateNeed, updateNeedStatus } from '../lib/needsService';
 import { fetchRepliesForNeed, createReply, formatTimeAgo, updateReplyStatus, getFirstReplyTime, formatResponseTime } from '../lib/replyService';
 import { useAuth } from '../context/AuthContext';
 import { ProfileHoverCard } from '../components/ProfileHoverCard';
@@ -15,6 +15,7 @@ import { EditNeedModal } from '../components/EditNeedModal';
 import { MarkMetModal } from '../components/MarkMetModal';
 import { EndorseModal } from '../components/EndorseModal';
 import { Helmet } from 'react-helmet-async';
+import { formatDisplayName, formatUsername } from '../lib/profileService';
 
 const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachment }) => {
     const { user } = useAuth();
@@ -64,9 +65,9 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachmen
                             authorBio: reply.profiles?.bio,
                             authorLastSeenAt: reply.profiles?.last_seen_at
                         }}>
-                            <span style={{ fontWeight: 700, color: 'var(--text-primary)', cursor: 'pointer' }}>{authorName}</span>
+                            <span style={{ fontWeight: 700, color: 'var(--text-primary)', cursor: 'pointer' }}>{formatDisplayName(authorName)}</span>
                         </ProfileHoverCard>
-                        {authorUsername && <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>@{authorUsername}</span>}
+                        {authorUsername && <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>@{formatUsername(authorUsername)}</span>}
                         <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>• {formatTimeAgo(reply.created_at)}</span>
 
                         {reply.is_private && (
@@ -142,8 +143,11 @@ export const NeedDetailPage = () => {
     const [isPrivateReply, setIsPrivateReply] = useState(false);
     const [submittingReply, setSubmittingReply] = useState(false);
     const [replyFile, setReplyFile] = useState(null);
+    const [replyImage, setReplyImage] = useState(null);
+    const [imagePreview, setImagePreview] = useState('');
     const [uploadingFile, setUploadingFile] = useState(false);
     const fileInputRef = React.useRef(null);
+    const imageInputRef = React.useRef(null);
 
     const [need, setNeed] = useState(null);
     const [replies, setReplies] = useState([]);
@@ -227,13 +231,18 @@ export const NeedDetailPage = () => {
         try {
             let fileUrl = null;
             let fileType = null;
-            if (replyFile) {
+
+            if (replyImage) {
+                setUploadingFile(true);
+                fileUrl = await uploadImageToCloudinary(replyImage);
+                fileType = 'image';
+            } else if (replyFile) {
                 setUploadingFile(true);
                 const res = await uploadFileToCloudinary(replyFile);
                 fileUrl = res.url;
                 fileType = res.fileType;
-                setUploadingFile(false);
             }
+            setUploadingFile(false);
 
             const newReply = await createReply(need.id, user.id, replyText, isPrivateReply, null, null, fileUrl, fileType);
             // Re-fetch to get profile joins and proper order since RT might be complex here
@@ -242,6 +251,8 @@ export const NeedDetailPage = () => {
             setReplyText('');
             setIsPrivateReply(false);
             setReplyFile(null);
+            setReplyImage(null);
+            setImagePreview('');
         } catch (err) {
             console.error("Failed to post reply", err);
         } finally {
@@ -406,7 +417,7 @@ export const NeedDetailPage = () => {
                 </div>
                 <form style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.75rem' }} onSubmit={handleSubmitReply}>
                     <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                        Replying to <span style={{ color: 'var(--primary)', fontWeight: 600 }}>@{need.authorUsername || 'author'}</span>
+                        Replying to <span style={{ color: 'var(--primary)', fontWeight: 600 }}>@{formatUsername(need.authorUsername || 'author')}</span>
                     </div>
                     <textarea
                         disabled={!user || submittingReply}
@@ -428,20 +439,31 @@ export const NeedDetailPage = () => {
                         }}
                     />
 
-                    {replyFile && (
-                        <div style={{
-                            display: 'flex', alignItems: 'center', gap: '0.75rem',
-                            padding: '0.5rem 0.75rem', background: 'var(--bg-base)',
-                            border: '1px solid var(--border-glass)', borderRadius: '10px'
-                        }}>
-                            <FileText size={16} color="var(--primary)" />
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ fontSize: '0.85rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{replyFile.name}</div>
-                                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{(replyFile.size / 1024 / 1024).toFixed(2)} MB</div>
-                            </div>
-                            <button type="button" onClick={() => setReplyFile(null)} style={{
-                                background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer'
-                            }}><X size={14} /></button>
+                    {/* Media Previews */}
+                    {(imagePreview || replyFile) && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                            {imagePreview && (
+                                <div style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-glass)' }}>
+                                    <img src={imagePreview} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    <button type="button" onClick={() => { setReplyImage(null); setImagePreview(''); }} style={{ position: 'absolute', top: '2px', right: '2px', background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%', color: 'white', padding: '2px' }}><X size={12} /></button>
+                                </div>
+                            )}
+                            {replyFile && (
+                                <div style={{
+                                    display: 'flex', alignItems: 'center', gap: '0.75rem',
+                                    padding: '0.5rem 0.75rem', background: 'var(--bg-base)',
+                                    border: '1px solid var(--border-glass)', borderRadius: '10px'
+                                }}>
+                                    <FileText size={16} color="var(--primary)" />
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div style={{ fontSize: '0.85rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{replyFile.name}</div>
+                                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{(replyFile.size / 1024 / 1024).toFixed(2)} MB</div>
+                                    </div>
+                                    <button type="button" onClick={() => setReplyFile(null)} style={{
+                                        background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer'
+                                    }}><X size={14} /></button>
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -462,7 +484,29 @@ export const NeedDetailPage = () => {
                         </button>
 
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <input type="file" ref={fileInputRef} onChange={(e) => setReplyFile(e.target.files?.[0])} style={{ display: 'none' }} />
+                            <input type="file" ref={fileInputRef} onChange={(e) => { setReplyFile(e.target.files?.[0]); setReplyImage(null); setImagePreview(''); }} style={{ display: 'none' }} />
+                            <input type="file" ref={imageInputRef} accept="image/*" onChange={(e) => { 
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                    setReplyImage(file);
+                                    setImagePreview(URL.createObjectURL(file));
+                                    setReplyFile(null);
+                                }
+                            }} style={{ display: 'none' }} />
+                            
+                            <button
+                                type="button"
+                                onClick={() => imageInputRef.current?.click()}
+                                style={{
+                                    padding: '0.5rem', borderRadius: '50%', color: 'var(--text-muted)',
+                                    background: 'transparent', border: 'none', cursor: 'pointer'
+                                }}
+                                className="nav-link-hover"
+                                title="Attach an image"
+                            >
+                                <Image size={18} />
+                            </button>
+
                             <button
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}

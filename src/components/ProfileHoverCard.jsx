@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Calendar, Users, Award } from 'lucide-react';
+import { MapPin, Calendar, Users, Award, Clock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useSocial } from '../context/SocialContext';
@@ -141,6 +141,12 @@ export const ProfileHoverCard = ({ userData, children }) => {
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
                                             <MapPin size={14} />
                                             <span>{userData.location}</span>
+                                        </div>
+                                    )}
+                                    {userData.firstResponseTime && (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--primary)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+                                            <Clock size={14} />
+                                            <span style={{ fontWeight: 600 }}>{userData.firstResponseTime}</span>
                                         </div>
                                     )}
                                 </div>

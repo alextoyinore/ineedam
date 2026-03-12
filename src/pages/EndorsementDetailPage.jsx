@@ -12,6 +12,7 @@ import { AttachmentModal } from '../components/AttachmentModal';
 import { Lock, Globe, MessageSquare, Archive, Send, Paperclip, FileText, Download, X } from 'lucide-react';
 import { uploadFileToCloudinary } from '../lib/needsService';
 import { OnlineBadge } from '../components/OnlineBadge';
+import { formatDisplayName, formatUsername } from '../lib/profileService';
 
 const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachment }) => {
     const { user } = useAuth();
@@ -61,9 +62,9 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachmen
                             authorBio: reply.profiles?.bio,
                             authorLastSeenAt: reply.profiles?.last_seen_at
                         }}>
-                            <span style={{ fontWeight: 700, color: 'var(--text-primary)', cursor: 'pointer' }}>{authorName}</span>
+                            <span style={{ fontWeight: 700, color: 'var(--text-primary)', cursor: 'pointer' }}>{formatDisplayName(authorName)}</span>
                         </ProfileHoverCard>
-                        {authorUsername && <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>@{authorUsername}</span>}
+                        {authorUsername && <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>@{formatUsername(authorUsername)}</span>}
                         <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>• {formatTimeAgo(reply.created_at)}</span>
 
                         {reply.is_private && (

@@ -76,7 +76,7 @@ export const HomeComposer = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!formData.title || !formData.description) return;
-        
+
         setSubmitError('');
         setSubmitting(true);
 
@@ -120,11 +120,11 @@ export const HomeComposer = () => {
     };
 
     return (
-        <div 
+        <div
             ref={composerRef}
-            className="glass-panel" 
-            style={{ 
-                margin: '0', 
+            className="glass-panel"
+            style={{
+                margin: '0',
                 padding: '1rem 1.25rem',
                 borderTop: 'none',
                 borderLeft: 'none',
@@ -134,11 +134,15 @@ export const HomeComposer = () => {
             }}
         >
             <div style={{ display: 'flex', gap: '1rem' }}>
-                <div style={{
-                    width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
-                    background: profile?.avatar_url ? `url(${profile.avatar_url}) center/cover` : 'var(--primary)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold'
-                }}>
+                <div 
+                    className="avatar-md"
+                    style={{
+                        borderRadius: '50%', flexShrink: 0,
+                        background: profile?.avatar_url ? `url(${profile.avatar_url}) center/cover` : 'var(--primary)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold',
+                        overflow: 'hidden'
+                    }}
+                >
                     {!profile?.avatar_url && (profile?.display_name?.charAt(0).toUpperCase() || '?')}
                 </div>
 
@@ -150,7 +154,7 @@ export const HomeComposer = () => {
                             value={formData.title}
                             onChange={handleChange}
                             onFocus={() => setIsExpanded(true)}
-                            placeholder="What do you need? (Title)"
+                            placeholder="What do you need?"
                             className="composer-input"
                             style={{
                                 background: 'transparent',
@@ -192,7 +196,7 @@ export const HomeComposer = () => {
                                             resize: 'none'
                                         }}
                                     />
-                                    
+
                                     {/* Action Rows */}
                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '0.5rem' }}>
                                         {/* Category */}
@@ -320,10 +324,10 @@ export const HomeComposer = () => {
                         </AnimatePresence>
                     </div>
 
-                    <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center', 
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
                         marginTop: isExpanded ? '0.5rem' : '0',
                         paddingTop: isExpanded ? '0.5rem' : '0',
                         borderTop: isExpanded ? '1px solid var(--border-glass)' : 'none'
@@ -331,7 +335,7 @@ export const HomeComposer = () => {
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                             <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} />
                             <input ref={attachmentInputRef} type="file" onChange={handleFileChange} style={{ display: 'none' }} />
-                            
+
                             <button type="button" onClick={() => fileInputRef.current?.click()} className="btn-icon">
                                 <Image size={20} color="var(--primary)" />
                             </button>
@@ -347,7 +351,6 @@ export const HomeComposer = () => {
                             style={{
                                 padding: '0.5rem 1.25rem',
                                 borderRadius: '9999px',
-                                opacity: (submitting || !formData.title || !formData.description) ? 0.5 : 1,
                                 height: '36px',
                                 fontSize: '0.9rem',
                                 display: 'flex',
@@ -359,7 +362,7 @@ export const HomeComposer = () => {
                             <span>{submitting ? 'Posting...' : 'Post'}</span>
                         </button>
                     </div>
-                    
+
                     {submitError && (
                         <div style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '0.5rem' }}>
                             {submitError}

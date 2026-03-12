@@ -8,6 +8,25 @@ export const MarkMetModal = ({ isOpen, onClose, need, onConfirm }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 435);
+
+    React.useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 435);
+        window.addEventListener('resize', handleResize);
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+            setUsername('');
+            setError('');
+            setLoading(false);
+            setSuccess(false);
+        } else {
+            document.body.style.overflow = 'auto';
+        }
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            document.body.style.overflow = 'auto';
+        };
+    }, [isOpen]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -61,18 +80,22 @@ export const MarkMetModal = ({ isOpen, onClose, need, onConfirm }) => {
             {isOpen && (
                 <div style={{
                     position: 'fixed', inset: 0, zIndex: 2000,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    padding: '1rem', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)'
-                }}>
+                    display: 'flex', alignItems: isMobile ? 'flex-end' : 'center', justifyContent: 'center',
+                    padding: isMobile ? '0' : '1rem', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)'
+                }} onClick={onClose}>
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 20 }}
+                        onClick={(e) => e.stopPropagation()}
+                        initial={{ opacity: 0, scale: isMobile ? 1 : 0.95, y: isMobile ? 100 : 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: isMobile ? 1 : 0.95, y: isMobile ? 100 : 20 }}
                         style={{
                             background: 'var(--bg-surface)', border: '1px solid var(--border-glass)',
-                            borderRadius: '20px', width: '100%', maxWidth: '400px',
+                            borderRadius: isMobile ? '20px 20px 0 0' : '20px', 
+                            width: '100%', maxWidth: '400px',
                             position: 'relative', overflow: 'hidden',
-                            boxShadow: 'none' // Removed shadow
+                            boxShadow: 'none',
+                            height: isMobile ? 'auto' : 'auto',
+                            maxHeight: isMobile ? '60dvh' : '90dvh'
                         }}
                     >
                         {success ? (
@@ -120,7 +143,7 @@ export const MarkMetModal = ({ isOpen, onClose, need, onConfirm }) => {
                                     <button
                                         type="submit"
                                         disabled={loading || !username.trim()}
-                                        className="btn btn-primary"
+                                        className="btn-primary"
                                         style={{ width: '100%', padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
                                     >
                                         {loading ? <Loader size={18} className="animate-spin" /> : <CheckCircle size={18} />}

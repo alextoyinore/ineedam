@@ -22,8 +22,10 @@
   --border-glass: rgba(0, 0, 0, 0.08);
 
   /* Button Theme */
-  --btn-primary-bg: #000000;
+  --btn-primary-bg: #101828;
   --btn-primary-text: #ffffff;
+  --btn-disabled-bg: #f1f5f9;
+  --btn-disabled-text: #94a3b8;
 
   /* Typography */
   --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
@@ -73,9 +75,10 @@ html {
 
   --border-glass: rgba(255, 255, 255, 0.08);
 
-  /* Button Theme */
   --btn-primary-bg: #ffffff;
   --btn-primary-text: #000000;
+  --btn-disabled-bg: #1e293b;
+  --btn-disabled-text: #475569;
   --bubble-me-bg: #121212;
   --bubble-me-text: #ffffff;
   --feed-item-padding: 1.5rem;
@@ -225,9 +228,17 @@ button {
   border: 1px solid var(--btn-primary-bg);
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   opacity: 0.9;
   transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+  background: var(--btn-disabled-bg);
+  color: var(--btn-disabled-text);
+  border-color: var(--btn-disabled-bg);
+  cursor: not-allowed;
+  opacity: 1; /* Override any inline opacity if present */
 }
 
 .btn-secondary {
@@ -641,10 +652,10 @@ button {
 }
 
 .profile-avatar {
-  width: 90px;
-  height: 90px;
-  margin-top: -45px;
-  font-size: 2rem;
+  width: 120px;
+  height: 120px;
+  margin-top: -60px;
+  font-size: 2.5rem;
 }
 
 @media (max-width: 768px) {
@@ -653,10 +664,10 @@ button {
   }
 
   .profile-avatar {
-    width: 60px;
-    height: 60px;
-    margin-top: -30px;
-    font-size: 1.5rem;
+    width: 80px;
+    height: 80px;
+    margin-top: -40px;
+    font-size: 1.8rem;
   }
 }
 

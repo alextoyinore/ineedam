@@ -203,7 +203,7 @@ export const EditProfileModal = ({ isOpen, onClose, currentProfile, onProfileUpd
                             <button type="button" onClick={onClose} className="btn" style={{ background: 'transparent', color: 'var(--text-primary)', padding: '0.75rem 1.5rem', marginRight: '1rem', cursor: 'pointer', border: 'none' }}>
                                 Cancel
                             </button>
-                            <button type="submit" disabled={submitting} className="btn btn-primary" style={{ padding: '0.75rem 1.5rem', borderRadius: '9999px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <button type="submit" disabled={submitting} className="btn-primary" style={{ padding: '0.75rem 1.5rem', borderRadius: '9999px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 {submitting ? <Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Save size={16} />}
                                 Save Changes
                             </button>

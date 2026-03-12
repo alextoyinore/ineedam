@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Award, ArrowRight, Heart, Repeat2, Bookmark, MessageSquare, MessageCircle, Share2 } from 'lucide-react';
+import { Award, ArrowRight, Heart, Repeat2, Bookmark, MessageSquare, MessageCircle, Share2, MoreVertical, Flag, Ban, Archive, Trash2, Edit3, VolumeX } from 'lucide-react';
 import { formatTimeAgo } from './../lib/replyService';
-import { ProfileHoverCard } from './ProfileHoverCard';
+import { formatDisplayName, formatUsername } from '../lib/profileService';
 import { useLikes } from '../context/LikesContext';
 import { useBookmarks } from '../context/BookmarksContext';
 import { useBroadcasts } from '../context/BroadcastsContext';
@@ -40,6 +40,7 @@ export const EndorsementFeedCard = ({ endorsement, broadcastedBy = null }) => {
     const [replyCount, setReplyCount] = useState(0);
     const [broadcastCount, setBroadcastCount] = useState(0);
     const [shareCopied, setShareCopied] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     useEffect(() => {
         const loadCounts = async () => {
@@ -156,11 +157,10 @@ export const EndorsementFeedCard = ({ endorsement, broadcastedBy = null }) => {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '0.5rem',
-                    color: 'var(--accent)',
+                    color: 'var(--primary)',
                     fontSize: '0.85rem',
                     fontWeight: 600,
-                    marginBottom: '0.5rem',
-                    marginLeft: '3.25rem' // Align with content
+                    marginBottom: '0.1rem'
                 }}>
                     <Repeat2 size={16} />
                     <span
@@ -172,7 +172,7 @@ export const EndorsementFeedCard = ({ endorsement, broadcastedBy = null }) => {
                         onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
                         onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
                     >
-                        {broadcastedBy.display_name} broadcasted
+                        {formatDisplayName(broadcastedBy.display_name)} broadcasted
                     </span>
                 </div>
             )}
@@ -235,12 +235,12 @@ export const EndorsementFeedCard = ({ endorsement, broadcastedBy = null }) => {
                                         <span
                                             onClick={(e) => { e.stopPropagation(); navigate(`/${endorsedUser.username}`); }}
                                             style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', cursor: 'pointer' }}>
-                                            {endorsedUser.display_name}
+                                            {formatDisplayName(endorsedUser.display_name)}
                                         </span>
                                     </ProfileHoverCard>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
                                         {endorsedUser.username && (
-                                            <span>@{endorsedUser.username}</span>
+                                            <span>@{formatUsername(endorsedUser.username)}</span>
                                         )}
                                         <span>• {formatTimeAgo(endorsement.created_at)}</span>
                                     </div>
@@ -249,6 +249,106 @@ export const EndorsementFeedCard = ({ endorsement, broadcastedBy = null }) => {
                                     <span>Verified Match Helper</span>
                                 </div>
                             </div>
+                        </div>
+
+                        {/* Menu Actions */}
+                        <div style={{ position: 'relative' }}>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setIsMenuOpen(!isMenuOpen);
+                                }}
+                                className="nav-link-hover"
+                                style={{
+                                    padding: '0.4rem', borderRadius: '50%', color: 'var(--text-muted)',
+                                    background: 'transparent', transition: 'all 0.2s',
+                                    marginRight: '-0.5rem'
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
+                                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+                            >
+                                <MoreVertical size={20} />
+                            </button>
+
+                            {isMenuOpen && (
+                                <>
+                                    <div
+                                        onClick={(e) => { e.stopPropagation(); setIsMenuOpen(false); }}
+                                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 900 }}
+                                    />
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '100%',
+                                        right: 0,
+                                        width: '180px',
+                                        background: 'var(--bg-surface)',
+                                        border: '1px solid var(--border-glass)',
+                                        borderRadius: '12px',
+                                        padding: '0.4rem',
+                                        zIndex: 1000,
+                                        boxShadow: 'none',
+                                        marginTop: '0.25rem',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '2px'
+                                    }}>
+                                        {/* View Thread Action */}
+                                        {hasNeed && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setIsMenuOpen(false);
+                                                    navigate(`/need/${need.id}`);
+                                                }}
+                                                style={{
+                                                    width: '100%', textAlign: 'left', padding: '0.7rem',
+                                                    borderRadius: '8px', display: 'flex', alignItems: 'center',
+                                                    gap: '0.75rem', color: 'var(--text-primary)',
+                                                    fontSize: '0.9rem', fontWeight: 500
+                                                }}
+                                                className="nav-link-hover"
+                                            >
+                                                <MessageCircle size={18} />
+                                                View Thread
+                                            </button>
+                                        )}
+
+                                        {/* Share Action */}
+                                        <button
+                                            onClick={handleShare}
+                                            style={{
+                                                width: '100%', textAlign: 'left', padding: '0.7rem',
+                                                borderRadius: '8px', display: 'flex', alignItems: 'center',
+                                                gap: '0.75rem', color: shareCopied ? '#22c55e' : 'var(--text-primary)',
+                                                fontSize: '0.9rem', fontWeight: 500, transition: 'color 0.2s'
+                                            }}
+                                            className="nav-link-hover"
+                                        >
+                                            <Share2 size={18} />
+                                            {shareCopied ? 'Link Copied!' : 'Share Endorsement'}
+                                        </button>
+
+                                        {/* report action */}
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setIsMenuOpen(false);
+                                                // Report logic would go here
+                                            }}
+                                            style={{
+                                                width: '100%', textAlign: 'left', padding: '0.7rem',
+                                                borderRadius: '8px', display: 'flex', alignItems: 'center',
+                                                gap: '0.75rem', color: 'var(--text-primary)',
+                                                fontSize: '0.9rem', fontWeight: 500
+                                            }}
+                                            className="nav-link-hover"
+                                        >
+                                            <Flag size={18} />
+                                            Report Endorsement
+                                        </button>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                 </>

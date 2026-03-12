@@ -18,6 +18,7 @@ import { MentionText } from './MentionText';
 import { OnlineBadge } from './OnlineBadge';
 import { useInterest } from '../context/InterestContext';
 import { getInterestCount } from '../lib/interestService';
+import { formatDisplayName, formatUsername } from '../lib/profileService';
 
 export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onEdit = null, onMarkMet = null }) => {
     const { user } = useAuth();
@@ -216,11 +217,10 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                     display: 'flex',
                     alignItems: 'center',
                     gap: '0.5rem',
-                    color: 'var(--accent)',
+                    color: 'var(--primary)',
                     fontSize: '0.85rem',
                     fontWeight: 600,
-                    marginBottom: '0.5rem',
-                    marginLeft: '3.25rem' // Align with content, after avatar space
+                    marginBottom: '0.1rem'
                 }}>
                     <Repeat2 size={16} />
                     <span
@@ -232,19 +232,20 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                         onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
                         onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
                     >
-                        {broadcastedBy.display_name} broadcasted
+                        {formatDisplayName(broadcastedBy.display_name)} broadcasted
                     </span>
                 </div>
             )}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', minWidth: 0 }}>
                     <ProfileHoverCard userData={{
                         id: need.authorId,
                         author: need.author,
                         authorUsername: need.authorUsername,
                         authorAvatar: need.authorAvatar,
                         authorBio: need.authorBio,
-                        authorLastSeenAt: need.authorLastSeenAt
+                        authorLastSeenAt: need.authorLastSeenAt,
+                        firstResponseTime: firstResponseTime
                     }}>
                         <div
                             onClick={(e) => { e.stopPropagation(); navigate(`/${need.authorUsername}`); }}
@@ -273,33 +274,28 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                                 author: need.author,
                                 authorUsername: need.authorUsername,
                                 authorAvatar: need.authorAvatar,
-                                authorBio: need.authorBio
+                                authorBio: need.authorBio,
+                                firstResponseTime: firstResponseTime
                             }}>
                                 <span
                                     onClick={(e) => { e.stopPropagation(); navigate(`/${need.authorUsername}`); }}
                                     style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', cursor: 'pointer' }}>
-                                    {need.author}
+                                    {formatDisplayName(need.author)}
                                 </span>
                             </ProfileHoverCard>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)', fontSize: '0.9rem', flexWrap: 'wrap' }}>
                                 {need.authorUsername && (
-                                    <span>@{need.authorUsername}</span>
+                                    <span style={{ whiteSpace: 'nowrap' }}>@{formatUsername(need.authorUsername)}</span>
                                 )}
-                                <span>• {need.postedAt}</span>
-                                {firstResponseTime && (
-                                    <>
-                                        <span>•</span>
-                                        <span style={{ color: 'var(--text-secondary)' }} title="Time to first response">{firstResponseTime}</span>
-                                    </>
-                                )}
+                                <span style={{ whiteSpace: 'nowrap' }}>• {need.postedAt}</span>
                                 {endorsementCount > 0 && (
-                                    <>
+                                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', whiteSpace: 'nowrap' }}>
                                         <span>•</span>
                                         <span style={{ display: 'flex', alignItems: 'center', gap: '0.15rem', color: 'var(--primary)' }} title={`${endorsementCount} Endorsement${endorsementCount !== 1 ? 's' : ''}`}>
                                             <Award size={12} />
                                             <span style={{ fontWeight: 600 }}>{endorsementCount}</span>
                                         </span>
-                                    </>
+                                    </span>
                                 )}
                             </div>
                         </div>
@@ -351,7 +347,8 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                             className="nav-link-hover"
                             style={{
                                 padding: '0.4rem', borderRadius: '50%', color: 'var(--text-muted)',
-                                background: 'transparent', transition: 'all 0.2s'
+                                background: 'transparent', transition: 'all 0.2s',
+                                marginRight: '-0.5rem'
                             }}
                             onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
                             onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
@@ -381,6 +378,86 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                                     flexDirection: 'column',
                                     gap: '2px'
                                 }}>
+                                    {/* View Thread Action */}
+                                    {!isFullDetail && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setIsMenuOpen(false);
+                                                navigate(`/need/${need.id}`);
+                                            }}
+                                            style={{
+                                                width: '100%', textAlign: 'left', padding: '0.7rem',
+                                                borderRadius: '8px', display: 'flex', alignItems: 'center',
+                                                gap: '0.75rem', color: 'var(--text-primary)',
+                                                fontSize: '0.9rem', fontWeight: 500
+                                            }}
+                                            className="nav-link-hover"
+                                        >
+                                            <MessageCircle size={18} />
+                                            View Thread
+                                        </button>
+                                    )}
+
+                                    {/* Share Action */}
+                                    <button
+                                        onClick={handleShare}
+                                        style={{
+                                            width: '100%', textAlign: 'left', padding: '0.7rem',
+                                            borderRadius: '8px', display: 'flex', alignItems: 'center',
+                                            gap: '0.75rem', color: shareCopied ? '#22c55e' : 'var(--text-primary)',
+                                            fontSize: '0.9rem', fontWeight: 500, transition: 'color 0.2s'
+                                        }}
+                                        className="nav-link-hover"
+                                    >
+                                        <Share2 size={18} />
+                                        {shareCopied ? 'Link Copied!' : 'Share Post'}
+                                    </button>
+
+                                    {/* Owner Actions in Menu */}
+                                    {user && need.authorId === user.id && (
+                                        <>
+                                            {need.status !== 'met' && onEdit && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setIsMenuOpen(false);
+                                                        onEdit(need);
+                                                    }}
+                                                    style={{
+                                                        width: '100%', textAlign: 'left', padding: '0.7rem',
+                                                        borderRadius: '8px', display: 'flex', alignItems: 'center',
+                                                        gap: '0.75rem', color: 'var(--text-primary)',
+                                                        fontSize: '0.9rem', fontWeight: 500
+                                                    }}
+                                                    className="nav-link-hover"
+                                                >
+                                                    <Edit3 size={18} />
+                                                    Edit Post
+                                                </button>
+                                            )}
+                                            {need.status === 'open' && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setIsMenuOpen(false);
+                                                        handleArchive(e);
+                                                    }}
+                                                    style={{
+                                                        width: '100%', textAlign: 'left', padding: '0.7rem',
+                                                        borderRadius: '8px', display: 'flex', alignItems: 'center',
+                                                        gap: '0.75rem', color: '#ef4444',
+                                                        fontSize: '0.9rem', fontWeight: 500
+                                                    }}
+                                                    className="nav-link-hover"
+                                                >
+                                                    <Trash2 size={18} />
+                                                    Archive Post
+                                                </button>
+                                            )}
+                                        </>
+                                    )}
+
                                     {/* Follow/Unfollow Action */}
                                     {user && need.authorId !== user.id && (
                                         <button
@@ -420,22 +497,6 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                                         <VolumeX size={18} />
                                         Mute @{need.authorUsername}
                                     </button>
-
-                                    {/* Share Action */}
-                                    <button
-                                        onClick={handleShare}
-                                        style={{
-                                            width: '100%', textAlign: 'left', padding: '0.7rem',
-                                            borderRadius: '8px', display: 'flex', alignItems: 'center',
-                                            gap: '0.75rem', color: shareCopied ? '#22c55e' : 'var(--text-primary)',
-                                            fontSize: '0.9rem', fontWeight: 500, transition: 'color 0.2s'
-                                        }}
-                                        className="nav-link-hover"
-                                    >
-                                        <Share2 size={18} />
-                                        {shareCopied ? 'Link Copied!' : 'Share Post'}
-                                    </button>
-
                                 </div>
                             </>
                         )}
@@ -524,14 +585,7 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                             )}
                         </button>
 
-                        <button onClick={() => navigate(`/need/${need.id}`)} className="nav-link-hover" style={{
-                            display: 'flex', alignItems: 'center', gap: '0.4rem',
-                            color: 'var(--text-muted)', fontSize: '0.9rem', background: 'transparent',
-                            transition: 'color 0.2s', padding: '0.25rem 0.5rem', borderRadius: '4px',
-                            cursor: 'pointer'
-                        }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'} onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}>
-                            <MessageCircle size={16} />
-                        </button>
+
 
                         {/* Broadcast Button */}
                         <button onClick={handleBroadcast} className="nav-link-hover" style={{
@@ -582,16 +636,6 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                         {/* Owner Actions */}
                         {user && need.authorId === user.id && (
                             <>
-                                {need.status !== 'met' && onEdit && (
-                                    <button onClick={(e) => { e.stopPropagation(); onEdit(need); }} className="nav-link-hover" style={{
-                                        display: 'flex', alignItems: 'center', gap: '0.4rem',
-                                        color: 'var(--text-muted)', fontSize: '0.9rem', background: 'transparent',
-                                        transition: 'all 0.2s', padding: '0.25rem 0.5rem', borderRadius: '4px',
-                                        cursor: 'pointer'
-                                    }} title="Edit Need" onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'} onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}>
-                                        <Edit3 size={16} />
-                                    </button>
-                                )}
                                 {need.status === 'open' && onMarkMet && (
                                     <button onClick={(e) => { e.stopPropagation(); onMarkMet(need); }} className="nav-link-hover" style={{
                                         display: 'flex', alignItems: 'center', gap: '0.4rem',
@@ -600,16 +644,6 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                                         cursor: 'pointer'
                                     }} title="Mark as Met" onMouseEnter={(e) => e.currentTarget.style.color = '#10b981'} onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}>
                                         <CheckCircle size={16} />
-                                    </button>
-                                )}
-                                {need.status === 'open' && (
-                                    <button onClick={handleArchive} className="nav-link-hover" style={{
-                                        display: 'flex', alignItems: 'center', gap: '0.4rem',
-                                        color: 'var(--text-muted)', fontSize: '0.9rem', background: 'transparent',
-                                        transition: 'all 0.2s', padding: '0.25rem 0.5rem', borderRadius: '4px',
-                                        cursor: 'pointer'
-                                    }} title="Archive Need" onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'} onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}>
-                                        <Archive size={16} />
                                     </button>
                                 )}
                             </>

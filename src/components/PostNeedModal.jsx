@@ -186,11 +186,15 @@ export const PostNeedModal = ({ isOpen, onClose }) => {
                         background: 'var(--bg-surface)', zIndex: 10, flexShrink: 0
                     }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <div style={{
-                                width: '32px', height: '32px', borderRadius: '50%',
-                                background: profile?.avatar_url ? `url(${profile.avatar_url}) center/cover` : 'var(--primary)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '0.8rem'
-                            }}>
+                            <div 
+                                className="avatar-md"
+                                style={{
+                                    borderRadius: '50%',
+                                    background: profile?.avatar_url ? `url(${profile.avatar_url}) center/cover` : 'var(--primary)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '0.8rem',
+                                    overflow: 'hidden', flexShrink: 0
+                                }}
+                            >
                                 {!profile?.avatar_url && (profile?.display_name?.charAt(0).toUpperCase() || '?')}
                             </div>
                             <div>
@@ -455,7 +459,7 @@ export const PostNeedModal = ({ isOpen, onClose }) => {
                                 <button type="button" onClick={() => attachmentInputRef.current?.click()} className="btn-icon" style={{ color: 'var(--primary)', padding: '0.5rem', borderRadius: '50%', background: 'transparent', border: 'none', cursor: 'pointer' }} title="Attach File">
                                     <Paperclip size={20} />
                                 </button>
-                                <button type="button" onClick={handleSaveDraft} disabled={!formData.title && !formData.description} className="btn-icon" style={{ color: 'var(--primary)', padding: '0.5rem', borderRadius: '50%', background: 'transparent', border: 'none', cursor: 'pointer', opacity: (!formData.title && !formData.description) ? 0.3 : 1 }} title="Save Draft">
+                                <button type="button" onClick={handleSaveDraft} disabled={!formData.title && !formData.description} className="btn-icon" style={{ color: 'var(--primary)', padding: '0.5rem', borderRadius: '50%', background: 'transparent', border: 'none', cursor: 'pointer' }} title="Save Draft">
                                     <Archive size={20} />
                                 </button>
                             </div>
@@ -467,7 +471,6 @@ export const PostNeedModal = ({ isOpen, onClose }) => {
                                 style={{
                                     padding: '0.6rem 1.5rem', borderRadius: '9999px',
                                     display: 'flex', alignItems: 'center', gap: '0.5rem',
-                                    opacity: (submitting || !formData.title || !formData.description) ? 0.5 : 1,
                                     fontSize: '0.9rem', border: 'none', fontWeight: 600, cursor: 'pointer'
                                 }}
                             >

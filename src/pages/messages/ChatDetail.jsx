@@ -411,7 +411,14 @@ export const ChatDetail = () => {
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', lineHeight: 1 }}>
-                                <h3 style={{ margin: 0, fontSize: '1rem', lineHeight: 1 }}>{activeThread.withUser}</h3>
+                                <h3 style={{ margin: 0, fontSize: '1rem', lineHeight: 1 }}>
+                                    {isMobile ? (
+                                        (() => {
+                                            const firstName = activeThread.withUser.split(' ')[0];
+                                            return firstName.length > 10 ? firstName.substring(0, 10) + '...' : firstName;
+                                        })()
+                                    ) : activeThread.withUser}
+                                </h3>
                                 {activeThread.withUserLastSeenAt && (
                                     <span style={{ fontSize: '0.7rem', color: new Date(activeThread.withUserLastSeenAt) > new Date(Date.now() - 5 * 60 * 1000) ? '#22c55e' : 'var(--text-muted)', fontWeight: 500 }}>
                                         {new Date(activeThread.withUserLastSeenAt) > new Date(Date.now() - 5 * 60 * 1000) ? '● Online' : '● Away'}

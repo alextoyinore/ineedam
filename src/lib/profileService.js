@@ -171,33 +171,91 @@ export const fetchResponseRate = async (userId) => {
         });
 
         let responded = 0;
+        let totalResponseTimeMs = 0;
+        let responseCount = 0;
         const FOURTY_EIGHT_HOURS = 48 * 60 * 60 * 1000;
 
         for (const need of needs) {
             const needReplies = repliesByNeed[need.id] || [];
-            // Check if the need author replied within 48h of the first external reply
             const externalReplies = needReplies.filter(r => r.user_id !== userId);
             const ownerReplies = needReplies.filter(r => r.user_id === userId);
 
-            if (!externalReplies.length) continue; // no one replied, exclude from rate
+            if (!externalReplies.length) continue; 
 
             const firstExternal = externalReplies.sort((a, b) => new Date(a.created_at) - new Date(b.created_at))[0];
-            const respondedInTime = ownerReplies.some(r => {
-                const diff = new Date(r.created_at).getTime() - new Date(firstExternal.created_at).getTime();
-                return diff >= 0 && diff <= FOURTY_EIGHT_HOURS;
-            });
+            const validOwnerReplies = ownerReplies
+                .filter(r => new Date(r.created_at) >= new Date(firstExternal.created_at))
+                .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
-            if (respondedInTime) responded++;
+            if (validOwnerReplies.length > 0) {
+                const firstOwnerReply = validOwnerReplies[0];
+                const diff = new Date(firstOwnerReply.created_at).getTime() - new Date(firstExternal.created_at).getTime();
+                
+                if (diff <= FOURTY_EIGHT_HOURS) {
+                    responded++;
+                }
+
+                totalResponseTimeMs += diff;
+                responseCount++;
+            }
         }
 
-        // Only count needs that had at least one external reply
         const total = needs.filter(n => (repliesByNeed[n.id] || []).some(r => r.user_id !== userId)).length;
         const rate = total > 0 ? Math.round((responded / total) * 100) : null;
 
-        return { responded, total, rate };
+        // Calculate Average Response Time String
+        let averageResponseTime = null;
+        if (responseCount > 0) {
+            const avgMs = totalResponseTimeMs / responseCount;
+            const mins = Math.floor(avgMs / 60000);
+            if (mins < 60) averageResponseTime = `${mins}m`;
+            else {
+                const hrs = Math.floor(mins / 60);
+                if (hrs < 24) averageResponseTime = `${hrs}h`;
+                else {
+                    const days = Math.floor(hrs / 24);
+                    averageResponseTime = `${days}d`;
+                }
+            }
+        }
+
+        return { responded, total, rate, averageResponseTime };
     } catch (err) {
         console.error('Error calculating response rate:', err);
-        return { responded: 0, total: 0, rate: null };
+        return { responded: 0, total: 0, rate: null, averageResponseTime: null };
     }
 };
 
+
+/**
+ * Format display name based on length and word count.
+ * if name is longer than 20 characters and more than one word show the first word 
+ * else truncated at 10 characters
+ */
+export const formatDisplayName = (name) => {
+    if (!name) return '';
+    const trimmed = name.trim();
+    const words = trimmed.split(/\s+/);
+    
+    if (words.length > 1) {
+        return words[0];
+    }
+    
+    if (trimmed.length > 10) {
+        return trimmed.substring(0, 10).trim() + '...';
+    }
+    
+    return trimmed;
+};
+
+/**
+ * Format username: truncate at 10 characters if longer.
+ */
+export const formatUsername = (username) => {
+    if (!username) return '';
+    const clean = username.replace(/^@/, '');
+    if (clean.length > 10) {
+        return clean.substring(0, 10) + '...';
+    }
+    return clean;
+};
