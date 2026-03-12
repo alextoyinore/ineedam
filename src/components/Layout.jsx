@@ -21,7 +21,7 @@ export const Layout = ({ children }) => {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [shouldFocusSearch, setShouldFocusSearch] = useState(false);
-  const { user, profile } = useAuth();
+  const { user, profile, fetchProfile } = useAuth();
   const { isLocked } = useMessageSecurity();
   const {
     call, endCall, acceptCall, localStream, remoteStream, toggleVideo
@@ -118,6 +118,7 @@ export const Layout = ({ children }) => {
           onClose={() => setIsEditProfileOpen(false)}
           currentProfile={profile}
           onProfileUpdate={() => {
+            fetchProfile(user.id);
             setIsEditProfileOpen(false);
           }}
         />

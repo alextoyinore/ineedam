@@ -129,61 +129,101 @@ export const EditNeedModal = ({ isOpen, onClose, need, onUpdate }) => {
     return (
         <AnimatePresence>
             {isOpen && (
-                <div className="modal-overlay-social">
+                <div className="modal-overlay-social" onClick={onClose}>
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95, y: isMobile ? 100 : 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: isMobile ? 100 : 20 }}
                         className="modal-content-social"
+                        onClick={e => e.stopPropagation()}
+                        style={{
+                            maxWidth: '600px',
+                            borderRadius: isMobile ? '20px 20px 0 0' : '24px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            overflow: 'hidden',
+                            height: isMobile ? '68dvh' : 'auto',
+                            maxHeight: isMobile ? '68dvh' : '90dvh',
+                            marginTop: isMobile ? 'auto' : '0'
+                        }}
                     >
                         <header style={{
-                            padding: isMobile ? '1rem' : '1.25rem 1.5rem',
+                            padding: '1rem 1.5rem',
                             borderBottom: '1px solid var(--border-glass)',
                             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                             background: 'var(--bg-surface)', zIndex: 10, flexShrink: 0
                         }}>
-                            <h2 className="h2" style={{ margin: 0, fontSize: '1.25rem' }}>Edit Need</h2>
-                            <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
-                                <X size={24} />
+                            <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 600 }}>Edit Need</h3>
+                            <button onClick={onClose} style={{ padding: '0.5rem', borderRadius: '50%', color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer' }} className="glass-panel-hover">
+                                <X size={20} />
                             </button>
                         </header>
 
-                        <form onSubmit={handleSubmit} style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                        <form onSubmit={handleSubmit} style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--bg-base)' }}>
                             <div style={{
                                 flex: 1,
                                 overflowY: 'auto',
-                                padding: isMobile ? '1rem' : '1.5rem',
+                                padding: '1.5rem',
                                 display: 'flex',
                                 flexDirection: 'column',
-                                gap: '1.25rem',
-                                WebkitOverflowScrolling: 'touch'
+                                gap: '1rem'
                             }}>
-                                <div>
-                                    <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Title</label>
-                                    <input required name="title" value={formData.title} onChange={handleChange} style={inputStyles} />
+                                {/* Unified Composer Area */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '0.75rem' : '0.5rem' }}>
+                                    <input
+                                        required
+                                        type="text"
+                                        name="title"
+                                        className="composer-input"
+                                        value={formData.title}
+                                        onChange={handleChange}
+                                        placeholder="Title of your need..."
+                                        style={{
+                                            ...inputStyles,
+                                            background: 'transparent', border: 'none', padding: '0.25rem 0',
+                                            fontSize: '1.25rem', fontWeight: 600, borderRadius: 0, boxShadow: 'none'
+                                        }}
+                                    />
+                                    <textarea
+                                        required
+                                        name="description"
+                                        className="composer-input"
+                                        value={formData.description}
+                                        onChange={handleChange}
+                                        placeholder="Description..."
+                                        rows={isMobile ? 6 : 4}
+                                        style={{
+                                            ...inputStyles,
+                                            background: 'transparent', border: 'none', padding: 0,
+                                            fontSize: '1rem', borderRadius: 0, boxShadow: 'none', resize: 'none',
+                                            minHeight: '100px'
+                                        }}
+                                    />
                                 </div>
 
-                                <div className="form-grid-2">
-                                    <div style={{ position: 'relative' }} ref={categoryRef}>
-                                        <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Category</label>
+                                {/* Row 1: Category & Location */}
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '0.5rem' }}>
+                                    <div style={{ position: 'relative', flex: 1, minWidth: '150px' }} ref={categoryRef}>
                                         <div
                                             onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-                                            style={{ ...inputStyles, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                                            style={{
+                                                display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 0.75rem',
+                                                borderRadius: '9999px', background: 'var(--bg-surface)', border: '1px solid var(--border-glass)',
+                                                fontSize: '0.8rem', cursor: 'pointer', color: 'var(--text-secondary)'
+                                            }}
+                                            className="glass-panel-hover"
                                         >
-                                            <span>{formData.category || 'Select a category'}</span>
-                                            <Search size={14} style={{ opacity: 0.5 }} />
+                                            <Search size={14} />
+                                            <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{formData.category}</span>
                                         </div>
-
                                         {showCategoryDropdown && (
                                             <div style={{
-                                                position: 'absolute', top: '100%', left: 0, right: 0,
+                                                position: 'absolute', bottom: '100%', left: 0, width: '250px',
                                                 background: 'var(--bg-surface)', border: '1px solid var(--border-glass)',
-                                                borderRadius: '8px', marginTop: '4px', zIndex: 100,
-                                                boxShadow: 'none', // Removed shadow
-                                                maxHeight: '300px',
-                                                display: 'flex', flexDirection: 'column'
+                                                borderRadius: '12px', marginBottom: '8px', zIndex: 100,
+                                                boxShadow: '0 4px 20px rgba(0,0,0,0.3)', maxHeight: '250px', overflowY: 'auto'
                                             }}>
-                                                <div style={{ padding: '0.5rem', borderBottom: '1px solid var(--border-glass)' }}>
+                                                <div style={{ padding: '0.5rem', borderBottom: '1px solid var(--border-glass)', position: 'sticky', top: 0, background: 'var(--bg-surface)' }}>
                                                     <input
                                                         autoFocus
                                                         type="text"
@@ -191,105 +231,129 @@ export const EditNeedModal = ({ isOpen, onClose, need, onUpdate }) => {
                                                         value={categorySearch}
                                                         onChange={(e) => setCategorySearch(e.target.value)}
                                                         onClick={(e) => e.stopPropagation()}
-                                                        style={{ ...inputStyles, padding: '0.4rem 0.6rem', fontSize: '0.85rem' }}
+                                                        style={{ width: '100%', padding: '0.3rem 0.6rem', fontSize: '0.8rem', background: 'var(--bg-base)', border: '1px solid var(--border-glass)', borderRadius: '6px', color: 'var(--text-primary)', outline: 'none' }}
                                                     />
                                                 </div>
-                                                <div style={{ overflowY: 'auto', flex: 1 }}>
-                                                    {CATEGORIES.filter(cat => cat.toLowerCase().includes(categorySearch.toLowerCase())).map(cat => (
-                                                        <div
-                                                            key={cat}
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setFormData(prev => ({ ...prev, category: cat }));
-                                                                setShowCategoryDropdown(false);
-                                                                setCategorySearch('');
-                                                            }}
-                                                            style={{
-                                                                padding: '0.7rem 1rem', cursor: 'pointer', fontSize: '0.9rem',
-                                                                background: formData.category === cat ? 'rgba(16, 185, 129, 0.12)' : 'transparent',
-                                                                borderLeft: formData.category === cat ? '3px solid var(--primary)' : '3px solid transparent'
-                                                            }}
-                                                            className="nav-link-hover"
-                                                        >
-                                                            {cat}
-                                                        </div>
-                                                    ))}
-                                                    {CATEGORIES.filter(cat => cat.toLowerCase().includes(categorySearch.toLowerCase())).length === 0 && (
-                                                        <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                                                            No categories found
-                                                        </div>
-                                                    )}
-                                                </div>
+                                                {CATEGORIES.filter(cat => cat.toLowerCase().includes(categorySearch.toLowerCase())).map(cat => (
+                                                    <div
+                                                        key={cat}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setFormData(prev => ({ ...prev, category: cat }));
+                                                            setShowCategoryDropdown(false);
+                                                            setCategorySearch('');
+                                                        }}
+                                                        style={{ padding: '0.6rem 1rem', cursor: 'pointer', fontSize: '0.85rem' }}
+                                                        className="nav-link-hover"
+                                                    >
+                                                        {cat}
+                                                    </div>
+                                                ))}
                                             </div>
                                         )}
                                     </div>
-                                    <div>
-                                        <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Location</label>
-                                        <input name="location" value={formData.location} onChange={handleChange} placeholder="Remote or City" style={inputStyles} />
+
+                                    <div style={{ position: 'relative', flex: 1, minWidth: '150px' }}>
+                                        <div style={{
+                                            display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 0.75rem',
+                                            borderRadius: '9999px', background: 'var(--bg-surface)', border: '1px solid var(--border-glass)',
+                                            fontSize: '0.8rem', color: 'var(--text-secondary)'
+                                        }}>
+                                            <MapPin size={14} />
+                                            <input
+                                                type="text"
+                                                name="location"
+                                                value={formData.location}
+                                                onChange={handleChange}
+                                                placeholder="Remote or City"
+                                                style={{ background: 'transparent', border: 'none', outline: 'none', color: 'var(--text-primary)', fontSize: '0.8rem', width: '100%' }}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div>
-                                    <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Description</label>
-                                    <textarea required name="description" value={formData.description} onChange={handleChange} rows={4} style={{ ...inputStyles, resize: 'vertical' }} />
-                                </div>
-
-                                <div className="form-grid-2">
-                                    <div>
-                                        <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Budget Mode</label>
-                                        <select name="budgetMode" value={formData.budgetMode} onChange={handleChange} style={inputStyles}>
+                                {/* Row 2: Budget & Timing */}
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+                                    <div style={{
+                                        display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 0.75rem',
+                                        borderRadius: '9999px', background: 'var(--bg-surface)', border: '1px solid var(--border-glass)',
+                                        fontSize: '0.8rem', color: 'var(--text-secondary)', flexShrink: 0
+                                    }}>
+                                        <select name="budgetMode" value={formData.budgetMode} onChange={handleChange} style={{ background: 'transparent', border: 'none', outline: 'none', color: 'var(--text-primary)', fontSize: '0.8rem', fontWeight: 600 }}>
                                             <option value="fixed">Fixed</option>
                                             <option value="range">Range</option>
                                             <option value="hourly">Hourly</option>
                                             <option value="trade">Trade</option>
                                         </select>
+                                        {formData.budgetMode !== 'trade' && (
+                                            <input
+                                                required
+                                                type="number"
+                                                name="budgetMin"
+                                                value={formData.budgetMin}
+                                                onChange={handleChange}
+                                                placeholder={formData.budgetMode === 'range' ? 'Min' : 'Price'}
+                                                style={{ background: 'transparent', border: 'none', outline: 'none', color: 'var(--text-primary)', fontSize: '0.8rem', width: '60px' }}
+                                            />
+                                        )}
+                                        {formData.budgetMode === 'range' && (
+                                            <>
+                                                <span style={{ opacity: 0.5 }}>-</span>
+                                                <input
+                                                    required
+                                                    type="number"
+                                                    name="budgetMax"
+                                                    value={formData.budgetMax}
+                                                    onChange={handleChange}
+                                                    placeholder="Max"
+                                                    style={{ background: 'transparent', border: 'none', outline: 'none', color: 'var(--text-primary)', fontSize: '0.8rem', width: '60px' }}
+                                                />
+                                            </>
+                                        )}
                                     </div>
-                                    {formData.budgetMode !== 'trade' && (
-                                        <div>
-                                            <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Amount ({formData.budgetMode === 'range' ? 'Min' : 'Price'})</label>
-                                            <input type="number" name="budgetMin" value={formData.budgetMin} onChange={handleChange} style={inputStyles} />
-                                        </div>
-                                    )}
+
+                                    <div style={{
+                                        display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 0.75rem',
+                                        borderRadius: '9999px', background: 'var(--bg-surface)', border: '1px solid var(--border-glass)',
+                                        fontSize: '0.8rem', color: 'var(--text-secondary)'
+                                    }}>
+                                        <Clock size={14} />
+                                        <select name="flexibility" value={formData.flexibility} onChange={handleChange} style={{ background: 'transparent', border: 'none', outline: 'none', color: 'var(--text-primary)', fontSize: '0.8rem' }}>
+                                            <option value="ASAP">ASAP</option>
+                                            <option value="within_week">Within a Week</option>
+                                            <option value="Flexible start">Flexible</option>
+                                        </select>
+                                    </div>
                                 </div>
 
-                                {/* Photo Upload */}
-                                <div>
-                                    <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Photo (Optional)</label>
-                                    <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} />
-                                    {imagePreview ? (
-                                        <div style={{ position: 'relative', borderRadius: '10px', overflow: 'hidden', border: '1px solid var(--border-glass)' }}>
-                                            <img src={imagePreview} alt="preview" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', display: 'block' }} />
-                                            <button type="button" onClick={() => { setImageFile(null); setImagePreview(''); }} style={{
-                                                position: 'absolute', top: '0.5rem', right: '0.5rem',
-                                                background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%',
-                                                color: 'white', width: '28px', height: '28px',
-                                                display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer'
-                                            }}><X size={14} /></button>
-                                        </div>
-                                    ) : (
-                                        <button type="button" onClick={() => fileInputRef.current?.click()} style={{
-                                            ...inputStyles, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            gap: '0.5rem', cursor: 'pointer', padding: '1.25rem',
-                                            color: 'var(--text-muted)', width: '100%', border: '1px dashed var(--border-glass)'
-                                        }}>
-                                            <UploadCloud size={18} /> Upload or Change Image
+                                {/* Image Preview */}
+                                {imagePreview && (
+                                    <div style={{ position: 'relative', width: '100px', height: '100px', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-glass)', marginTop: '0.5rem' }}>
+                                        <img src={imagePreview} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        <button type="button" onClick={() => { setImageFile(null); setImagePreview(''); }} style={{ position: 'absolute', top: '4px', right: '4px', background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%', color: 'white', padding: '2px', cursor: 'pointer' }}>
+                                            <X size={12} />
                                         </button>
-                                    )}
-                                </div>
+                                    </div>
+                                )}
                             </div>
 
                             <div style={{
-                                padding: isMobile ? '1rem' : '1.25rem 1.5rem',
+                                padding: '0.75rem 1.5rem',
                                 borderTop: '1px solid var(--border-glass)',
                                 background: 'var(--bg-surface)',
+                                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                                 flexShrink: 0
                             }}>
-                                <button type="submit" disabled={loading} className="btn btn-primary" style={{ width: '100%', padding: '0.8rem' }}>
-                                    {loading ? (
-                                        <><Loader size={18} className="animate-spin" /> Updating...</>
-                                    ) : (
-                                        'Save Changes'
-                                    )}
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} />
+                                    <button type="button" onClick={() => fileInputRef.current?.click()} style={{ color: 'var(--primary)', background: 'transparent', border: 'none', cursor: 'pointer', padding: '0.5rem' }} className="btn-icon" title="Change Image">
+                                        <UploadCloud size={20} />
+                                    </button>
+                                </div>
+
+                                <button type="submit" disabled={loading} className="btn-primary" style={{ padding: '0.6rem 2rem', borderRadius: '9999px', fontWeight: 600, fontSize: '0.9rem', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: loading ? 0.6 : 1 }}>
+                                    {loading ? <Loader size={16} className="animate-spin" /> : <Send size={16} />}
+                                    <span>{loading ? 'Updating...' : 'Save Changes'}</span>
                                 </button>
                             </div>
                         </form>

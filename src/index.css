@@ -145,6 +145,12 @@ button {
   background: none;
 }
 
+/* Composer Placeholder Styling */
+.composer-input::placeholder {
+  color: var(--text-muted) !important;
+  opacity: 0.5 !important;
+}
+
 /* Glassmorphism Utilities */
 .glass-panel {
   background: var(--bg-surface);
@@ -532,14 +538,17 @@ button {
 @media (max-width: 435px) {
   .modal-overlay-social {
     left: 0;
-    top: var(--mobile-header-height);
-    bottom: var(--mobile-nav-height);
-    background: var(--bg-surface);
-    backdrop-filter: none;
+    top: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    align-items: flex-end;
+    padding: 0;
   }
 
   .modal-content-social {
     border: none;
+    max-height: 80dvh;
   }
 }
 
