@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, User, PenSquare, Bookmark, Bell, Mail, LogOut, MoreHorizontal, Settings, Share2, Trophy } from 'lucide-react';
 import { useNotifications } from '../context/NotificationsContext';
@@ -18,6 +18,25 @@ export const Sidebar = ({ onPostClick, onInviteClick, forceIconic = false }) => 
     const { unreadCount } = useNotifications();
     const { unreadThreadsCount } = useMessages();
     const [showLogout, setShowLogout] = useState(false);
+    const logoutRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (logoutRef.current && !logoutRef.current.contains(event.target)) {
+                setShowLogout(false);
+            }
+        };
+
+        if (showLogout) {
+            document.addEventListener('mousedown', handleClickOutside);
+        } else {
+            document.removeEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showLogout]);
 
     return (
         <aside className={`social-sidebar-left ${forceIconic ? 'force-iconic' : ''}`}>
@@ -79,7 +98,7 @@ export const Sidebar = ({ onPostClick, onInviteClick, forceIconic = false }) => 
                 </div>
 
                 {/* User Mini Profile at bottom */}
-                <div style={{ position: 'relative', marginTop: 'auto' }}>
+                <div ref={logoutRef} style={{ position: 'relative', marginTop: 'auto' }}>
                     {showLogout && (
                         <div style={{
                             position: 'absolute', bottom: '110%', left: '0.5rem', right: '0.5rem',

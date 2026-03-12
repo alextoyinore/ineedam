@@ -79,7 +79,7 @@ export const AudioBubble = ({ id, url, isMe, currentlyPlayingId, onTogglePlay })
                 onClick={togglePlay}
                 style={{
                     width: '32px', height: '32px', borderRadius: '50%',
-                    background: isMe ? 'rgba(255,255,255,0.2)' : 'var(--primary)',
+                    background: isMe ? 'rgba(255,255,255,0.15)' : 'var(--primary)',
                     color: isMe ? 'white' : 'white',
                     border: 'none', display: 'flex', alignItems: 'center',
                     justifyContent: 'center', cursor: 'pointer', flexShrink: 0
