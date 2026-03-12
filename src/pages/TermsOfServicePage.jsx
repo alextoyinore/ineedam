@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 export const TermsOfServicePage = () => {
     return (
-        <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto', color: 'var(--text-primary)' }}>
+        <div style={{ padding: '2rem var(--feed-item-padding)', maxWidth: '800px', margin: '0 auto', color: 'var(--text-primary)' }}>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
                 <h1 className="h1" style={{ marginBottom: '1.5rem', fontSize: '2.5rem' }}>Terms of Service</h1>
                 <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>Last updated: February 2026</p>

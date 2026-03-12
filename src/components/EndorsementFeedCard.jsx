@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Award, ArrowRight, Heart, Repeat2, Bookmark, MessageSquare, MessageCircle } from 'lucide-react';
+import { Award, ArrowRight, Heart, Repeat2, Bookmark, MessageSquare, MessageCircle, Share2 } from 'lucide-react';
 import { formatTimeAgo } from './../lib/replyService';
 import { ProfileHoverCard } from './ProfileHoverCard';
 import { useLikes } from '../context/LikesContext';
@@ -39,6 +39,7 @@ export const EndorsementFeedCard = ({ endorsement, broadcastedBy = null }) => {
     const [likeCount, setLikeCount] = useState(0);
     const [replyCount, setReplyCount] = useState(0);
     const [broadcastCount, setBroadcastCount] = useState(0);
+    const [shareCopied, setShareCopied] = useState(false);
 
     useEffect(() => {
         const loadCounts = async () => {
@@ -85,6 +86,42 @@ export const EndorsementFeedCard = ({ endorsement, broadcastedBy = null }) => {
         if (hasNeed) setIsReplyModalOpen(true);
     };
 
+    const handleShare = async (e) => {
+        e.stopPropagation();
+        const shareData = {
+            title: `Endorsement for ${endorsedUser.display_name}`,
+            text: endorsement.message,
+            url: window.location.origin + `/endorsement/${endorsement.id}`
+        };
+
+        const fallbackCopy = async () => {
+            try {
+                await navigator.clipboard.writeText(shareData.url);
+                setShareCopied(true);
+                setTimeout(() => setShareCopied(false), 2500);
+            } catch (err) {
+                console.error('Clipboard fallback failed', err);
+            }
+        };
+
+        if (navigator.share) {
+            try {
+                if (navigator.canShare && !navigator.canShare(shareData)) {
+                    await fallbackCopy();
+                    return;
+                }
+                await navigator.share(shareData);
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    console.error('Native share failed, falling back', err);
+                    await fallbackCopy();
+                }
+            }
+        } else {
+            await fallbackCopy();
+        }
+    };
+
     const handleThreadClick = (e) => {
         e.stopPropagation();
         if (hasNeed) navigate(`/need/${need.id}`);
@@ -110,7 +147,7 @@ export const EndorsementFeedCard = ({ endorsement, broadcastedBy = null }) => {
                 gap: '0.75rem',
                 position: 'relative',
                 cursor: 'pointer',
-                padding: '1.5rem',
+                padding: 'var(--feed-item-padding)',
                 borderBottom: '1px solid var(--border-glass)'
             }}>
             {/* Broadcast Header */}
@@ -308,15 +345,26 @@ export const EndorsementFeedCard = ({ endorsement, broadcastedBy = null }) => {
                             </button>
                         </div>
 
-                        {/* Bookmark Action right-aligned */}
-                        <button onClick={(e) => handleActionClick(e, toggleBookmark)} className="nav-link-hover" style={{
-                            display: 'flex', alignItems: 'center', gap: '0.5rem',
-                            color: bookmarked ? 'var(--primary)' : 'var(--text-muted)', fontSize: '0.9rem', background: 'transparent',
-                            transition: 'color 0.2s, transform 0.1s', padding: '0.25rem', borderRadius: '50%', border: 'none',
-                            cursor: 'pointer', transform: bookmarked ? 'scale(1.1)' : 'scale(1)'
-                        }} title={bookmarked ? "Remove Bookmark" : "Bookmark Need"}>
-                            <Bookmark size={18} fill={bookmarked ? 'currentColor' : 'none'} />
-                        </button>
+                        {/* Share & Bookmark Actions right-aligned */}
+                        <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
+                            <button onClick={handleShare} className="nav-link-hover" style={{
+                                display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                color: shareCopied ? '#22c55e' : 'var(--text-muted)', fontSize: '0.9rem', background: 'transparent',
+                                transition: 'color 0.2s', padding: '0.25rem', borderRadius: '50%',
+                                cursor: 'pointer', border: 'none'
+                            }} title={shareCopied ? 'Link Copied!' : 'Share Endorsement'}>
+                                <Share2 size={18} />
+                            </button>
+
+                            <button onClick={(e) => handleActionClick(e, toggleBookmark)} className="nav-link-hover" style={{
+                                display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                color: bookmarked ? 'var(--primary)' : 'var(--text-muted)', fontSize: '0.9rem', background: 'transparent',
+                                transition: 'color 0.2s, transform 0.1s', padding: '0.25rem', borderRadius: '50%', border: 'none',
+                                cursor: 'pointer', transform: bookmarked ? 'scale(1.1)' : 'scale(1)'
+                            }} title={bookmarked ? "Remove Bookmark" : "Bookmark Need"}>
+                                <Bookmark size={18} fill={bookmarked ? 'currentColor' : 'none'} />
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>

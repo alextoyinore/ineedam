@@ -1,8 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MessageSquare, ArrowRight, FileText } from 'lucide-react';
+import { MessageSquare, ArrowRight, FileText, Share2 } from 'lucide-react';
 
 export const ChatMessageBookmarkCard = ({ message }) => {
+    const [shareCopied, setShareCopied] = React.useState(false);
     const isAudio = message.file_type?.startsWith('audio/') || message.file_url?.toLowerCase().endsWith('.webm') || message.file_url?.toLowerCase().endsWith('.mp3');
     const isImage = message.file_type?.startsWith('image/');
 
@@ -93,23 +94,73 @@ export const ChatMessageBookmarkCard = ({ message }) => {
                     )}
                 </div>
 
-                {/* Footer Link */}
-                <Link
-                    to={`/messages/${message.thread_id}`}
-                    className="btn btn-glass"
-                    style={{
-                        fontSize: '0.75rem',
-                        padding: '0.4rem 0.75rem',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        color: 'var(--primary)',
-                        textDecoration: 'none'
-                    }}
-                >
-                    View in Conversation
-                    <ArrowRight size={14} />
-                </Link>
+                {/* Footer Actions */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <Link
+                        to={`/messages/${message.thread_id}`}
+                        className="btn btn-glass"
+                        style={{
+                            fontSize: '0.75rem',
+                            padding: '0.4rem 0.75rem',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            color: 'var(--primary)',
+                            textDecoration: 'none'
+                        }}
+                    >
+                        View in Conversation
+                        <ArrowRight size={14} />
+                    </Link>
+
+                    <button
+                        onClick={async (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const shareData = {
+                                title: `ChatMessage from ${message.sender?.display_name}`,
+                                text: message.text,
+                                url: window.location.origin + `/messages/${message.thread_id}`
+                            };
+
+                            const doCopy = () => {
+                                navigator.clipboard.writeText(shareData.url);
+                                setShareCopied(true);
+                                setTimeout(() => setShareCopied(false), 2500);
+                            };
+
+                            if (navigator.share) {
+                                try {
+                                    await navigator.share(shareData);
+                                } catch (err) {
+                                    if (err.name !== 'AbortError') {
+                                        console.error('Share failed', err);
+                                        doCopy();
+                                    }
+                                }
+                            } else {
+                                doCopy();
+                            }
+                        }}
+                        className="nav-link-hover"
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.4rem',
+                            color: shareCopied ? '#22c55e' : 'var(--text-muted)',
+                            fontSize: '0.75rem',
+                            background: 'transparent',
+                            cursor: 'pointer',
+                            padding: '0.4rem 0.6rem',
+                            borderRadius: '8px',
+                            transition: 'color 0.2s'
+                        }}
+                        title={shareCopied ? 'Link Copied!' : 'Share'}
+                    >
+                        <Share2 size={14} />
+                        {shareCopied ? 'Link Copied!' : 'Share'}
+                    </button>
+                </div>
             </div>
         </div>
     );

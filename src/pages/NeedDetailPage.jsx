@@ -28,7 +28,7 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachmen
             <div
                 className="feed-item-hover"
                 style={{
-                    padding: '1rem 1.5rem',
+                    padding: '1rem var(--feed-item-padding)',
                     borderBottom: '1px solid var(--border-glass)',
                     display: 'flex', gap: '1rem', alignItems: 'flex-start',
                 }}
@@ -367,7 +367,7 @@ export const NeedDetailPage = () => {
 
             <header style={{
                 position: 'sticky', top: 0, zIndex: 40,
-                padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem',
+                padding: '0.75rem var(--feed-item-padding)', display: 'flex', alignItems: 'center', gap: '1.5rem',
                 background: 'var(--bg-surface-glass)', backdropFilter: 'blur(16px)',
                 borderBottom: '1px solid var(--border-glass)'
             }}>
@@ -393,7 +393,7 @@ export const NeedDetailPage = () => {
             </div>
 
             {/* Main Reply Box */}
-            <div style={{ display: 'flex', gap: '1rem', padding: '1.5rem', borderBottom: '1px solid var(--border-glass)', background: 'var(--bg-base)' }}>
+            <div style={{ display: 'flex', gap: '1rem', padding: 'var(--feed-item-padding)', borderBottom: '1px solid var(--border-glass)', background: 'var(--bg-base)' }}>
                 <div style={{ flexShrink: 0 }}>
                     <div className="avatar-md" style={{
                         borderRadius: '50%',

@@ -31,7 +31,7 @@ export const NotificationsPage = () => {
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             {/* Header */}
             <header className="sticky-header" style={{
-                padding: '0 1rem',
+                padding: '0 var(--feed-item-padding)',
                 height: 'var(--mobile-header-height)',
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center'
             }}>
@@ -77,7 +77,7 @@ export const NotificationsPage = () => {
                                 }
                             }}
                             style={{
-                                padding: '1.25rem 1rem',
+                                padding: '1.25rem var(--feed-item-padding)',
                                 borderBottom: '1px solid var(--border-glass)',
                                 display: 'flex', gap: '0.75rem',
                                 background: notif.read ? 'transparent' : 'color-mix(in srgb, var(--primary), transparent 95%)',

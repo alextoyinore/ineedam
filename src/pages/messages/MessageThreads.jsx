@@ -66,7 +66,7 @@ export const MessageThreads = ({ isSplitView = false }) => {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', background: 'var(--bg-base)', width: '100%' }}>
             <header style={{
-                padding: '1.5rem',
+                padding: 'var(--feed-item-padding)',
                 borderBottom: '1px solid var(--border-glass)',
                 position: 'sticky',
                 top: 'var(--sticky-offset, 0px)',
@@ -181,7 +181,7 @@ export const MessageThreads = ({ isSplitView = false }) => {
                                 onClick={() => navigate(`/messages/${thread.id}`)}
                                 className={`feed-item-hover ${isActive ? 'active-thread' : ''}`}
                                 style={{
-                                    padding: '1rem 1.5rem', display: 'flex', gap: '1rem', alignItems: 'center',
+                                    padding: '1rem var(--feed-item-padding)', display: 'flex', gap: '1rem', alignItems: 'center',
                                     cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.05)',
                                     position: 'relative',
                                     background: isActive ? 'var(--bg-surface-glass)' : 'transparent',

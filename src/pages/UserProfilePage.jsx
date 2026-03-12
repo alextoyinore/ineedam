@@ -389,7 +389,7 @@ export const UserProfilePage = () => {
                 height: 'var(--profile-header-height)',
                 top: 'var(--sticky-offset, 0px)',
                 zIndex: 1000,
-                padding: '0 1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem'
+                padding: '0 var(--feed-item-padding)', display: 'flex', alignItems: 'center', gap: '1.5rem'
             }}>
                 <button onClick={() => navigate(-1)} style={{ padding: '0.5rem', borderRadius: '50%', color: 'var(--text-primary)' }} className="glass-panel-hover">
                     <ArrowLeft size={20} />
@@ -412,7 +412,7 @@ export const UserProfilePage = () => {
             </div>
 
             {/* Profile Info */}
-            <div style={{ padding: '0 1.5rem 0 1.5rem', position: 'relative' }}>
+            <div style={{ padding: '0 var(--feed-item-padding) 0 var(--feed-item-padding)', position: 'relative' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div className="profile-avatar" style={{
                         borderRadius: '50%',

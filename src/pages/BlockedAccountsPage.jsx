@@ -55,7 +55,7 @@ export const BlockedAccountsPage = () => {
         <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
             {/* Header */}
             <header className="sticky-header" style={{
-                padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem',
+                padding: '1rem var(--feed-item-padding)', display: 'flex', alignItems: 'center', gap: '1.5rem',
                 borderBottom: '1px solid var(--border-glass)'
             }}>
                 <button
@@ -70,7 +70,7 @@ export const BlockedAccountsPage = () => {
                 </h1>
             </header>
 
-            <div style={{ padding: '1.5rem', flex: 1, overflowY: 'auto' }}>
+            <div style={{ padding: '1.5rem var(--feed-item-padding)', flex: 1, overflowY: 'auto' }}>
                 <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', fontSize: '0.95rem' }}>
                     Blocked users cannot see your profile, your posts, or send you messages. They will not be explicitly notified that you blocked them.
                 </p>

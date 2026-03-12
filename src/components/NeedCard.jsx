@@ -208,7 +208,7 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                 cursor: !isFullDetail ? 'pointer' : 'default',
                 borderBottom: isFullDetail ? 'none' : '1px solid var(--border-glass)',
                 margin: '0',
-                padding: '1.5rem'
+                padding: 'var(--feed-item-padding)'
             }}>
             {/* Broadcast Header */}
             {broadcastedBy && (
@@ -616,18 +616,29 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                         )}
                     </div>
 
-                    {/* Bookmark Action right-aligned */}
-                    <button onClick={(e) => {
-                        e.stopPropagation();
-                        toggleBookmark(targetId, targetType);
-                    }} className="nav-link-hover" style={{
-                        display: 'flex', alignItems: 'center', gap: '0.5rem',
-                        color: bookmarked ? 'var(--primary)' : 'var(--text-muted)', fontSize: '0.9rem', background: 'transparent',
-                        transition: 'color 0.2s, transform 0.1s', padding: '0.25rem', borderRadius: '50%',
-                        cursor: 'pointer', transform: bookmarked ? 'scale(1.1)' : 'scale(1)'
-                    }} title={bookmarked ? `Remove ${targetType === 'broadcast' ? 'Broadcast ' : ''}Bookmark` : `Bookmark ${targetType === 'broadcast' ? 'Broadcast' : 'Need'}`}>
-                        <Bookmark size={18} fill={bookmarked ? 'currentColor' : 'none'} />
-                    </button>
+                    {/* Share & Bookmark Actions right-aligned */}
+                    <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
+                        <button onClick={handleShare} className="nav-link-hover" style={{
+                            display: 'flex', alignItems: 'center', gap: '0.5rem',
+                            color: shareCopied ? '#22c55e' : 'var(--text-muted)', fontSize: '0.9rem', background: 'transparent',
+                            transition: 'color 0.2s', padding: '0.25rem', borderRadius: '50%',
+                            cursor: 'pointer'
+                        }} title={shareCopied ? 'Link Copied!' : 'Share Post'}>
+                            <Share2 size={18} />
+                        </button>
+
+                        <button onClick={(e) => {
+                            e.stopPropagation();
+                            toggleBookmark(targetId, targetType);
+                        }} className="nav-link-hover" style={{
+                            display: 'flex', alignItems: 'center', gap: '0.5rem',
+                            color: bookmarked ? 'var(--primary)' : 'var(--text-muted)', fontSize: '0.9rem', background: 'transparent',
+                            transition: 'color 0.2s, transform 0.1s', padding: '0.25rem', borderRadius: '50%',
+                            cursor: 'pointer', transform: bookmarked ? 'scale(1.1)' : 'scale(1)'
+                        }} title={bookmarked ? `Remove ${targetType === 'broadcast' ? 'Broadcast ' : ''}Bookmark` : `Bookmark ${targetType === 'broadcast' ? 'Broadcast' : 'Need'}`}>
+                            <Bookmark size={18} fill={bookmarked ? 'currentColor' : 'none'} />
+                        </button>
+                    </div>
                 </div>
             </div>
 

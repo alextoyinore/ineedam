@@ -95,7 +95,7 @@ export const MobileWhoToFollowPage = () => {
                 display: 'flex', flexDirection: 'column',
                 borderBottom: '1px solid var(--border-glass)', background: 'var(--bg-base)'
             }}>
-                <div style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{ padding: '0.75rem var(--feed-item-padding)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <button onClick={() => navigate(-1)} style={{ padding: '0.5rem', borderRadius: '50%', background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }}>
                         <ArrowLeft size={24} />
                     </button>
@@ -146,7 +146,7 @@ export const MobileWhoToFollowPage = () => {
                                     key={profile.id}
                                     onClick={() => navigate(`/${profile.username}`)}
                                     style={{
-                                        padding: '1rem 1.5rem', borderBottom: '1px solid var(--border-glass)',
+                                        padding: '1rem var(--feed-item-padding)', borderBottom: '1px solid var(--border-glass)',
                                         display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer'
                                     }}
                                 >
@@ -215,7 +215,7 @@ export const MobileWhoToFollowPage = () => {
                                             className="feed-item-hover"
                                             style={{
                                                 display: 'flex', alignItems: 'center', gap: '1rem',
-                                                padding: '1rem 1.25rem', borderRadius: '16px',
+                                                padding: '1rem var(--feed-item-padding)', borderRadius: '16px',
                                                 border: '1px solid var(--border-glass)',
                                                 background: idx < 3 ? `color-mix(in srgb, ${medal} 6%, var(--bg-surface))` : 'var(--bg-surface)',
                                                 cursor: 'pointer', transition: 'all 0.2s'

@@ -35,6 +35,7 @@
   --sidebar-width: 250px;
   --bubble-me-bg: #1a1a1a;
   --bubble-me-text: #ffffff;
+  --feed-item-padding: 1.5rem;
 }
 
 html {
@@ -44,6 +45,12 @@ html {
 @media (max-width: 768px) {
   html {
     font-size: 15px;
+  }
+}
+
+@media (max-width: 435px) {
+  :root {
+    --feed-item-padding: 1rem;
   }
 }
 
@@ -71,6 +78,7 @@ html {
   --btn-primary-text: #000000;
   --bubble-me-bg: #121212;
   --bubble-me-text: #ffffff;
+  --feed-item-padding: 1.5rem;
 }
 
 [data-theme='dark'] select,

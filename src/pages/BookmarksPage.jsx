@@ -57,7 +57,7 @@ export const BookmarksPage = () => {
 
             {/* Header */}
             <header className="sticky-header" style={{
-                padding: '1rem 1.5rem'
+                padding: '1rem var(--feed-item-padding)'
             }}>
                 <h2 className="h2" style={{ fontSize: '1.25rem', margin: 0, cursor: 'pointer' }} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
                     Bookmarks
