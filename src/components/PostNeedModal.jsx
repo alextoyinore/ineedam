@@ -524,7 +524,7 @@ export const PostNeedModal = ({ isOpen, onClose }) => {
 const inputStyles = {
     width: '100%',
     padding: '0.6rem 0.75rem',
-    background: 'rgba(15, 17, 21, 0.05)', // Extremely subtle background if needed
+    background: 'var(--bg-base)', // Using base background for depth on surface
     border: '1px solid var(--border-glass)',
     borderRadius: '8px',
     color: 'var(--text-primary)',
