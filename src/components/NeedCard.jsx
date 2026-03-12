@@ -41,6 +41,7 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
     const [firstResponseTime, setFirstResponseTime] = useState(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [shareCopied, setShareCopied] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 435);
 
     const isBroadcast = broadcastedBy || need.type === 'broadcast';
     const targetId = isBroadcast ? (need.broadcast_id || need.id) : need.id;
@@ -51,6 +52,12 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
     const liked = checkIsLiked(need.id);
     const broadcasted = checkIsBroadcasted(need.id);
     const interested = checkIsInterested(need.id);
+
+    React.useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 435);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     React.useEffect(() => {
         const loadCounts = async () => {
@@ -232,7 +239,7 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                         onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
                         onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
                     >
-                        {formatDisplayName(broadcastedBy.display_name)} broadcasted
+                        {formatDisplayName(broadcastedBy.display_name, isMobile)} broadcasted
                     </span>
                 </div>
             )}
@@ -280,12 +287,12 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                                 <span
                                     onClick={(e) => { e.stopPropagation(); navigate(`/${need.authorUsername}`); }}
                                     style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', cursor: 'pointer' }}>
-                                    {formatDisplayName(need.author)}
+                                    {formatDisplayName(need.author, isMobile)}
                                 </span>
                             </ProfileHoverCard>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)', fontSize: '0.9rem', flexWrap: 'wrap' }}>
                                 {need.authorUsername && (
-                                    <span style={{ whiteSpace: 'nowrap' }}>@{formatUsername(need.authorUsername)}</span>
+                                    <span style={{ whiteSpace: 'nowrap' }}>@{formatUsername(need.authorUsername, isMobile)}</span>
                                 )}
                                 <span style={{ whiteSpace: 'nowrap' }}>• {need.postedAt}</span>
                                 {endorsementCount > 0 && (

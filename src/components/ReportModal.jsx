@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, AlertTriangle } from 'lucide-react';
 import { reportUser } from '../lib/moderationService';
@@ -9,6 +9,13 @@ export const ReportModal = ({ isOpen, onClose, reportedProfile, onSuccess }) => 
     const [reason, setReason] = useState('spam');
     const [notes, setNotes] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 435);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 435);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     if (!isOpen || !reportedProfile || !currentUser) return null;
 
@@ -38,21 +45,36 @@ export const ReportModal = ({ isOpen, onClose, reportedProfile, onSuccess }) => 
                 style={{
                     position: 'fixed', inset: 0, zIndex: 2000,
                     background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem'
+                    display: 'flex', 
+                    alignItems: isMobile ? 'flex-end' : 'center', 
+                    justifyContent: 'center', 
+                    padding: isMobile ? 0 : '1rem'
                 }}
                 onClick={onClose}
             >
                 <motion.div
-                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                    initial={isMobile ? { y: '100%' } : { opacity: 0, scale: 0.95, y: 20 }}
+                    animate={isMobile ? { y: 0 } : { opacity: 1, scale: 1, y: 0 }}
+                    exit={isMobile ? { y: '100%' } : { opacity: 0, scale: 0.95, y: 20 }}
+                    transition={{ type: 'spring', damping: 25, stiffness: 300 }}
                     onClick={e => e.stopPropagation()}
                     style={{
-                        background: 'var(--bg-surface)', width: '100%', maxWidth: '400px',
-                        borderRadius: '24px', border: '1px solid var(--border-glass)',
-                        overflow: 'hidden', boxShadow: 'none' // Removed shadow
+                        background: 'var(--bg-surface)', 
+                        width: '100%', 
+                        maxWidth: isMobile ? '100%' : '400px',
+                        borderRadius: isMobile ? '24px 24px 0 0' : '24px', 
+                        border: '1px solid var(--border-glass)',
+                        overflow: 'hidden', 
+                        paddingBottom: isMobile ? 'env(safe-area-inset-bottom)' : 0
                     }}
                 >
+                    {/* Handle for mobile bottom sheet */}
+                    {isMobile && (
+                        <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '0.75rem' }}>
+                            <div style={{ width: '40px', height: '4px', background: 'var(--border-glass)', borderRadius: '2px' }} />
+                        </div>
+                    )}
+
                     <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border-glass)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <h3 className="h3" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.25rem' }}>
                             <AlertTriangle size={20} color="#ef4444" />

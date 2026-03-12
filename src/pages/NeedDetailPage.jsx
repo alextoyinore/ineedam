@@ -17,7 +17,7 @@ import { EndorseModal } from '../components/EndorseModal';
 import { Helmet } from 'react-helmet-async';
 import { formatDisplayName, formatUsername } from '../lib/profileService';
 
-const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachment }) => {
+const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachment, isMobile }) => {
     const { user } = useAuth();
     const isMe = user && reply.user_id === user.id;
     const authorName = reply.profiles?.display_name || 'Anonymous';
@@ -65,9 +65,9 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachmen
                             authorBio: reply.profiles?.bio,
                             authorLastSeenAt: reply.profiles?.last_seen_at
                         }}>
-                            <span style={{ fontWeight: 700, color: 'var(--text-primary)', cursor: 'pointer' }}>{formatDisplayName(authorName)}</span>
+                            <span style={{ fontWeight: 700, color: 'var(--text-primary)', cursor: 'pointer' }}>{formatDisplayName(authorName, isMobile)}</span>
                         </ProfileHoverCard>
-                        {authorUsername && <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>@{formatUsername(authorUsername)}</span>}
+                        {authorUsername && <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>@{formatUsername(authorUsername, isMobile)}</span>}
                         <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>• {formatTimeAgo(reply.created_at)}</span>
 
                         {reply.is_private && (
@@ -128,7 +128,7 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachmen
                 </div>
             </div>
             {reply.children && reply.children.map(child => (
-                <ReplyItem key={child.id} reply={child} need={need} depth={depth + 1} onReply={onReply} onArchive={onArchive} onViewAttachment={onViewAttachment} />
+                <ReplyItem key={child.id} reply={child} need={need} depth={depth + 1} onReply={onReply} onArchive={onArchive} onViewAttachment={onViewAttachment} isMobile={isMobile} />
             ))}
         </div>
     );
@@ -163,10 +163,17 @@ export const NeedDetailPage = () => {
     const [isMarkMetModalOpen, setIsMarkMetModalOpen] = useState(false);
     const [isEndorseModalOpen, setIsEndorseModalOpen] = useState(false);
     const [needToEndorse, setNeedToEndorse] = useState(null);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 435);
 
     // For viewing attachments
     const [attachmentToView, setAttachmentToView] = useState(null);
 
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 435);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -417,7 +424,7 @@ export const NeedDetailPage = () => {
                 </div>
                 <form style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.75rem' }} onSubmit={handleSubmitReply}>
                     <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                        Replying to <span style={{ color: 'var(--primary)', fontWeight: 600 }}>@{formatUsername(need.authorUsername || 'author')}</span>
+                        Replying to <span style={{ color: 'var(--primary)', fontWeight: 600 }}>@{formatUsername(need.authorUsername || 'author', isMobile)}</span>
                     </div>
                     <textarea
                         disabled={!user || submittingReply}
@@ -537,6 +544,7 @@ export const NeedDetailPage = () => {
                         onReply={handleOpenReplyToReply}
                         onArchive={handleArchiveReply}
                         onViewAttachment={(url, type, name) => setAttachmentToView({ url, type, name })}
+                        isMobile={isMobile}
                     />
                 ))}
             </div>

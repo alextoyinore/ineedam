@@ -14,7 +14,7 @@ import { uploadFileToCloudinary } from '../lib/needsService';
 import { OnlineBadge } from '../components/OnlineBadge';
 import { formatDisplayName, formatUsername } from '../lib/profileService';
 
-const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachment }) => {
+const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachment, isMobile }) => {
     const { user } = useAuth();
     const isMe = user && reply.user_id === user.id;
     const authorName = reply.profiles?.display_name || 'Anonymous';
@@ -62,9 +62,9 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachmen
                             authorBio: reply.profiles?.bio,
                             authorLastSeenAt: reply.profiles?.last_seen_at
                         }}>
-                            <span style={{ fontWeight: 700, color: 'var(--text-primary)', cursor: 'pointer' }}>{formatDisplayName(authorName)}</span>
+                            <span style={{ fontWeight: 700, color: 'var(--text-primary)', cursor: 'pointer' }}>{formatDisplayName(authorName, isMobile)}</span>
                         </ProfileHoverCard>
-                        {authorUsername && <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>@{formatUsername(authorUsername)}</span>}
+                        {authorUsername && <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>@{formatUsername(authorUsername, isMobile)}</span>}
                         <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>• {formatTimeAgo(reply.created_at)}</span>
 
                         {reply.is_private && (
@@ -127,7 +127,16 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachmen
                 </div>
             </div>
             {reply.children && reply.children.map(child => (
-                <ReplyItem key={child.id} reply={child} need={need} depth={depth + 1} onReply={onReply} onArchive={onArchive} onViewAttachment={onViewAttachment} />
+                <ReplyItem 
+                    key={child.id} 
+                    reply={child} 
+                    need={need} 
+                    depth={depth + 1} 
+                    onReply={onReply} 
+                    onArchive={onArchive} 
+                    onViewAttachment={onViewAttachment} 
+                    isMobile={isMobile}
+                />
             ))}
         </div>
     );
@@ -151,6 +160,13 @@ export const EndorsementDetailPage = () => {
     // For nested replies via modal
     const [isReplyModalOpen, setIsReplyModalOpen] = useState(false);
     const [activeParentReply, setActiveParentReply] = useState(null);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 435);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 435);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     // For viewing attachments
     const [attachmentToView, setAttachmentToView] = useState(null);
@@ -328,6 +344,11 @@ export const EndorsementDetailPage = () => {
                     </div>
                 </div>
                 <form style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.75rem' }} onSubmit={handleSubmitReply}>
+                    {endorsement?.endorsed?.username && (
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                            Replying to <span style={{ color: 'var(--primary)', fontWeight: 600 }}>@{formatUsername(endorsement.endorsed.username, isMobile)}</span>
+                        </div>
+                    )}
                     <textarea
                         value={replyText}
                         onChange={(e) => setReplyText(e.target.value)}
@@ -405,6 +426,7 @@ export const EndorsementDetailPage = () => {
                         onReply={handleOpenReplyToReply}
                         onArchive={handleArchiveReply}
                         onViewAttachment={(url, type, name) => setAttachmentToView({ url, type, name })}
+                        isMobile={isMobile}
                     />
                 ))}
             </div>

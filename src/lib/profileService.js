@@ -228,31 +228,33 @@ export const fetchResponseRate = async (userId) => {
 
 
 /**
- * Format display name based on length and word count.
- * if name is longer than 20 characters and more than one word show the first word 
- * else truncated at 10 characters
+ * Format display name based on length and word count (Mobile only).
+ * If isMobile is true:
+ * - If full name < 15 chars, show full name.
+ * - Otherwise, if multiple words, show first word.
+ * - If single word >= 15 chars, truncate at 10 chars.
  */
-export const formatDisplayName = (name) => {
-    if (!name) return '';
+export const formatDisplayName = (name, isMobile = false) => {
+    if (!name || !isMobile) return name || '';
     const trimmed = name.trim();
-    const words = trimmed.split(/\s+/);
     
+    if (trimmed.length < 15) {
+        return trimmed;
+    }
+    
+    const words = trimmed.split(/\s+/);
     if (words.length > 1) {
         return words[0];
     }
     
-    if (trimmed.length > 10) {
-        return trimmed.substring(0, 10).trim() + '...';
-    }
-    
-    return trimmed;
+    return trimmed.substring(0, 10).trim() + '...';
 };
 
 /**
- * Format username: truncate at 10 characters if longer.
+ * Format username (Mobile only): truncate at 10 characters if longer.
  */
-export const formatUsername = (username) => {
-    if (!username) return '';
+export const formatUsername = (username, isMobile = false) => {
+    if (!username || !isMobile) return username || '';
     const clean = username.replace(/^@/, '');
     if (clean.length > 10) {
         return clean.substring(0, 10) + '...';

@@ -134,11 +134,11 @@ export const ReplyModal = ({ isOpen, onClose, need, parentId = null, replyingTo 
                         </div>
                         <div style={{ flex: 1 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>{formatDisplayName(targetUser.author)}</span>
+                                <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>{formatDisplayName(targetUser.author, isMobile)}</span>
                                 <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>• {targetUser.postedAt || 'just now'}</span>
                             </div>
                             <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginTop: '0.25rem', lineHeight: 1.5 }}>
-                                Replying to <span style={{ color: 'var(--primary)' }}>@{formatUsername(targetUser.authorUsername || targetUser.author.toLowerCase().replace(/\s/g, ''))}</span>
+                                Replying to <span style={{ color: 'var(--primary)' }}>@{formatUsername(targetUser.authorUsername || targetUser.author.toLowerCase().replace(/\s/g, ''), isMobile)}</span>
                             </p>
                         </div>
                     </div>

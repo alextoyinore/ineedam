@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Award, ArrowRight, Heart, Repeat2, Bookmark, MessageSquare, MessageCircle, Share2, MoreVertical, Flag, Ban, Archive, Trash2, Edit3, VolumeX } from 'lucide-react';
 import { formatTimeAgo } from './../lib/replyService';
 import { formatDisplayName, formatUsername } from '../lib/profileService';
+import { ProfileHoverCard } from './ProfileHoverCard';
 import { useLikes } from '../context/LikesContext';
 import { useBookmarks } from '../context/BookmarksContext';
 import { useBroadcasts } from '../context/BroadcastsContext';
@@ -41,6 +42,13 @@ export const EndorsementFeedCard = ({ endorsement, broadcastedBy = null }) => {
     const [broadcastCount, setBroadcastCount] = useState(0);
     const [shareCopied, setShareCopied] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 435);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 435);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         const loadCounts = async () => {
@@ -172,7 +180,7 @@ export const EndorsementFeedCard = ({ endorsement, broadcastedBy = null }) => {
                         onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
                         onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
                     >
-                        {formatDisplayName(broadcastedBy.display_name)} broadcasted
+                        {formatDisplayName(broadcastedBy.display_name, isMobile)} broadcasted
                     </span>
                 </div>
             )}
@@ -235,12 +243,12 @@ export const EndorsementFeedCard = ({ endorsement, broadcastedBy = null }) => {
                                         <span
                                             onClick={(e) => { e.stopPropagation(); navigate(`/${endorsedUser.username}`); }}
                                             style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', cursor: 'pointer' }}>
-                                            {formatDisplayName(endorsedUser.display_name)}
+                                            {formatDisplayName(endorsedUser.display_name, isMobile)}
                                         </span>
                                     </ProfileHoverCard>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
                                         {endorsedUser.username && (
-                                            <span>@{formatUsername(endorsedUser.username)}</span>
+                                            <span>@{formatUsername(endorsedUser.username, isMobile)}</span>
                                         )}
                                         <span>• {formatTimeAgo(endorsement.created_at)}</span>
                                     </div>
