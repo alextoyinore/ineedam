@@ -384,14 +384,15 @@ export const EndorsementDetailPage = () => {
                             onClick={() => setIsPrivateReply(!isPrivateReply)}
                             className="btn btn-secondary"
                             style={{
-                                padding: '0.4rem 0.8rem', borderRadius: '9999px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem',
+                                padding: '0.4rem 0.8rem', borderRadius: '9999px', fontSize: '0.85rem',
                                 color: isPrivateReply ? 'var(--primary)' : 'var(--text-muted)',
                                 border: isPrivateReply ? '1px solid var(--primary)' : '1px solid var(--border-glass)',
-                                background: isPrivateReply ? 'rgba(16, 185, 129, 0.1)' : 'transparent'
+                                background: isPrivateReply ? 'rgba(16, 185, 129, 0.1)' : 'transparent',
+                                fontWeight: 600,
+                                transition: 'all 0.2s'
                             }}
                         >
-                            {isPrivateReply ? <Lock size={14} /> : <Globe size={14} />}
-                            {isPrivateReply ? 'Private Reply' : 'Public Reply'}
+                            {isPrivateReply ? 'Private' : 'Public'}
                         </button>
 
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

@@ -211,40 +211,21 @@ export const ReplyModal = ({ isOpen, onClose, need, parentId = null, replyingTo 
                             {/* Footer Actions */}
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '1rem', borderTop: '1px solid var(--border-glass)', marginTop: '0.5rem' }}>
                                 {/* Visibility Toggle */}
-                                <div style={{
-                                    display: 'flex',
-                                    background: 'var(--bg-base)',
-                                    padding: '0.2rem',
-                                    borderRadius: '9999px',
-                                    border: '1px solid var(--border-glass)'
-                                }}>
-                                    <button
-                                        type="button"
-                                        onClick={() => setVisibility('public')}
-                                        style={{
-                                            padding: '0.3rem 0.8rem', borderRadius: '9999px', fontSize: '0.8rem',
-                                            background: visibility === 'public' ? 'var(--bg-surface)' : 'transparent',
-                                            color: visibility === 'public' ? 'var(--primary)' : 'var(--text-muted)',
-                                            fontWeight: visibility === 'public' ? 600 : 400,
-                                            transition: 'all 0.2s'
-                                        }}
-                                    >
-                                        Public
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setVisibility('private')}
-                                        style={{
-                                            padding: '0.3rem 0.8rem', borderRadius: '9999px', fontSize: '0.8rem',
-                                            background: visibility === 'private' ? 'var(--bg-surface)' : 'transparent',
-                                            color: visibility === 'private' ? 'var(--primary)' : 'var(--text-muted)',
-                                            fontWeight: visibility === 'private' ? 600 : 400,
-                                            transition: 'all 0.2s'
-                                        }}
-                                    >
-                                        Private
-                                    </button>
-                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setVisibility(v => v === 'private' ? 'public' : 'private')}
+                                    className="btn btn-secondary"
+                                    style={{
+                                        padding: '0.4rem 0.8rem', borderRadius: '9999px', fontSize: '0.85rem',
+                                        color: visibility === 'private' ? 'var(--primary)' : 'var(--text-muted)',
+                                        border: visibility === 'private' ? '1px solid var(--primary)' : '1px solid var(--border-glass)',
+                                        background: visibility === 'private' ? 'rgba(16, 185, 129, 0.1)' : 'transparent',
+                                        fontWeight: 600,
+                                        transition: 'all 0.2s'
+                                    }}
+                                >
+                                    {visibility === 'private' ? 'Private' : 'Public'}
+                                </button>
                                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                     <input type="file" ref={fileInputRef} onChange={(e) => { setReplyFile(e.target.files?.[0]); setReplyImage(null); setImagePreview(''); }} style={{ display: 'none' }} />
                                     <input type="file" ref={imageInputRef} accept="image/*" onChange={(e) => { 

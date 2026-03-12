@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { HelpCircle, Info, X } from 'lucide-react';
 import pkg from '../../package.json';
 
 export const MobileTopHeader = () => {
     const { profile } = useAuth();
+    const { isDark } = useTheme();
     const navigate = useNavigate();
     const { scrollY } = useScroll();
     const [showDropdown, setShowDropdown] = useState(false);
@@ -62,7 +64,7 @@ export const MobileTopHeader = () => {
             >
                 {/* Logo area */}
                 <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <img src="/logo.svg" alt="Ineedam Logo" style={{ height: '32px' }} />
+                    <img src={isDark ? "/logo-dark.svg" : "/logo.svg"} alt="Ineedam Logo" style={{ height: '32px' }} />
                 </Link>
 
                 {/* Help/Info area */}
@@ -135,7 +137,7 @@ export const MobileTopHeader = () => {
                     right: 0,
                     height: '1px',
                     background: 'linear-gradient(to right, var(--primary), var(--secondary), var(--accent))',
-                    opacity: 0.3
+                    opacity: 1
                 }} />
             </motion.header>
 

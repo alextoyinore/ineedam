@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X, Mail, Lock, Eye, EyeOff, Loader } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 export const AuthModal = ({ isOpen, onClose, defaultTab = 'signin' }) => {
     const [tab, setTab] = useState(defaultTab);
@@ -13,6 +14,7 @@ export const AuthModal = ({ isOpen, onClose, defaultTab = 'signin' }) => {
     const [successMsg, setSuccessMsg] = useState('');
     const [isUnconfirmed, setIsUnconfirmed] = useState(false);
     const { signIn, signUp, resendVerification, resetPassword } = useAuth();
+    const { isDark } = useTheme();
     const navigate = useNavigate();
 
     if (!isOpen) return null;
@@ -148,7 +150,7 @@ export const AuthModal = ({ isOpen, onClose, defaultTab = 'signin' }) => {
 
                 {/* Logo */}
                 <div style={{ marginBottom: '1.5rem' }}>
-                    <img src="/logo.svg" alt="Ineedam" style={{ height: '36px' }} />
+                    <img src={isDark ? "/logo-dark.svg" : "/logo.svg"} alt="Ineedam Logo" style={{ height: '36px' }} />
                 </div>
 
                 {/* Tabs */}

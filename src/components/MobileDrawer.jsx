@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { X, Settings, HelpCircle, FileText, Shield, Users, TrendingUp, Award, Search, Bookmark, SlidersHorizontal, Trash2, BookOpen, Share2, LifeBuoy } from 'lucide-react';
 import { fetchMetCounts } from '../lib/needsService';
 import { getFollowStats } from '../lib/socialService';
@@ -9,6 +10,7 @@ import { fetchEndorsementsForUser } from '../lib/endorsementService';
 
 export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false, onInviteClick }) => {
     const { profile, signOut } = useAuth();
+    const { isDark } = useTheme();
     const navigate = useNavigate();
     const location = useLocation();
     const searchInputRef = useRef(null);
@@ -114,7 +116,7 @@ export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false, onInvit
                                 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}
                                 className="nav-link-hover"
                             >
-                                <img src="/logo.svg" alt="Ineedam Logo" style={{ height: '36px' }} />
+                                <img src={isDark ? "/logo-dark.svg" : "/logo.svg"} alt="Ineedam Logo" style={{ height: '36px' }} />
                             </div>
                             <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', padding: '0.5rem' }}>
                                 <X size={20} />
