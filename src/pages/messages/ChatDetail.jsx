@@ -409,16 +409,16 @@ export const ChatDetail = () => {
                                 <OnlineBadge lastSeenAt={activeThread.withUserLastSeenAt} size="10px" />
                             </div>
                         </div>
-                        <div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <h3 style={{ margin: 0, fontSize: '1rem' }}>{activeThread.withUser}</h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', lineHeight: 1 }}>
+                                <h3 style={{ margin: 0, fontSize: '1rem', lineHeight: 1 }}>{activeThread.withUser}</h3>
                                 {activeThread.withUserLastSeenAt && (
-                                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                                        • {new Date(activeThread.withUserLastSeenAt) > new Date(Date.now() - 5 * 60 * 1000) ? 'Online' : 'Away'}
+                                    <span style={{ fontSize: '0.7rem', color: new Date(activeThread.withUserLastSeenAt) > new Date(Date.now() - 5 * 60 * 1000) ? '#22c55e' : 'var(--text-muted)', fontWeight: 500 }}>
+                                        {new Date(activeThread.withUserLastSeenAt) > new Date(Date.now() - 5 * 60 * 1000) ? '● Online' : '● Away'}
                                     </span>
                                 )}
                             </div>
-                            {activeThread.withUserUsername && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>@{activeThread.withUserUsername}</span>}
+                            {activeThread.withUserUsername && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1 }}>@{activeThread.withUserUsername}</span>}
                         </div>
                     </Link>
                 </div>

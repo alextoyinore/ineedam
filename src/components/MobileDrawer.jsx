@@ -63,17 +63,9 @@ export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false, onInvit
         };
     }, [isOpen]);
 
-    // Close drawer on location change
-    useEffect(() => {
-        if (isOpen) {
-            onClose();
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [location.pathname]);
-
     const handleNavigation = (path) => {
-        navigate(path);
         onClose();
+        setTimeout(() => navigate(path), 50);
     };
 
     const handleSignOut = async () => {

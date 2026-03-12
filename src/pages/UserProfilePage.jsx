@@ -394,11 +394,11 @@ export const UserProfilePage = () => {
                 <button onClick={() => navigate(-1)} style={{ padding: '0.5rem', borderRadius: '50%', color: 'var(--text-primary)' }} className="glass-panel-hover">
                     <ArrowLeft size={20} />
                 </button>
-                <div>
-                    <h2 className="h2" style={{ fontSize: '1.25rem', margin: 0, lineHeight: 1.2 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
+                    <h2 className="h2" style={{ fontSize: '1.25rem', margin: 0, lineHeight: 1 }}>
                         {profile.display_name}
                     </h2>
-                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{userNeeds.length} posts</span>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1 }}>{userNeeds.length} posts</span>
                 </div>
             </header>
 
