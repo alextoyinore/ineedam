@@ -93,6 +93,7 @@ html {
   padding: 0;
   overflow-wrap: break-word;
   word-wrap: break-word;
+  font-family: inherit;
   /* Firefox */
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;

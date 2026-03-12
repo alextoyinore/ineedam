@@ -159,6 +159,7 @@ export const HomeComposer = () => {
                                 color: 'var(--text-primary)',
                                 fontSize: '1.2rem',
                                 fontWeight: 500,
+                                fontFamily: 'inherit',
                                 padding: '0.5rem 0',
                                 width: '100%'
                             }}
@@ -185,6 +186,7 @@ export const HomeComposer = () => {
                                             outline: 'none',
                                             color: 'var(--text-primary)',
                                             fontSize: '1rem',
+                                            fontFamily: 'inherit',
                                             padding: '0.5rem 0',
                                             width: '100%',
                                             resize: 'none'
