@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { HelpCircle, Info, X } from 'lucide-react';
+import pkg from '../../package.json';
 
 export const MobileTopHeader = () => {
     const { profile } = useAuth();
@@ -141,39 +142,42 @@ export const MobileTopHeader = () => {
             {/* App Info Modal */}
             <AnimatePresence>
                 {showInfo && (
-                    <div style={{ position: 'fixed', inset: 0, zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+                    <div style={{ position: 'fixed', inset: 0, zIndex: 2000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: 0 }}>
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setShowInfo(false)}
-                            style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }}
+                            style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
                         />
                         <motion.div
-                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            initial={{ y: '100%' }}
+                            animate={{ y: 0 }}
+                            exit={{ y: '100%' }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
                             style={{
-                                width: '100%', maxWidth: '340px', background: 'var(--bg-surface)',
-                                border: '1px solid var(--border-glass)', borderRadius: '24px',
-                                padding: '2rem', position: 'relative', zIndex: 1, textAlign: 'center'
+                                width: '100%', maxWidth: '100%', background: 'var(--bg-surface)',
+                                borderTop: '1px solid var(--border-glass)', borderRadius: '24px 24px 0 0',
+                                padding: '1.5rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom))', position: 'relative', zIndex: 1, textAlign: 'center'
                             }}
                         >
+                            {/* Handle for bottom sheet */}
+                            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+                                <div style={{ width: '40px', height: '4px', background: 'var(--border-glass)', borderRadius: '2px' }} />
+                            </div>
+
                             <button
                                 onClick={() => setShowInfo(false)}
-                                style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+                                style={{ position: 'absolute', top: '1.25rem', right: '1.5rem', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
                             >
                                 <X size={20} />
                             </button>
-                            <div style={{
-                                width: '64px', height: '64px', borderRadius: '16px', background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
-                                margin: '0 auto 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white'
-                            }}>
-                                <img src="/icon.svg" alt="Ineedam" style={{ height: '32px', filter: 'brightness(0) invert(1)' }} />
+                            <div style={{ margin: '0 auto 1.5rem', display: 'flex', justifyContent: 'center' }}>
+                                <img src="/icon.svg" alt="Ineedam Icon" style={{ height: '64px' }} />
                             </div>
-                            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>Version 1.0.0 (Alpha)</p>
-                            <div style={{ textAlign: 'left', background: 'var(--bg-base)', padding: '1.25rem', borderRadius: '16px', fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                                <p style={{ margin: 0 }}>Connecting real needs with real solutions. Built for clarity, speed, and community trust.</p>
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem', textAlign: 'center' }}>Version {pkg.version} (Alpha)</p>
+                            <div style={{ textAlign: 'center', background: 'var(--bg-base)', padding: '1.25rem', borderRadius: '16px', fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                                <p style={{ margin: 0 }}>Connecting real needs with real solutions.<br/>Built for clarity, speed, and community trust.</p>
                             </div>
                             <button
                                 onClick={() => setShowInfo(false)}
