@@ -102,6 +102,7 @@ export const EditProfileModal = ({ isOpen, onClose, currentProfile, onProfileUpd
         borderRadius: '12px',
         color: 'var(--text-primary)',
         fontSize: '1rem',
+        fontFamily: 'inherit',
         outline: 'none',
         transition: 'border-color 0.2s',
         marginBottom: '1rem'
@@ -132,8 +133,8 @@ export const EditProfileModal = ({ isOpen, onClose, currentProfile, onProfileUpd
                     style={{
                         background: 'var(--bg-base)', border: '1px solid var(--border-glass)',
                         borderRadius: isMobile ? '24px 24px 0 0' : '24px', 
-                        width: '100%', maxWidth: isMobile ? '100%' : '500px',
-                        maxHeight: isMobile ? '90vh' : 'auto',
+                        width: '100%', maxWidth: isMobile ? '100%' : '420px',
+                        maxHeight: isMobile ? '90vh' : '85vh',
                         overflow: 'hidden',
                         display: 'flex', 
                         flexDirection: 'column'
@@ -233,8 +234,8 @@ export const EditProfileModal = ({ isOpen, onClose, currentProfile, onProfileUpd
 
                             <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Bio</label>
                             <textarea
-                                name="bio" value={formData.bio} onChange={handleChange} rows={4}
-                                style={{ ...inputStyle, resize: 'vertical' }}
+                                name="bio" value={formData.bio} onChange={handleChange} rows={6}
+                                style={{ ...inputStyle, resize: 'vertical', minHeight: '140px' }}
                                 placeholder="Tell the community about yourself..."
                             />
 
