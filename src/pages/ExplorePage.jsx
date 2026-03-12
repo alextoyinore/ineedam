@@ -12,6 +12,7 @@ import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 import { getSuggestedProfiles } from '../lib/profileService';
 import { useAuth } from '../context/AuthContext';
 import { Users } from 'lucide-react';
+import { HomeComposer } from '../components/HomeComposer';
 
 export const ExplorePage = () => {
     const navigate = useNavigate();
@@ -199,6 +200,7 @@ export const ExplorePage = () => {
 
             {/* Feed List */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                <HomeComposer />
                 {feedTab === 'whotofollow' ? (
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <div

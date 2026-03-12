@@ -294,7 +294,7 @@ export const PostNeedModal = ({ isOpen, onClose }) => {
                                             position: 'absolute', bottom: '100%', left: 0, width: '250px',
                                             background: 'var(--bg-surface)', border: '1px solid var(--border-glass)',
                                             borderRadius: '12px', marginBottom: '8px', zIndex: 100,
-                                            boxShadow: '0 4px 20px rgba(0,0,0,0.3)', maxHeight: '250px', overflowY: 'auto'
+                                            boxShadow: 'none', maxHeight: '250px', overflowY: 'auto'
                                         }}>
                                             <div style={{ padding: '0.5rem', borderBottom: '1px solid var(--border-glass)', position: 'sticky', top: 0, background: 'var(--bg-surface)' }}>
                                                 <input
@@ -353,10 +353,16 @@ export const PostNeedModal = ({ isOpen, onClose }) => {
                                     fontSize: '0.8rem', color: 'var(--text-secondary)', flexShrink: 0
                                 }}>
                                     <select name="currency" value={formData.currency} onChange={handleChange} style={{ background: 'transparent', border: 'none', outline: 'none', color: 'var(--text-primary)', fontSize: '0.8rem', fontWeight: 600 }}>
-                                        <option value="$">$</option>
-                                        <option value="€">€</option>
-                                        <option value="£">£</option>
-                                        <option value="₦">₦</option>
+                                        <option value="$">$ USD</option>
+                                        <option value="€">€ EUR</option>
+                                        <option value="£">£ GBP</option>
+                                        <option value="₦">₦ NGN</option>
+                                        <option value="C$">C$ CAD</option>
+                                        <option value="A$">A$ AUD</option>
+                                        <option value="₹">₹ INR</option>
+                                        <option value="¥">¥ JPY</option>
+                                        <option value="R">R ZAR</option>
+                                        <option value="د.إ">د.إ AED</option>
                                     </select>
                                     <select name="budgetMode" value={formData.budgetMode} onChange={handleChange} style={{ background: 'transparent', border: 'none', outline: 'none', color: 'var(--text-primary)', fontSize: '0.8rem' }}>
                                         <option value="fixed">Fixed</option>

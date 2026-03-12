@@ -188,15 +188,16 @@ export const getNeedById = async (id) => {
  * Shape a raw Supabase need row into the format NeedCard expects.
  */
 export const shapeNeed = (row) => {
-    const categoryColorMap = {
-        'Product': 'secondary',
-        'Service': 'secondary',
-        'Training': 'accent',
-        'Housing & Real Estate': 'accent',
-        'Events & Gig Work': 'primary',
-        'Software & Tech': 'primary',
-        'Creative Arts': 'secondary',
-        'Vehicles': 'primary',
+    const getCategoryColor = (cat) => {
+        const c = cat.toLowerCase();
+        if (c.includes('rent') || c.includes('sale') || c.includes('property') || c.includes('estate') || c.includes('housing')) return 'accent';
+        if (c.includes('car') || c.includes('vehicle') || c.includes('truck') || c.includes('motorcycle') || c.includes('bus')) return 'primary';
+        if (c.includes('job') || c.includes('full-time') || c.includes('part-time') || c.includes('freelance') || c.includes('gig')) return 'primary';
+        if (c.includes('service') || c.includes('repair') || c.includes('tutor') || c.includes('maintenance')) return 'secondary';
+        if (c.includes('phone') || c.includes('laptop') || c.includes('tech') || c.includes('electronic') || c.includes('gaming')) return 'primary';
+        if (c.includes('fashion') || c.includes('clothing') || c.includes('beauty') || c.includes('jewelry')) return 'secondary';
+        if (c.includes('pet') || c.includes('animal') || c.includes('dog') || c.includes('cat')) return 'accent';
+        return 'primary'; // Default
     };
 
     let budget = '';
@@ -217,7 +218,7 @@ export const shapeNeed = (row) => {
         title: row.title,
         description: row.description,
         category: row.category,
-        categoryColor: categoryColorMap[row.category] || 'primary',
+        categoryColor: getCategoryColor(row.category),
         budget,
         location: row.location || 'Remote',
         flexibility: row.flexibility,
