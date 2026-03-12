@@ -61,10 +61,7 @@ export const MobileTopHeader = () => {
             >
                 {/* Logo area */}
                 <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <img src="/icon.svg" alt="Ineedam Icon" style={{ height: '28px' }} />
-                    <span style={{ fontWeight: 900, fontSize: '1.25rem', letterSpacing: '-0.025em', color: 'var(--text-primary)' }}>
-                        Ineedam
-                    </span>
+                    <img src="/logo.svg" alt="Ineedam Logo" style={{ height: '32px' }} />
                 </Link>
 
                 {/* Help/Info area */}
@@ -174,7 +171,6 @@ export const MobileTopHeader = () => {
                             }}>
                                 <img src="/icon.svg" alt="Ineedam" style={{ height: '32px', filter: 'brightness(0) invert(1)' }} />
                             </div>
-                            <h2 className="h2" style={{ marginBottom: '0.5rem' }}>Ineedam</h2>
                             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>Version 1.0.0 (Alpha)</p>
                             <div style={{ textAlign: 'left', background: 'var(--bg-base)', padding: '1.25rem', borderRadius: '16px', fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                                 <p style={{ margin: 0 }}>Connecting real needs with real solutions. Built for clarity, speed, and community trust.</p>
