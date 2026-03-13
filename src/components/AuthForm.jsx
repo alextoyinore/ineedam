@@ -268,6 +268,15 @@ export const AuthForm = ({ onAuthSuccess, initialTab = 'signin', variant = 'inli
                         tab === 'signin' ? 'Sign In' : tab === 'signup' ? 'Create Account' : 'Send Reset Link'
                     )}
                 </button>
+
+                {tab === 'signup' && (
+                    <p style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.5, margin: '0.75rem 0 0 0' }}>
+                        By creating an account, you agree to our{' '}
+                        <a href="/terms" style={{ color: 'var(--text-secondary)', textDecoration: 'underline' }}>Terms of Service</a>
+                        {' '}and{' '}
+                        <a href="/privacy" style={{ color: 'var(--text-secondary)', textDecoration: 'underline' }}>Privacy Policy</a>.
+                    </p>
+                )}
             </form>
 
             <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '1.5rem' }}>
