@@ -315,7 +315,7 @@ export const EndorsementDetailPage = () => {
             }}>
                 <button
                     type="button"
-                    onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); navigate(-1); }}
+                    onClick={() => navigate(-1)}
                     style={{ padding: '0.5rem', borderRadius: '50%', color: 'var(--text-primary)', touchAction: 'manipulation', cursor: 'pointer' }}
                     className="nav-link-hover"
                 >

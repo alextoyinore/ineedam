@@ -27,7 +27,7 @@ export const fetchAllEndorsements = async (from = 0, to = 9) => {
     }
 
     return (data || [])
-        .filter(e => e.needs && e.needs.status !== 'archived')
+        .filter(e => !e.needs || e.needs.status !== 'archived')
         .map(e => ({
             ...e,
             type: 'endorsement',

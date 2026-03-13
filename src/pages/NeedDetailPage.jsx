@@ -185,9 +185,7 @@ export const NeedDetailPage = () => {
                     const shaped = shapeNeed(needData);
                     setNeed(shaped);
                     if (user) {
-                        // Mark interaction
-                        const { getOrCreateThread } = await import('../lib/messageService');
-                        // just to preload or track something if needed, left as is
+                        // User interaction tracking placeholder
                     }
                     // Fetch first reply time
                     const firstReplyTs = await getFirstReplyTime(needData.id, needData.user_id);
@@ -212,7 +210,7 @@ export const NeedDetailPage = () => {
             }
         };
         load();
-    }, [id, user, navigate]);
+    }, [id, user]);
 
     const replyTree = useMemo(() => {
         const map = {};
@@ -391,7 +389,7 @@ export const NeedDetailPage = () => {
             }}>
                 <button
                     type="button"
-                    onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); navigate(-1); }}
+                    onClick={() => navigate(-1)}
                     style={{ padding: '0.5rem', borderRadius: '50%', color: 'var(--text-primary)', touchAction: 'manipulation', cursor: 'pointer' }}
                     className="nav-link-hover"
                 >
