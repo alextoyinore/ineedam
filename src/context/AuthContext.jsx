@@ -97,12 +97,23 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         // Get initial session
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-            const authUser = session?.user ?? null;
-            setUser(authUser);
-            if (authUser) fetchProfile(authUser.id);
-        });
+        // Get initial session with a 5s timeout to prevent infinite loading on iOS
+        const getSessionWithTimeout = Promise.race([
+            supabase.auth.getSession(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Session timeout')), 5000))
+        ]);
+
+        getSessionWithTimeout
+            .then(({ data: { session } }) => {
+                setSession(session);
+                const authUser = session?.user ?? null;
+                setUser(authUser);
+                if (authUser) fetchProfile(authUser.id);
+            })
+            .catch((err) => {
+                console.warn('[AuthContext] getSession failed or timed out:', err.message);
+                setSession(null); // Unblock the loader — treat as logged out
+            });
 
         // Listen for auth state changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -133,7 +144,9 @@ export const AuthProvider = ({ children }) => {
             updateLastSeen(); // Initial update
             const heartbeat = setInterval(updateLastSeen, 2 * 60 * 1000);
 
-            if (Notification.permission === 'default' || Notification.permission === 'granted') {
+            // Guard for iOS Safari which doesn't support Notifications API
+            const notificationsSupported = typeof Notification !== 'undefined';
+            if (notificationsSupported && (Notification.permission === 'default' || Notification.permission === 'granted')) {
                 const timer = setTimeout(() => {
                     /* Existing Web Push (VAPID) subscription - Commented out
                     if (!profile.push_subscription) {

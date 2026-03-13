@@ -1,7 +1,37 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Shield, Users, AlertTriangle, MessageSquare, Star, Lock } from 'lucide-react';
+
+const RuleSection = ({ number, icon: Icon, iconColor = 'var(--primary)', title, children }) => (
+    <section style={{
+        padding: '1.5rem',
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border-glass)',
+        borderRadius: '20px',
+    }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+            <div style={{
+                width: '36px', height: '36px', borderRadius: '10px',
+                background: `color-mix(in srgb, ${iconColor}, transparent 88%)`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: iconColor, flexShrink: 0
+            }}>
+                <Icon size={18} />
+            </div>
+            <h2 className="h2" style={{ fontSize: '1.2rem', margin: 0 }}>{number}. {title}</h2>
+        </div>
+        {children}
+    </section>
+);
+
+const RuleList = ({ items }) => (
+    <ul style={{ color: 'var(--text-secondary)', lineHeight: 1.7, paddingLeft: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.6rem', margin: 0 }}>
+        {items.map((item, i) => (
+            <li key={i}>{item.bold ? <><strong style={{ color: 'var(--text-primary)' }}>{item.bold}:</strong> {item.text}</> : item}</li>
+        ))}
+    </ul>
+);
 
 export const RuleOfEngagementPage = () => {
     const navigate = useNavigate();
@@ -18,44 +48,84 @@ export const RuleOfEngagementPage = () => {
                 </button>
             </div>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-                <h1 className="h1" style={{ marginBottom: '1.5rem', fontSize: '2.5rem' }}>Rules of Engagement</h1>
-
-                <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', fontSize: '1.1rem', lineHeight: 1.6 }}>
-                    Welcome to iNeedam! To ensure a safe, respectful, and productive environment for everyone, we ask all users to adhere to the following rules, both on our platform and when engaging with others in the physical world.
+                <h1 className="h1" style={{ marginBottom: '0.75rem', fontSize: '2.5rem' }}>Rules of Engagement</h1>
+                <p style={{ color: 'var(--text-muted)', marginBottom: '2.5rem', fontSize: '1.05rem', lineHeight: 1.6 }}>
+                    Welcome to Ineedam. Our community thrives on trust, respect, and genuine connection. These rules exist to protect everyone — the people asking for help and the people offering it.
                 </p>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                    <section>
-                        <h2 className="h2" style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>1. Platform Etiquette</h2>
-                        <ul style={{ color: 'var(--text-secondary)', lineHeight: 1.6, paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                            <li><strong>Be Respectful:</strong> Treat everyone with kindness and respect. Harassment, hate speech, and abusive language are strictly prohibited.</li>
-                            <li><strong>Stay on Topic:</strong> Keep your needs, offers, and replies relevant. Do not spam or use the platform for unsolicited advertising.</li>
-                            <li><strong>Honesty and Transparency:</strong> Be truthful about your needs and what you can offer. Do not misrepresent yourself or your intentions.</li>
-                            <li><strong>Respect Privacy:</strong> Do not share personal information of others without their explicit consent.</li>
-                        </ul>
-                    </section>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
-                    <section>
-                        <h2 className="h2" style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>2. Personal Safety & Real-World Engagements</h2>
-                        <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1rem' }}>
-                            When an interaction begins on iNeedam and extends into the physical world (e.g., meeting to fulfill a need or deliver an item), your safety is our top priority. Please observe these critical safety guidelines:
-                        </p>
-                        <ul style={{ color: 'var(--text-secondary)', lineHeight: 1.6, paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                            <li><strong>Meet in Public:</strong> Always arrange to meet in well-lit, public locations during daylight hours (e.g., coffee shops, malls, or local police station trading zones).</li>
-                            <li><strong>Bring a Friend:</strong> Whenever possible, do not go alone to a meetup. Bring a friend or family member with you.</li>
-                            <li><strong>Inform Others:</strong> Tell someone you trust where you are going, who you are meeting, and approximately when you will return.</li>
-                            <li><strong>Trust Your Instincts:</strong> If a situation or person makes you feel uncomfortable, cancel the meeting or leave immediately. Your safety is more important than completing a transaction.</li>
-                            <li><strong>Do Not Share Undue Personal Information:</strong> Avoid giving out your home address, financial details, or other sensitive information unless absolutely necessary and you fully trust the other party.</li>
-                        </ul>
-                    </section>
+                    <RuleSection number="1" icon={Users} title="Platform Etiquette">
+                        <RuleList items={[
+                            { bold: 'Be Respectful', text: 'Treat everyone with kindness. Harassment, hate speech, threats, and abusive language of any kind will result in immediate account suspension.' },
+                            { bold: 'Stay on Topic', text: 'Keep your needs, offers, and replies relevant to the platform\'s purpose. Do not spam, post unrelated content, or use the platform for unsolicited advertising.' },
+                            { bold: 'Be Honest', text: 'Be truthful about your needs, budget, timeline, and what you can offer. Misrepresentation damages the community and may lead to account removal.' },
+                            { bold: 'Respect Privacy', text: 'Do not publicly share another user\'s personal information, contact details, or private messages without their explicit consent.' },
+                            { bold: 'No Duplicate Posts', text: 'Avoid posting the same need multiple times. Update your existing post if circumstances change.' },
+                            { bold: 'Appropriate Content Only', text: 'Do not post content that is illegal, sexually explicit, violent, or otherwise objectionable. Ineedam is a professional community platform.' },
+                        ]} />
+                    </RuleSection>
 
-                    <section>
-                        <h2 className="h2" style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>3. Reporting Violations</h2>
-                        <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                            If you experience or witness any behavior that violates these Rules of Engagement, either online or in person, please report it to us immediately using the in-app reporting tools or by contacting support. In case of immediate physical danger, always contact your local emergency services first.
+                    <RuleSection number="2" icon={Shield} iconColor="var(--accent)" title="Personal Safety & Real-World Meetups">
+                        <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1rem', fontSize: '0.95rem' }}>
+                            When a connection made on Ineedam leads to a physical meeting, your safety must come first. Please follow these guidelines:
                         </p>
-                    </section>
+                        <RuleList items={[
+                            { bold: 'Meet in Public', text: 'Always arrange first meetings in well-lit, busy public places — coffee shops, malls, or designated police-approved trading zones.' },
+                            { bold: 'Bring a Friend', text: 'Whenever possible, do not go to a meetup alone. Having someone with you significantly increases your safety.' },
+                            { bold: 'Tell Someone', text: 'Before any meeting, inform a trusted person of your destination, who you are meeting, and your expected return time.' },
+                            { bold: 'Trust Your Instincts', text: 'If something feels wrong, cancel the meeting or leave immediately. Your safety is always more important than completing a transaction.' },
+                            { bold: 'Limit Personal Information', text: 'Avoid sharing your home address, financial details, or other sensitive information until you fully trust the other party.' },
+                            { bold: 'Verify Before You Pay', text: 'Never send money in advance without verifying a person\'s identity and service. If a deal sounds too good to be true, it probably is.' },
+                        ]} />
+                    </RuleSection>
+
+                    <RuleSection number="3" icon={MessageSquare} iconColor="var(--secondary)" title="Communication Standards">
+                        <RuleList items={[
+                            { bold: 'Respond Promptly', text: 'If someone replies to your need, acknowledge them within a reasonable time. Ignoring people without reason is disrespectful and harms your Response Rate.' },
+                            { bold: 'Close the Loop', text: 'Once a need is fulfilled, mark it as "Met" and tag or endorse the person who helped. This builds trust for the whole community.' },
+                            { bold: 'No Unsolicited DMs', text: 'Do not send direct messages to users who have not engaged on your post or shown interest in what you\'re offering.' },
+                            { bold: 'Constructive Replies Only', text: 'When replying to a need, provide genuine, relevant, and helpful information. Negative or dismissive comments are not welcome.' },
+                        ]} />
+                    </RuleSection>
+
+                    <RuleSection number="4" icon={Star} iconColor="#f59e0b" title="Endorsements & Reputation">
+                        <RuleList items={[
+                            { bold: 'Endorse Honestly', text: 'Only endorse users who have genuinely helped fulfil a need. Fake or coerced endorsements undermine the trust layer of the platform.' },
+                            { bold: 'No Endorsement Trading', text: 'Exchanging endorsements without actual fulfillment is strictly prohibited and will result in both endorsements being removed.' },
+                            { bold: 'No Self-Promotion Abuse', text: 'Do not create multiple accounts to boost your own reputation. Such activity will result in permanent bans.' },
+                        ]} />
+                    </RuleSection>
+
+                    <RuleSection number="5" icon={Lock} iconColor="var(--text-secondary)" title="Prohibited Activities">
+                        <RuleList items={[
+                            { bold: 'No Illegal Transactions', text: 'The platform must not be used to buy, sell, or facilitate anything illegal under applicable law.' },
+                            { bold: 'No Scamming or Fraud', text: 'Any form of deception, phishing, fake listings, or financial fraud will be immediately reported to the authorities and result in a permanent ban.' },
+                            { bold: 'No Impersonation', text: 'Do not create an account pretending to be another person, brand, or organisation.' },
+                            { bold: 'No Automated Scraping', text: 'Using bots, scrapers, or automated tools to collect data from the platform is strictly prohibited.' },
+                        ]} />
+                    </RuleSection>
+
+                    <RuleSection number="6" icon={AlertTriangle} iconColor="#ef4444" title="Reporting Violations">
+                        <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1rem', fontSize: '0.95rem' }}>
+                            If you experience or witness any behavior that violates these rules — online or in person — please act:
+                        </p>
+                        <RuleList items={[
+                            { bold: 'Use In-App Reporting', text: 'Every post, reply, and profile has a report option. Use it. Our moderation team reviews all reports.' },
+                            { bold: 'Contact Support', text: 'For urgent matters, email us directly at admin@ineedam.com with as much detail as possible.' },
+                            { bold: 'Emergency First', text: 'In any situation involving immediate physical danger, contact your local emergency services before anything else.' },
+                            { bold: 'No Vigilantism', text: 'Do not take matters into your own hands or publicly shame users. Report violations through official channels.' },
+                        ]} />
+                    </RuleSection>
+
                 </div>
+
+                <div style={{ marginTop: '2.5rem', padding: '1.5rem', borderRadius: '16px', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(236, 72, 153, 0.05) 100%)', border: '1px solid var(--border-glass)', textAlign: 'center' }}>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.6, margin: 0 }}>
+                        By using Ineedam, you agree to abide by these rules. Violations may result in warnings, temporary suspension, or permanent account removal. We reserve the right to update these rules as the community grows.
+                    </p>
+                </div>
+
             </motion.div>
         </div>
     );
