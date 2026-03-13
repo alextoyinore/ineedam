@@ -148,7 +148,7 @@ export const ContactPage = () => {
 
             {/* Removed Header for a cleaner look */}
 
-            <main style={{ maxWidth: '1000px', margin: '0 auto', width: '100%', padding: '1rem 1.5rem' }}>
+            <main style={{ maxWidth: '1000px', margin: '0 auto', width: '100%', padding: '2rem 1.5rem 1rem 1.5rem' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '3rem', width: '100%' }}>
                     
                     {/* Info Section */}
