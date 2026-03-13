@@ -16,9 +16,12 @@ const InViewMarker = ({ onInView }) => {
     }, [onInView]);
 
     React.useEffect(() => {
+        let hasFired = false;
         const observer = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting) {
+            if (entries[0].isIntersecting && !hasFired) {
+                hasFired = true;
                 onInViewRef.current();
+                observer.disconnect();
             }
         }, { threshold: 0.1 });
         
@@ -119,17 +122,19 @@ export const NotificationsPage = () => {
                                 onClick={() => markAsRead(notif.id)}
                                 style={{
                                     borderBottom: '1px solid var(--border-glass)',
-                                    background: notif.read ? 'transparent' : 'color-mix(in srgb, var(--primary), transparent 95%)',
+                                    background: notif.read ? 'transparent' : 'color-mix(in srgb, var(--primary) 12%, transparent)',
                                     position: 'relative',
                                     width: '100%'
                                 }}
                             >
                                 {!notif.read && (
                                     <>
-                                        <InViewMarker onInView={() => markAsRead(notif.id)} />
+                                        <InViewMarker onInView={() => {
+                                            setTimeout(() => markAsRead(notif.id), 2500);
+                                        }} />
                                         <div style={{
                                             position: 'absolute', left: '0.4rem', top: '50%', transform: 'translateY(-50%)',
-                                            width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary)',
+                                            width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary)',
                                             zIndex: 2
                                         }} />
                                     </>
