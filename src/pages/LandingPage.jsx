@@ -5,6 +5,7 @@ import { useTheme } from '../context/ThemeContext';
 import { Helmet } from 'react-helmet-async';
 import { AuthForm } from '../components/AuthForm';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { Play } from 'lucide-react';
 
 export const LandingPage = () => {
     const { session, loading } = useAuth();
@@ -97,10 +98,27 @@ export const LandingPage = () => {
                         color: 'var(--text-secondary)',
                         maxWidth: '480px',
                         lineHeight: 1.6,
-                        marginBottom: '3rem'
+                        marginBottom: '1.5rem'
                     }}>
                         Post exactly what you need, set budget and constraints, and let the providers come to you.
                     </p>
+
+                    <div style={{ marginBottom: '3rem', display: 'flex', justifyContent: 'flex-start' }} className="landing-intro-cta">
+                        <button
+                            onClick={() => navigate('/intro')}
+                            style={{
+                                display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+                                background: 'color-mix(in srgb, var(--primary) 15%, transparent)',
+                                color: 'var(--primary)', border: '1px solid color-mix(in srgb, var(--primary) 30%, transparent)',
+                                padding: '0.75rem 1.25rem', borderRadius: '9999px',
+                                fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s'
+                            }}
+                            onMouseOver={(e) => { e.currentTarget.style.background = 'color-mix(in srgb, var(--primary) 25%, transparent)'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.background = 'color-mix(in srgb, var(--primary) 15%, transparent)'; }}
+                        >
+                            <Play size={18} fill="currentColor" /> Watch Intro
+                        </button>
+                    </div>
 
                     {/* Mobile CTA Buttons */}
                     <div className="mobile-only mobile-ctas" style={{ display: 'none', flexDirection: 'column', gap: '1rem', width: '100%', marginBottom: '3rem' }}>
@@ -134,6 +152,7 @@ export const LandingPage = () => {
                         color: 'var(--text-muted)',
                         fontSize: '0.85rem'
                     }} className="landing-footer">
+                        <a href="/intro" style={{ color: 'inherit', textDecoration: 'none' }} className="nav-link-hover">Intro</a>
                         <a href="/about" style={{ color: 'inherit', textDecoration: 'none' }} className="nav-link-hover">About</a>
                         <a href="/how-to-use" style={{ color: 'inherit', textDecoration: 'none' }} className="nav-link-hover">Use Cases</a>
                         <a href="/faq" style={{ color: 'inherit', textDecoration: 'none' }} className="nav-link-hover">FAQ</a>

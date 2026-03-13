@@ -5,6 +5,33 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, Bookmark, Check, Edit2, Trash2, ArrowLeft, Phone, Video, MoreVertical, Paperclip, Mic, Send, Reply, Smile, PhoneOff, X, FileText } from 'lucide-react';
 import { useChat } from '../../context/ChatContext';
 import { OnlineBadge } from '../../components/OnlineBadge';
+
+const TypingBubble = () => (
+    <div style={{
+        alignSelf: 'flex-start',
+        maxWidth: '85%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        position: 'relative',
+        marginBottom: '0.5rem'
+    }}>
+        <div style={{
+            padding: '0.8rem 1.2rem',
+            borderRadius: '18px',
+            borderBottomLeftRadius: '4px',
+            background: 'var(--bg-surface)',
+            border: '1px solid var(--border-glass)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px'
+        }}>
+            <motion.div animate={{ y: [0, -5, 0] }} transition={{ duration: 0.6, repeat: Infinity, delay: 0 }} style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--text-muted)' }} />
+            <motion.div animate={{ y: [0, -5, 0] }} transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }} style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--text-muted)' }} />
+            <motion.div animate={{ y: [0, -5, 0] }} transition={{ duration: 0.6, repeat: Infinity, delay: 0.4 }} style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--text-muted)' }} />
+        </div>
+    </div>
+);
 import { VoiceRecorder } from '../../components/messages/VoiceRecorder';
 import { AudioBubble } from '../../components/messages/AudioBubble';
 
@@ -209,7 +236,8 @@ export const ChatDetail = () => {
     const navigate = useNavigate();
     const {
         threads, sendMessage, markThreadAsRead, loadingThreads, setActiveThreadId, initiateCall,
-        replyingTo, setReplyingTo, toggleReaction, toggleBookmark, editMessage, deleteMessage
+        replyingTo, setReplyingTo, toggleReaction, toggleBookmark, editMessage, deleteMessage,
+        sendTypingSignal, typingUsers
     } = useChat();
     const [messageText, setMessageText] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
@@ -224,6 +252,7 @@ export const ChatDetail = () => {
     const chatsEndRef = useRef(null);
     const messageContainerRef = useRef(null);
     const emojiPickerRef = useRef(null);
+    const lastTypingSignalRef = useRef(0);
 
     const activeThread = threads.find(t => String(t.id) === String(threadId));
 
@@ -457,6 +486,9 @@ export const ChatDetail = () => {
                     gap: '0.15rem',
                     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Cg stroke='%236366f1' stroke-opacity='0.02' fill='none' stroke-width='1.5'%3E%3Cpath d='M40 40h60c8 0 15 7 15 15v40c0 8-7 15-15 15h-20l-15 15v-15h-25c-8 0-15-7-15-15v-40c0-8 7-15 15-15z'/%3E%3Cpath d='M160 160l30-30 15 15-30 30z M195 125l15-15 15 15-15 15z M155 165l5 25-25-5z'/%3E%3Cpath d='M160 40h30c4 0 8 4 8 8v15c0 4-4 8-8 8h-5l-10 10v-10h-15c-4 0-8-4-8-8v-15c0-4 4-8 8-8z'/%3E%3C/g%3E%3C/svg%3E")`
                 }}>
+                {typingUsers[activeThread?.id] && (
+                    <TypingBubble />
+                )}
                 {[...activeThread.messages].reverse().map((msg, index, allMsgs) => {
                     const isMe = msg.sender === 'Me';
                     const isAudio = msg.fileType?.startsWith('audio/') || msg.fileUrl?.toLowerCase().endsWith('.webm') || msg.fileUrl?.toLowerCase().endsWith('.mp3') || msg.fileUrl?.toLowerCase().endsWith('.wav');
@@ -780,7 +812,14 @@ export const ChatDetail = () => {
                         <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center' }}>
                             <textarea
                                 value={messageText}
-                                onChange={(e) => setMessageText(e.target.value)}
+                                onChange={(e) => {
+                                    setMessageText(e.target.value);
+                                    const now = Date.now();
+                                    if (now - lastTypingSignalRef.current > 2000) {
+                                        sendTypingSignal(activeThread.withUserId, activeThread.id);
+                                        lastTypingSignalRef.current = now;
+                                    }
+                                }}
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter' && !e.shiftKey) {
                                         e.preventDefault();

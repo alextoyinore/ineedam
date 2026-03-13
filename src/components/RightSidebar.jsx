@@ -299,6 +299,7 @@ export const RightSidebar = () => {
 
                 {/* Footer Links */}
                 <div style={{ padding: '0 0 1rem 1rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem 1rem', marginBottom: '2rem' }}>
+                    <span onClick={() => navigate('/intro')} style={{ fontSize: '0.8rem', color: 'var(--text-muted)', cursor: 'pointer' }} className="nav-link-hover">Intro</span>
                     <span onClick={() => navigate('/about')} style={{ fontSize: '0.8rem', color: 'var(--text-muted)', cursor: 'pointer' }} className="nav-link-hover">About</span>
                     <span onClick={() => navigate('/faq')} style={{ fontSize: '0.8rem', color: 'var(--text-muted)', cursor: 'pointer' }} className="nav-link-hover">FAQ</span>
                     <span onClick={() => navigate('/support')} style={{ fontSize: '0.8rem', color: 'var(--text-muted)', cursor: 'pointer' }} className="nav-link-hover">Support</span>

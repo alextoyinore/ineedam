@@ -28,6 +28,13 @@ export const ExplorePage = () => {
     const { following, toggleFollow, isFollowing } = useSocial();
     const [suggestedUsers, setSuggestedUsers] = useState([]);
     const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+    const [visibleCommunityCount, setVisibleCommunityCount] = useState(10);
+
+    const loadMoreCommunity = useCallback(() => {
+        setTimeout(() => {
+            setVisibleCommunityCount(prev => prev + 10);
+        }, 400);
+    }, []);
 
     const loadItems = useCallback(async (isInitial = false) => {
         if (isInitial) {
@@ -79,7 +86,7 @@ export const ExplorePage = () => {
             if (!user) return;
             setLoadingSuggestions(true);
             try {
-                const users = await getSuggestedProfiles(user.id, 15);
+                const users = await getSuggestedProfiles(user.id, 100); // Fetch a larger batch
                 setSuggestedUsers(users);
             } catch (err) {
                 console.error("Failed to load suggested users", err);
@@ -91,6 +98,10 @@ export const ExplorePage = () => {
     }, [user]);
 
     const lastElementRef = useInfiniteScroll(loadItems, hasMore, loading || loadingMore);
+
+    const visibleCommunityUsers = suggestedUsers.slice(0, visibleCommunityCount);
+    const hasMoreCommunity = visibleCommunityCount < suggestedUsers.length;
+    const communitySentinelRef = useInfiniteScroll(loadMoreCommunity, hasMoreCommunity, loadingSuggestions);
 
     // Subscribe to real-time inserts so new posts appear instantly
     useEffect(() => {
@@ -231,8 +242,8 @@ export const ExplorePage = () => {
                             <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem', color: 'var(--primary)' }}>
                                 <Loader size={32} className="animate-spin" />
                             </div>
-                        ) : suggestedUsers.length > 0 ? (
-                            suggestedUsers.map(profile => (
+                        ) : visibleCommunityUsers.length > 0 ? (
+                            visibleCommunityUsers.map(profile => (
                                 <div
                                     key={profile.id}
                                     onClick={() => navigate(`/${profile.username}`)}
@@ -275,6 +286,15 @@ export const ExplorePage = () => {
                                 <Users size={48} style={{ opacity: 0.3, marginBottom: '1rem' }} />
                                 <h3 className="h3">No suggestions</h3>
                                 <p>Check back later for more people to follow.</p>
+                            </div>
+                        )}
+                        {/* Sentinel for Community Infinite Scroll */}
+                        {feedTab === 'whotofollow' && visibleCommunityUsers.length > 0 && (
+                            <div ref={communitySentinelRef} style={{ height: '20px' }} />
+                        )}
+                        {feedTab === 'whotofollow' && hasMoreCommunity && visibleCommunityUsers.length > 0 && (
+                            <div style={{ display: 'flex', justifyContent: 'center', padding: '1rem', color: 'var(--primary)' }}>
+                                <Loader size={24} className="animate-spin" />
                             </div>
                         )}
                     </div>

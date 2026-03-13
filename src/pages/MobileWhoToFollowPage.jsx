@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Users, Loader, Trophy, Award, MessageSquare } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -7,6 +7,7 @@ import { getSuggestedProfiles } from '../lib/profileService';
 import { supabase } from '../lib/supabase';
 import { motion } from 'framer-motion';
 import { OnlineBadge } from '../components/OnlineBadge';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 
 const MEDAL_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32'];
 
@@ -25,13 +26,20 @@ export const MobileWhoToFollowPage = () => {
     const [leaders, setLeaders] = useState([]);
     const [loadingSuggested, setLoadingSuggested] = useState(true);
     const [loadingLeaders, setLoadingLeaders] = useState(true);
+    const [visibleCount, setVisibleCount] = useState(15);
+
+    const loadMore = useCallback(() => {
+        setTimeout(() => {
+            setVisibleCount(prev => prev + 15);
+        }, 400);
+    }, []);
 
     useEffect(() => {
         const loadSuggestedUsers = async () => {
             if (!user) return;
             setLoadingSuggested(true);
             try {
-                const users = await getSuggestedProfiles(user.id, 15);
+                const users = await getSuggestedProfiles(user.id, 100);
                 setSuggestedUsers(users);
             } catch (err) {
                 console.error("Failed to load suggested users", err);
@@ -95,6 +103,10 @@ export const MobileWhoToFollowPage = () => {
         await toggleFollow(userId);
     };
 
+    const visibleUsers = suggestedUsers.slice(0, visibleCount);
+    const hasMore = visibleCount < suggestedUsers.length;
+    const customScrollRef = useInfiniteScroll(loadMore, hasMore, loadingSuggested);
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--bg-base)' }}>
             <header className="sticky-header" style={{
@@ -146,8 +158,8 @@ export const MobileWhoToFollowPage = () => {
                             <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem', color: 'var(--primary)' }}>
                                 <Loader size={32} className="animate-spin" />
                             </div>
-                        ) : suggestedUsers.length > 0 ? (
-                            suggestedUsers.map(profile => (
+                        ) : visibleUsers.length > 0 ? (
+                            visibleUsers.map(profile => (
                                 <div
                                     key={profile.id}
                                     onClick={() => navigate(`/${profile.username}`)}
@@ -190,6 +202,15 @@ export const MobileWhoToFollowPage = () => {
                                 <Users size={48} style={{ opacity: 0.3, marginBottom: '1rem' }} />
                                 <h3 className="h3">No suggestions</h3>
                                 <p>Check back later for more people to follow.</p>
+                            </div>
+                        )}
+                        {/* Sentinel for Infinite Scroll */}
+                        {activeTab === 'suggested' && visibleUsers.length > 0 && (
+                            <div ref={customScrollRef} style={{ height: '20px' }} />
+                        )}
+                        {activeTab === 'suggested' && hasMore && visibleUsers.length > 0 && (
+                            <div style={{ display: 'flex', justifyContent: 'center', padding: '1rem', color: 'var(--primary)' }}>
+                                <Loader size={24} className="animate-spin" />
                             </div>
                         )}
                     </div>

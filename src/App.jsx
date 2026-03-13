@@ -37,6 +37,7 @@ const ArchivedContentPage = lazy(() => import('./pages/ArchivedContentPage').the
 const EndorsementDetailPage = lazy(() => import('./pages/EndorsementDetailPage').then(module => ({ default: module.EndorsementDetailPage })));
 const HelpPage = lazy(() => import('./pages/HelpPage').then(module => ({ default: module.HelpPage })));
 const SupportPage = lazy(() => import('./pages/SupportPage').then(module => ({ default: module.SupportPage })));
+const VideoIntroPage = lazy(() => import('./pages/VideoIntroPage').then(module => ({ default: module.VideoIntroPage })));
 
 // Full-screen spinner while the session is being determined or pages are loading
 const AuthLoader = () => (
@@ -73,6 +74,7 @@ function App() {
         <Route path="/terms" element={<PublicPageWrapper><TermsOfServicePage /></PublicPageWrapper>} />
         <Route path="/contact" element={<PublicPageWrapper><ContactPage /></PublicPageWrapper>} />
         <Route path="/rules" element={<PublicPageWrapper><RuleOfEngagementPage /></PublicPageWrapper>} />
+        <Route path="/intro" element={<VideoIntroPage />} />
 
         {/* ── Protected: all app routes inside social layout ────── */}
         <Route path="/*" element={

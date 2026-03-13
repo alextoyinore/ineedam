@@ -18,6 +18,7 @@ export const ChatProvider = ({ children }) => {
     const [localStream, setLocalStream] = useState(null);
     const [remoteStream, setRemoteStream] = useState(null);
     const [replyingTo, setReplyingTo] = useState(null); // { id, text, sender }
+    const [typingUsers, setTypingUsers] = useState({}); // { [threadId]: timestamp }
 
     const activeThreadIdRef = useRef(activeThreadId);
     const callRef = useRef(call);
@@ -165,6 +166,15 @@ export const ChatProvider = ({ children }) => {
                 })
                 .subscribe();
 
+            // Subscribe to typing signals
+            const typingChannel = supabase.channel(`typing-${user.id}`)
+                .on('broadcast', { event: 'typing' }, ({ payload }) => {
+                    if (payload.threadId) {
+                        setTypingUsers(prev => ({ ...prev, [payload.threadId]: Date.now() }));
+                    }
+                })
+                .subscribe();
+
             // 4. Heartbeat silent refresh (safety net for liquid feel)
             const heartbeat = setInterval(() => {
                 loadThreads(true);
@@ -173,11 +183,31 @@ export const ChatProvider = ({ children }) => {
             return () => {
                 supabase.removeChannel(channel);
                 supabase.removeChannel(callChannel);
+                supabase.removeChannel(typingChannel);
                 clearInterval(heartbeat);
                 if (pcRef.current) pcRef.current.close();
             };
         }
     }, [user]);
+
+    // Cleanup stale typing indicators
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setTypingUsers(prev => {
+                const now = Date.now();
+                let changed = false;
+                const next = { ...prev };
+                for (const threadId in next) {
+                    if (now - next[threadId] > 3000) {
+                        delete next[threadId];
+                        changed = true;
+                    }
+                }
+                return changed ? next : prev;
+            });
+        }, 1000);
+        return () => clearInterval(interval);
+    }, []);
 
     const createPeerConnection = (isVideo) => {
         const pc = new RTCPeerConnection({
@@ -704,6 +734,20 @@ export const ChatProvider = ({ children }) => {
         }
     };
 
+    const sendTypingSignal = async (targetUserId, threadId) => {
+        if (!user || !targetUserId || !threadId) return;
+        try {
+            const channel = supabase.channel(`typing-${targetUserId}`);
+            await channel.send({
+                type: 'broadcast',
+                event: 'typing',
+                payload: { threadId, fromUserId: user.id }
+            });
+        } catch (err) {
+            // Ignore errors for typing signals as they are ephemeral
+        }
+    };
+
     const unreadThreadsCount = threads.filter(t => t.unread).length;
 
     return (
@@ -730,7 +774,9 @@ export const ChatProvider = ({ children }) => {
             toggleReaction,
             toggleBookmark,
             editMessage,
-            deleteMessage
+            deleteMessage,
+            sendTypingSignal,
+            typingUsers
         }}>
             {children}
         </ChatContext.Provider>
