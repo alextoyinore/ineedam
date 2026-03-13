@@ -48,10 +48,10 @@ export const ContactPage = () => {
     };
 
     const ContactForm = ({ compact = false }) => (
-        <div style={{ 
-            background: compact ? 'transparent' : 'var(--bg-surface)', 
-            padding: compact ? '0' : '1.5rem', 
-            borderRadius: '20px', 
+        <div style={{
+            background: compact ? 'transparent' : 'var(--bg-surface)',
+            padding: compact ? '0' : '1.5rem',
+            borderRadius: '20px',
             border: compact ? 'none' : '1px solid var(--border-glass)',
         }}>
             {status === 'success' ? (
@@ -148,9 +148,9 @@ export const ContactPage = () => {
 
             {/* Removed Header for a cleaner look */}
 
-            <main style={{ maxWidth: '1000px', margin: '0 auto', width: '100%', padding: '2rem 1.5rem 1rem 1.5rem' }}>
+            <main style={{ maxWidth: '1000px', margin: '3rem auto', width: '100%', padding: '' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '3rem', width: '100%' }}>
-                    
+
                     {/* Info Section */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                         <div>
@@ -206,7 +206,7 @@ export const ContactPage = () => {
 
                         {/* Mobile CTA */}
                         <div className="mobile-only" style={{ display: 'none', marginTop: '1rem' }}>
-                            <button 
+                            <button
                                 className="btn btn-primary"
                                 onClick={() => { setStatus('idle'); setIsBottomSheetOpen(true); }}
                                 style={{ width: '100%', padding: '1rem', borderRadius: '12px', fontSize: '1rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}
@@ -233,7 +233,8 @@ export const ContactPage = () => {
                 </div>
             )}
 
-            <style dangerouslySetInnerHTML={{ __html: `
+            <style dangerouslySetInnerHTML={{
+                __html: `
                 @media (max-width: 768px) {
                     .desktop-only { display: none !important; }
                     .mobile-only { display: flex !important; }
