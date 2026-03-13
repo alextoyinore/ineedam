@@ -21,7 +21,7 @@ export const RightSidebar = () => {
     const navigate = useNavigate();
 
     const sidebarRef = React.useRef(null);
-    const [stickyTop, setStickyTop] = useState(16);
+    const [stickyTop, setStickyTop] = useState(0);
 
     useEffect(() => {
         let lastScrollY = window.scrollY;
@@ -38,14 +38,14 @@ export const RightSidebar = () => {
 
             // If sidebar is shorter than viewport, keep it at top
             if (sh <= vh - 32) {
-                setStickyTop(16);
+                setStickyTop(0);
                 return;
             }
 
             setStickyTop(prev => {
                 const newTop = prev - delta;
                 const minTop = vh - sh - 24; // 24px bottom margin/buffer
-                const maxTop = 16; // 1rem top margin
+                const maxTop = 0; // 0px top margin to align with logo/headers
                 return Math.min(maxTop, Math.max(minTop, newTop));
             });
         };
@@ -130,7 +130,7 @@ export const RightSidebar = () => {
     ];
     return (
         <aside ref={sidebarRef} className="social-sidebar-right" style={{ top: `${stickyTop}px` }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', height: '100%', padding: '1.5rem 0' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', height: '100%', padding: '1.25rem 0' }}>
 
                 {/* Profile Completion Checklist */}
                 <ProfileCompletionList />

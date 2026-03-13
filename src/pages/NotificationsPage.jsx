@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Bell, UserPlus, MessageCircle, Info, Heart, PhoneOff } from 'lucide-react';
+import { Bell, UserPlus, MessageCircle, Info, Heart, PhoneOff, Loader } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useNotifications } from '../context/NotificationsContext';
 import { OnlineBadge } from '../components/OnlineBadge';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 
 const InViewMarker = ({ onInView }) => {
     const ref = React.useRef(null);
@@ -32,6 +33,23 @@ const InViewMarker = ({ onInView }) => {
 export const NotificationsPage = () => {
     const { notifications, markAsRead } = useNotifications();
     const navigate = useNavigate();
+    
+    // UI Pagination State
+    const [visibleCount, setVisibleCount] = useState(20);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const visibleNotifications = notifications.slice(0, visibleCount);
+
+    const loadMore = useCallback(() => {
+        if (loadingMore) return;
+        setLoadingMore(true);
+        setTimeout(() => {
+            setVisibleCount((prev) => prev + 20);
+            setLoadingMore(false);
+        }, 400);
+    }, [loadingMore]);
+
+    const hasMore = visibleCount < notifications.length;
+    const lastElementRef = useInfiniteScroll(loadMore, hasMore, loadingMore);
 
     useEffect(() => {
         // Option: mark all as read when page is opened
@@ -87,15 +105,16 @@ export const NotificationsPage = () => {
             {/* Notifications List */}
             <div style={{ flex: 1, overflowY: 'auto' }}>
                 {notifications.length > 0 ? (
-                    notifications.map((notif, index) => {
-                        const mainLink = getNotificationLink(notif);
+                    <>
+                        {visibleNotifications.map((notif, index) => {
+                            const mainLink = getNotificationLink(notif);
                         
                         return (
                             <motion.div
                                 key={notif.id}
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.05 }}
+                                transition={{ delay: (index % 20) * 0.05 }}
                                 className="feed-item-hover"
                                 onClick={() => markAsRead(notif.id)}
                                 style={{
@@ -226,7 +245,15 @@ export const NotificationsPage = () => {
                                 </div>
                             </motion.div>
                         );
-                    })
+                    })}
+                    
+                    {/* Sentinel for infinite scroll */}
+                    {hasMore && (
+                        <div ref={lastElementRef} style={{ height: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1rem', color: 'var(--primary)' }}>
+                            {loadingMore && <Loader className="animate-spin" size={24} />}
+                        </div>
+                    )}
+                    </>
                 ) : (
                     <div style={{
                         height: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',

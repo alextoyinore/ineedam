@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Bookmark, Loader } from 'lucide-react';
 import { NeedCard } from '../components/NeedCard';
@@ -9,12 +9,30 @@ import { useAuth } from '../context/AuthContext';
 import { fetchBookmarkedItems } from '../lib/bookmarkService';
 import { shapeNeed, timeAgo } from '../lib/needsService';
 import { Link } from 'react-router-dom';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 
 export const BookmarksPage = () => {
     const { user, profile } = useAuth();
     const { bookmarkedIds } = useBookmarks();
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // UI Pagination State
+    const [visibleCount, setVisibleCount] = useState(10);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const visibleItems = items.slice(0, visibleCount);
+
+    const loadMore = useCallback(() => {
+        if (loadingMore) return;
+        setLoadingMore(true);
+        setTimeout(() => {
+            setVisibleCount((prev) => prev + 10);
+            setLoadingMore(false);
+        }, 400);
+    }, [loadingMore]);
+
+    const hasMore = visibleCount < items.length;
+    const lastElementRef = useInfiniteScroll(loadMore, hasMore, loadingMore);
 
     useEffect(() => {
         if (!user) {
@@ -74,8 +92,9 @@ export const BookmarksPage = () => {
                         <Loader className="animate-spin" size={32} />
                     </div>
                 ) : items.length > 0 ? (
-                    items.map((item, index) => (
-                        <motion.div
+                    <>
+                        {visibleItems.map((item, index) => (
+                            <motion.div
                             key={`${item.type}-${item.id}`}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -89,7 +108,15 @@ export const BookmarksPage = () => {
                                 <ChatMessageBookmarkCard message={item} />
                             )}
                         </motion.div>
-                    ))
+                        ))}
+                        
+                        {/* Sentinel for infinite scroll */}
+                        {hasMore && (
+                            <div ref={lastElementRef} style={{ height: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1rem', color: 'var(--primary)' }}>
+                                {loadingMore && <Loader className="animate-spin" size={24} />}
+                            </div>
+                        )}
+                    </>
                 ) : (
                     <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
                         <div style={{ padding: '1.5rem', borderRadius: '50%', background: 'var(--bg-surface)', border: '1px solid var(--border-glass)' }}>
