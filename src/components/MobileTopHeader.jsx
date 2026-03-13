@@ -130,7 +130,7 @@ export const MobileTopHeader = () => {
                 </div>
 
                 {/* Polymorphic Gradient Border */}
-                <div style={{
+                {/* <div style={{
                     position: 'absolute',
                     bottom: 0,
                     left: 0,
@@ -138,7 +138,7 @@ export const MobileTopHeader = () => {
                     height: '1px',
                     background: 'linear-gradient(to right, var(--primary), var(--secondary), var(--accent))',
                     opacity: 1
-                }} />
+                }} /> */}
             </motion.header>
 
             {/* App Info Modal */}
@@ -179,7 +179,7 @@ export const MobileTopHeader = () => {
                             </div>
                             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem', textAlign: 'center' }}>Version {pkg.version} (Alpha)</p>
                             <div style={{ textAlign: 'center', background: 'var(--bg-base)', padding: '1.25rem', borderRadius: '16px', fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                                <p style={{ margin: 0 }}>Connecting real needs with real solutions.<br/>Built for clarity, speed, and community trust.</p>
+                                <p style={{ margin: 0 }}>Connecting real needs with real solutions.<br />Built for clarity, speed, and community trust.</p>
                             </div>
                             <button
                                 onClick={() => setShowInfo(false)}
