@@ -33,8 +33,22 @@ export const LandingPage = () => {
             position: 'relative',
             transition: 'background-color 0.3s ease'
         }} className="landing-container">
-            {/* Theme Toggle */}
-            <div style={{ position: 'absolute', top: '2rem', right: '2rem', zIndex: 10 }}>
+            {/* Top Right Controls (Theme & Intro) */}
+            <div style={{ position: 'absolute', top: '2rem', right: '2rem', zIndex: 10, display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <button
+                    onClick={() => navigate('/intro')}
+                    style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+                        background: 'color-mix(in srgb, var(--primary) 15%, transparent)',
+                        color: 'var(--primary)', border: '1px solid color-mix(in srgb, var(--primary) 30%, transparent)',
+                        height: '40px', padding: '0 1rem', borderRadius: '9999px',
+                        fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s'
+                    }}
+                    onMouseOver={(e) => { e.currentTarget.style.background = 'color-mix(in srgb, var(--primary) 25%, transparent)'; }}
+                    onMouseOut={(e) => { e.currentTarget.style.background = 'color-mix(in srgb, var(--primary) 15%, transparent)'; }}
+                >
+                    <Play size={16} fill="currentColor" /> Watch Intro
+                </button>
                 <ThemeToggle />
             </div>
 
@@ -98,27 +112,10 @@ export const LandingPage = () => {
                         color: 'var(--text-secondary)',
                         maxWidth: '480px',
                         lineHeight: 1.6,
-                        marginBottom: '1.5rem'
+                        marginBottom: '3rem'
                     }}>
                         Post exactly what you need, set budget and constraints, and let the providers come to you.
                     </p>
-
-                    <div style={{ marginBottom: '3rem', display: 'flex', justifyContent: 'flex-start' }} className="landing-intro-cta">
-                        <button
-                            onClick={() => navigate('/intro')}
-                            style={{
-                                display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-                                background: 'color-mix(in srgb, var(--primary) 15%, transparent)',
-                                color: 'var(--primary)', border: '1px solid color-mix(in srgb, var(--primary) 30%, transparent)',
-                                padding: '0.75rem 1.25rem', borderRadius: '9999px',
-                                fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s'
-                            }}
-                            onMouseOver={(e) => { e.currentTarget.style.background = 'color-mix(in srgb, var(--primary) 25%, transparent)'; }}
-                            onMouseOut={(e) => { e.currentTarget.style.background = 'color-mix(in srgb, var(--primary) 15%, transparent)'; }}
-                        >
-                            <Play size={18} fill="currentColor" /> Watch Intro
-                        </button>
-                    </div>
 
                     {/* Mobile CTA Buttons */}
                     <div className="mobile-only mobile-ctas" style={{ display: 'none', flexDirection: 'column', gap: '1rem', width: '100%', marginBottom: '3rem' }}>
