@@ -20,9 +20,9 @@ export const LandingPage = () => {
     }
 
     return (
-        <div style={{ 
-            minHeight: '100vh', 
-            display: 'flex', 
+        <div style={{
+            minHeight: '100vh',
+            display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             background: 'var(--bg-base)',
@@ -59,17 +59,17 @@ export const LandingPage = () => {
             </button>
 
             {/* Background Layers */}
-            <div style={{ 
-                position: 'absolute', 
-                inset: 0, 
-                zIndex: 0 
+            <div style={{
+                position: 'absolute',
+                inset: 0,
+                zIndex: 0
             }} className="landing-grid-pattern" />
-            
-            <div style={{ 
-                position: 'absolute', 
-                inset: 0, 
+
+            <div style={{
+                position: 'absolute',
+                inset: 0,
                 zIndex: 0,
-                background: isDark 
+                background: isDark
                     ? 'radial-gradient(circle at 15% 50%, rgba(34, 197, 94, 0.1) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(34, 197, 94, 0.05) 0%, transparent 40%)'
                     : 'radial-gradient(circle at 15% 50%, rgba(34, 197, 94, 0.05) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(34, 197, 94, 0.03) 0%, transparent 40%)'
             }} />
@@ -79,10 +79,10 @@ export const LandingPage = () => {
                 <meta name="description" content="Post exactly what you need, set your budget and constraints, and let the providers come to you. Connecting real needs with real solutions." />
             </Helmet>
 
-            <div style={{ 
+            <div style={{
                 width: '100%',
                 maxWidth: '1100px',
-                display: 'flex', 
+                display: 'flex',
                 flexDirection: 'row',
                 alignItems: 'center',
                 gap: '4rem',
@@ -91,31 +91,31 @@ export const LandingPage = () => {
                 zIndex: 1
             }} className="landing-content">
                 {/* Left Column: Branding & Messaging */}
-                <div style={{ 
-                    flex: 1, 
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    justifyContent: 'center', 
+                <div style={{
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
                 }} className="landing-left">
                     <div style={{ marginBottom: '2.5rem' }} className="landing-logo">
                         <img src={isDark ? "/logo-dark.svg" : "/logo.svg"} alt="Ineedam" style={{ height: '42px' }} />
                     </div>
 
-                    <h1 style={{ 
-                        fontSize: 'clamp(2.5rem, 5vw, 4rem)', 
-                        fontWeight: 900, 
+                    <h1 style={{
+                        fontSize: 'clamp(2.5rem, 5vw, 4rem)',
+                        fontWeight: 900,
                         lineHeight: 1.1,
                         marginBottom: '1.25rem',
                         letterSpacing: '-0.02em',
                         color: 'var(--text-primary)'
                     }}>
-                        Stop Searching. <br />
+                        Stop Searching, <br />
                         <span className="text-gradient">Start Finding.</span>
                     </h1>
 
-                    <p style={{ 
-                        fontSize: 'clamp(1rem, 1.5vw, 1.2rem)', 
-                        color: 'var(--text-secondary)', 
+                    <p style={{
+                        fontSize: 'clamp(1rem, 1.5vw, 1.2rem)',
+                        color: 'var(--text-secondary)',
                         maxWidth: '480px',
                         lineHeight: 1.6,
                         marginBottom: '3rem'
@@ -125,14 +125,14 @@ export const LandingPage = () => {
 
                     {/* Mobile CTA Buttons */}
                     <div className="mobile-only mobile-ctas" style={{ display: 'none', flexDirection: 'column', gap: '1rem', width: '100%', marginBottom: '3rem' }}>
-                        <button 
+                        <button
                             className="auth-cta"
                             onClick={() => { setAuthTab('signup'); setIsMobileAuthOpen(true); }}
                         >
                             Get Started
                         </button>
-                        <button 
-                            style={{ 
+                        <button
+                            style={{
                                 background: 'transparent',
                                 border: '1px solid var(--border-glass)',
                                 color: 'var(--text-primary)',
@@ -148,11 +148,11 @@ export const LandingPage = () => {
                     </div>
 
                     {/* Footer links */}
-                    <div style={{ 
-                        display: 'flex', 
-                        gap: '1.25rem', 
-                        flexWrap: 'wrap', 
-                        color: 'var(--text-muted)', 
+                    <div style={{
+                        display: 'flex',
+                        gap: '1.25rem',
+                        flexWrap: 'wrap',
+                        color: 'var(--text-muted)',
                         fontSize: '0.85rem'
                     }} className="landing-footer">
                         <a href="/about" style={{ color: 'inherit', textDecoration: 'none' }} className="nav-link-hover">About</a>
@@ -165,13 +165,13 @@ export const LandingPage = () => {
                 </div>
 
                 {/* Right Column: Auth Form (Desktop Only) */}
-                <div style={{ 
+                <div style={{
                     flex: 1,
-                    display: 'flex', 
+                    display: 'flex',
                     justifyContent: 'center'
                 }} className="landing-right desktop-only">
-                    <div style={{ 
-                        width: '100%', 
+                    <div style={{
+                        width: '100%',
                         maxWidth: '400px',
                         background: isDark ? 'rgba(0, 0, 0, 0.15)' : 'rgba(255, 255, 255, 0.15)',
                         padding: '0 2rem 2rem 2rem',
@@ -189,11 +189,11 @@ export const LandingPage = () => {
 
             {/* Mobile Bottom Sheet Auth */}
             {isMobileAuthOpen && (
-                <div 
-                    className="bottom-sheet-overlay" 
+                <div
+                    className="bottom-sheet-overlay"
                     onClick={() => setIsMobileAuthOpen(false)}
                 >
-                    <div 
+                    <div
                         className="bottom-sheet-content"
                         onClick={(e) => e.stopPropagation()}
                     >
@@ -202,7 +202,8 @@ export const LandingPage = () => {
                 </div>
             )}
 
-            <style dangerouslySetInnerHTML={{ __html: `
+            <style dangerouslySetInnerHTML={{
+                __html: `
                 @media (max-width: 968px) {
                     .landing-content {
                         flex-direction: column !important;
