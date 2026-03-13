@@ -31,28 +31,40 @@ export const NotificationsProvider = ({ children }) => {
             try {
                 const data = await fetchNotifications(user.id);
 
-                // Grouping logic: group "incoming_call" and possibly others from same user
+                // Grouping logic: group by type, reference_id, and day
                 const grouped = [];
-                const groups = {}; // key: type-actorId
+                const groups = {}; // key for grouped notifications
 
                 (data || []).forEach(notif => {
-                    // Only group specific types, or group everything from same user?
-                    // User mentioned "is calling you..." (incoming_call)
-                    const shouldGroup = ['incoming_call', 'missed_call', 'like'].includes(notif.type);
+                    const shouldGroup = true; // Group all notification types including replies and mentions
+                    const currentActor = notif.actorProfile || { display_name: notif.actor_id?.substring(0, 6), username: notif.actor_id?.substring(0, 6) };
 
                     if (shouldGroup) {
-                        const key = `${notif.type}-${notif.actor_id}`;
+                        const day = new Date(notif.created_at || notif.timestamp || Date.now()).toISOString().split('T')[0];
+                        const key = `${notif.type}-${notif.reference_id || 'noref'}-${day}`;
+
                         if (!groups[key]) {
-                            groups[key] = { ...notif, group_count: 1, grouped_ids: [notif.id] };
+                            groups[key] = { 
+                                ...notif, 
+                                group_count: 1, 
+                                grouped_ids: [notif.id],
+                                actors: [currentActor]
+                            };
                             grouped.push(groups[key]);
                         } else {
                             groups[key].group_count++;
                             groups[key].grouped_ids.push(notif.id);
+                            
+                            // Add unique actor
+                            if (!groups[key].actors.find(a => (a?.username === currentActor.username) || (a?.display_name === currentActor.display_name))) {
+                                groups[key].actors.push(currentActor);
+                            }
+                            
                             // Keep the most recent unread status if any is unread
                             if (!notif.read) groups[key].read = false;
                         }
                     } else {
-                        grouped.push({ ...notif, group_count: 1, grouped_ids: [notif.id] });
+                        grouped.push({ ...notif, group_count: 1, grouped_ids: [notif.id], actors: [currentActor] });
                     }
                 });
 

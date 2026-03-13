@@ -24,6 +24,12 @@ export const ThemeProvider = ({ children }) => {
 
             root.setAttribute('data-theme', resolvedTheme);
             setIsDark(resolvedTheme === 'dark');
+            
+            // Update meta theme-color
+            const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+            if (metaThemeColor) {
+                metaThemeColor.setAttribute('content', resolvedTheme === 'dark' ? '#000000' : '#ffffff');
+            }
         };
 
         applyTheme(theme);
@@ -37,6 +43,11 @@ export const ThemeProvider = ({ children }) => {
                 const resolvedTheme = e.matches ? 'dark' : 'light';
                 root.setAttribute('data-theme', resolvedTheme);
                 setIsDark(resolvedTheme === 'dark');
+                
+                const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+                if (metaThemeColor) {
+                    metaThemeColor.setAttribute('content', resolvedTheme === 'dark' ? '#000000' : '#ffffff');
+                }
             };
             mediaQuery.addEventListener('change', mediaListener);
         }

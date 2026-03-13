@@ -212,7 +212,7 @@ export const MessageThreads = ({ isSplitView = false }) => {
                                         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                                         fontWeight: thread.unread ? 600 : 400
                                     }}>
-                                        {thread.lastMessage}
+                                        {thread.lastMessage?.replace(/\[CALL_(SUCCESS|MISSED|REJECTED|CANCELLED)\]/, '')}
                                     </p>
                                 </div>
                             </div>

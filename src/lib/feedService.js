@@ -5,8 +5,9 @@ import { fetchAllBroadcasts } from './broadcastService';
 
 /**
  * Fetch all endorsements globally, shaping them so they match Need items structure.
+ * Increased default limits to reduce JS filtering drop off during MVP.
  */
-export const fetchAllEndorsements = async (from = 0, to = 9) => {
+export const fetchAllEndorsements = async (from = 0, to = 99) => {
     const { data, error } = await supabase
         .from('endorsements')
         .select(`

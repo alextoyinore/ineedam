@@ -24,7 +24,7 @@
   /* Button Theme */
   --btn-primary-bg: #101828;
   --btn-primary-text: #ffffff;
-  --btn-disabled-bg: #f1f5f9;
+  --btn-disabled-bg: #e2e8f0;
   --btn-disabled-text: #94a3b8;
 
   /* Typography */
@@ -165,7 +165,7 @@ button {
 input::placeholder,
 textarea::placeholder {
   color: var(--text-muted) !important;
-  opacity: 0.5 !important;
+  opacity: 0.75 !important;
   font-weight: 400 !important;
 }
 

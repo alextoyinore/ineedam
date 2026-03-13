@@ -3,8 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
-  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#ffffff" id="theme-color-meta" />
   <link rel="icon" type="image/svg+xml" href="/icon.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -35,12 +34,15 @@
       try {
         var theme = localStorage.getItem('app-theme') || 'system';
         var root = document.documentElement;
+        var dark = false;
         if (theme === 'system') {
-          var dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-          root.setAttribute('data-theme', dark ? 'dark' : 'light');
+          dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         } else {
-          root.setAttribute('data-theme', theme);
+          dark = theme === 'dark';
         }
+        root.setAttribute('data-theme', dark ? 'dark' : 'light');
+        var metaTheme = document.getElementById('theme-color-meta') || document.querySelector('meta[name="theme-color"]');
+        if (metaTheme) metaTheme.setAttribute('content', dark ? '#000000' : '#ffffff');
       } catch (e) { }
     })();
   </script>
