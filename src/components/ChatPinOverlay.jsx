@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Lock, Unlock, ShieldAlert, KeyRound, Loader } from 'lucide-react';
-import { useMessageSecurity } from '../context/MessageSecurityContext';
+import { useChatSecurity } from '../context/ChatSecurityContext';
 
-export const MessagePinOverlay = ({ children }) => {
-    const { isLocked, hasPinSetup, verifyPin, setupPin, loading } = useMessageSecurity();
+export const ChatPinOverlay = ({ children }) => {
+    const { isLocked, hasPinSetup, verifyPin, setupPin, loading } = useChatSecurity();
     const [pin, setPin] = useState(['', '', '', '']);
     const [confirmPin, setConfirmPin] = useState(['', '', '', '']);
     const [step, setStep] = useState(hasPinSetup ? 'verify' : 'setup-initial');
@@ -173,7 +173,7 @@ export const MessagePinOverlay = ({ children }) => {
                         </div>
 
                         <h2 className="h2" style={{ fontSize: '1.5rem', marginBottom: '0.5rem', textAlign: 'center' }}>
-                            {step === 'verify' ? 'Unlock Messages' : step === 'setup-initial' ? 'Secure Your Messages' : 'Confirm Your PIN'}
+                            {step === 'verify' ? 'Unlock Chat' : step === 'setup-initial' ? 'Secure Your Chats' : 'Confirm Your PIN'}
                         </h2>
                         <p style={{ color: 'var(--text-muted)', textAlign: 'center', marginBottom: '2rem', fontSize: '0.95rem' }}>
                             {step === 'verify' ? 'Enter your 4-digit PIN to access private chats.' :

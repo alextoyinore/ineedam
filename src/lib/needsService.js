@@ -34,7 +34,7 @@ export const uploadFileToCloudinary = async (file) => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_preset', UPLOAD_PRESET);
-    formData.append('folder', 'ineedam/messages');
+    formData.append('folder', 'ineedam/chat');
 
     const res = await fetch(uploadUrl, { method: 'POST', body: formData });
     if (!res.ok) throw new Error('File upload failed');

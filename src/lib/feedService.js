@@ -7,7 +7,7 @@ import { fetchAllBroadcasts } from './broadcastService';
  * Fetch all endorsements globally, shaping them so they match Need items structure.
  * Increased default limits to reduce JS filtering drop off during MVP.
  */
-export const fetchAllEndorsements = async (from = 0, to = 99) => {
+export const fetchAllEndorsements = async (from = 0, to = 199) => {
     const { data, error } = await supabase
         .from('endorsements')
         .select(`
@@ -28,7 +28,6 @@ export const fetchAllEndorsements = async (from = 0, to = 99) => {
     }
 
     return (data || [])
-        .filter(e => !e.needs || e.needs.status !== 'archived')
         .map(e => ({
             ...e,
             type: 'endorsement',
@@ -47,8 +46,8 @@ export const fetchMixedFeed = async (from = 0, to = 5) => {
             .neq('status', 'archived')
             .order('created_at', { ascending: false })
             .range(from, to),
-        fetchAllEndorsements(from, to),
-        fetchAllBroadcasts(from, to)
+        fetchAllEndorsements(0, 199),
+        fetchAllBroadcasts(0, 199)
     ]);
 
     if (needsError) throw needsError;
@@ -94,8 +93,8 @@ export const searchMixedFeed = async ({ query, category, minBudget, maxBudget },
 
     const [{ data: needsData, error: needsError }, endorsements, broadcasts] = await Promise.all([
         supabaseQuery.neq('status', 'archived').order('created_at', { ascending: false }).range(from, to),
-        fetchAllEndorsements(from, to),
-        fetchAllBroadcasts(from, to)
+        fetchAllEndorsements(0, 199),
+        fetchAllBroadcasts(0, 199)
     ]);
 
     if (needsError) throw needsError;
@@ -115,9 +114,9 @@ export const searchMixedFeed = async ({ query, category, minBudget, maxBudget },
         const lowerQuery = query.toLowerCase();
         filteredEndorsements = filteredEndorsements.filter(e =>
             (e.message && e.message.toLowerCase().includes(lowerQuery)) ||
-            (e.endorsed.display_name && e.endorsed.display_name.toLowerCase().includes(lowerQuery)) ||
-            (e.endorser.display_name && e.endorser.display_name.toLowerCase().includes(lowerQuery)) ||
-            (e.needs.title && e.needs.title.toLowerCase().includes(lowerQuery))
+            (e.endorsed?.display_name && e.endorsed.display_name.toLowerCase().includes(lowerQuery)) ||
+            (e.endorser?.display_name && e.endorser.display_name.toLowerCase().includes(lowerQuery)) ||
+            (e.needs?.title && e.needs.title.toLowerCase().includes(lowerQuery))
         );
 
         filteredBroadcasts = filteredBroadcasts.filter(b =>

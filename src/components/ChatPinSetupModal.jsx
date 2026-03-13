@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, KeyRound, ShieldAlert, Loader } from 'lucide-react';
-import { useMessageSecurity } from '../context/MessageSecurityContext';
+import { useChatSecurity } from '../context/ChatSecurityContext';
 
-export const MessagePinSetupModal = ({ isOpen, onClose }) => {
-    const { setupPin } = useMessageSecurity();
+export const ChatPinSetupModal = ({ isOpen, onClose }) => {
+    const { setupPin } = useChatSecurity();
     const [pin, setPin] = useState(['', '', '', '']);
     const [confirmPin, setConfirmPin] = useState(['', '', '', '']);
     const [step, setStep] = useState('initial'); // 'initial' or 'confirm'
@@ -139,7 +139,7 @@ export const MessagePinSetupModal = ({ isOpen, onClose }) => {
                     </div>
 
                     <h2 className="h2" style={{ fontSize: '1.5rem', marginBottom: '0.5rem', textAlign: 'center' }}>
-                        {step === 'initial' ? 'Secure Your Messages' : 'Confirm Your PIN'}
+                        {step === 'initial' ? 'Secure Your Chats' : 'Confirm Your PIN'}
                     </h2>
                     <p style={{ color: 'var(--text-muted)', textAlign: 'center', marginBottom: '2rem', fontSize: '0.95rem' }}>
                         {step === 'initial' ? 'Set a 4-digit PIN to keep your conversations private.' : 'Re-enter your 4-digit PIN to confirm.'}

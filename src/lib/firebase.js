@@ -40,10 +40,10 @@ export const getFCMToken = async () => {
 };
 
 /**
- * Listen for foreground messages and show a manual notification.
+ * Listen for foreground chats and show a manual notification.
  * onMessage is called when the app is in the foreground.
  */
-export const listenForegroundMessages = (callback) => {
+export const listenForegroundChats = (callback) => {
     return onMessage(messaging, (payload) => {
         console.log('[FCM] Foreground message received:', payload);
         callback?.(payload);

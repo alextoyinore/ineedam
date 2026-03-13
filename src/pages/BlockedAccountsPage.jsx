@@ -72,7 +72,7 @@ export const BlockedAccountsPage = () => {
 
             <div style={{ padding: '1.5rem var(--feed-item-padding)', flex: 1, overflowY: 'auto' }}>
                 <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', fontSize: '0.95rem' }}>
-                    Blocked users cannot see your profile, your posts, or send you messages. They will not be explicitly notified that you blocked them.
+                    Blocked users cannot see your profile, your posts, or start chats with you. They will not be explicitly notified that you blocked them.
                 </p>
 
                 {loading ? (

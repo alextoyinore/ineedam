@@ -67,7 +67,7 @@ export const HelpPage = () => {
                 </HelpSection>
 
                 <HelpSection title="Security PIN" icon={Shield}>
-                    <p>Protect your private conversations by setting a <strong>Message PIN</strong> in your settings. Once enabled, your messages will lock automatically after 1 minute of inactivity, ensuring your privacy even if someone else holds your device.</p>
+                    <p>Protect your private conversations by setting a <strong>Chat PIN</strong> in your settings. Once enabled, your chats will lock automatically after 1 minute of inactivity, ensuring your privacy even if someone else holds your device.</p>
                 </HelpSection>
 
                 <HelpSection title="Response Metrics" icon={Clock}>

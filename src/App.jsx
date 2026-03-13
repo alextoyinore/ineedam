@@ -4,7 +4,7 @@ import { Loader } from 'lucide-react';
 import { Layout } from './components/Layout';
 import { PublicPageWrapper } from './components/PublicPageWrapper';
 import { useAuth } from './context/AuthContext';
-import { MessageSecurityProvider } from './context/MessageSecurityContext';
+import { ChatSecurityProvider } from './context/ChatSecurityContext';
 
 // Lazy load all pages
 const ExplorePage = lazy(() => import('./pages/ExplorePage').then(module => ({ default: module.ExplorePage })));
@@ -20,9 +20,9 @@ const UserProfilePage = lazy(() => import('./pages/UserProfilePage').then(module
 const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage').then(module => ({ default: module.PrivacyPolicyPage })));
 const TermsOfServicePage = lazy(() => import('./pages/TermsOfServicePage').then(module => ({ default: module.TermsOfServicePage })));
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage').then(module => ({ default: module.NotificationsPage })));
-const MessagesPage = lazy(() => import('./pages/MessagesPage').then(module => ({ default: module.MessagesPage })));
-const MessageThreads = lazy(() => import('./pages/messages/MessageThreads').then(module => ({ default: module.MessageThreads })));
-const ChatDetail = lazy(() => import('./pages/messages/ChatDetail').then(module => ({ default: module.ChatDetail })));
+const ChatPage = lazy(() => import('./pages/ChatPage').then(module => ({ default: module.ChatPage })));
+const ChatThreads = lazy(() => import('./pages/chat/ChatThreads').then(module => ({ default: module.ChatThreads })));
+const ChatDetail = lazy(() => import('./pages/chat/ChatDetail').then(module => ({ default: module.ChatDetail })));
 const SettingsPage = lazy(() => import('./pages/SettingsPage').then(module => ({ default: module.SettingsPage })));
 const RuleOfEngagementPage = lazy(() => import('./pages/RuleOfEngagementPage').then(module => ({ default: module.RuleOfEngagementPage })));
 const MobileWhoToFollowPage = lazy(() => import('./pages/MobileWhoToFollowPage').then(module => ({ default: module.MobileWhoToFollowPage })));
@@ -75,14 +75,14 @@ function App() {
         {/* ── Protected: all app routes inside social layout ────── */}
         <Route path="/*" element={
           <ProtectedRoute>
-            <MessageSecurityProvider>
+            <ChatSecurityProvider>
               <Layout>
                 <Routes>
                   <Route path="/" element={<ExplorePage />} />
                   <Route path="/bookmarks" element={<BookmarksPage />} />
                   <Route path="/notifications" element={<NotificationsPage />} />
-                  <Route path="/messages" element={<MessagesPage />}>
-                    <Route index element={<MessageThreads />} />
+                  <Route path="/chat" element={<ChatPage />}>
+                    <Route index element={<ChatThreads />} />
                     <Route path=":threadId" element={<ChatDetail />} />
                   </Route>
                   <Route path="/search" element={<SearchPage />} />
@@ -102,7 +102,7 @@ function App() {
                   <Route path="*" element={<NotFoundPage />} />
                 </Routes>
               </Layout>
-            </MessageSecurityProvider>
+            </ChatSecurityProvider>
           </ProtectedRoute>
         } />
       </Routes>

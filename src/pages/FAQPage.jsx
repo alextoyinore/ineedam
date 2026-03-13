@@ -102,8 +102,8 @@ export const FAQPage = () => {
         },
         {
             icon: Shield,
-            question: "Can I protect my messages with a PIN?",
-            answer: "Yes! You can set a PIN in your profile settings under 'Message PIN'. After 1 minute of inactivity or when you switch pages, your messages will be locked automatically and require your PIN to access."
+            question: "Can I protect my chats with a PIN?",
+            answer: "Yes! You can set a PIN in your profile settings under 'Chat PIN'. After 1 minute of inactivity or when you switch pages, your chats will be locked automatically and require your PIN to access."
         },
         {
             icon: MessageCircle,
@@ -122,8 +122,8 @@ export const FAQPage = () => {
         },
         {
             icon: MessageCircle,
-            question: "Can I attach files to messages and replies?",
-            answer: "Yes! You can attach images, videos, PDFs, and other documents to both direct messages and need replies. Attachments can be previewed in-app by tapping on them — videos play directly, images open in a full-screen viewer."
+            question: "Can I attach files to chats and replies?",
+            answer: "Yes! You can attach images, videos, PDFs, and other documents to both direct chats and need replies. Attachments can be previewed in-app by tapping on them — videos play directly, images open in a full-screen viewer."
         },
         {
             icon: HelpCircle,

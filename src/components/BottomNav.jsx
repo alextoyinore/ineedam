@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Bookmark, Bell, Mail, User, Search } from 'lucide-react';
 import { useNotifications } from '../context/NotificationsContext';
-import { useMessages } from '../context/MessagesContext';
+import { useChat } from '../context/ChatContext';
 import { useAuth } from '../context/AuthContext';
 
 export const BottomNav = ({ onInviteClick, isDrawerOpen, setIsDrawerOpen, shouldFocusSearch, setShouldFocusSearch }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const { unreadCount } = useNotifications();
-    const { unreadThreadsCount } = useMessages();
+    const { unreadThreadsCount } = useChat();
     const { profile } = useAuth();
 
     const openSearchDrawer = () => {
@@ -39,7 +39,7 @@ export const BottomNav = ({ onInviteClick, isDrawerOpen, setIsDrawerOpen, should
             ? { icon: Search, label: 'Explore', isButton: true, onClick: openSearchDrawer }
             : { icon: Bookmark, label: 'Saved', path: '/bookmarks' },
         { icon: Bell, label: 'Alerts', path: '/notifications', badge: unreadCount },
-        { icon: Mail, label: 'Inbox', path: '/messages', badge: unreadThreadsCount },
+        { icon: Mail, label: 'Chat', path: '/chat', badge: unreadThreadsCount },
         { icon: User, label: 'Profile', isButton: true, onClick: toggleProfileDrawer, useAvatar: true }
     ];
 

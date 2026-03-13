@@ -1,15 +1,15 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { useAuth } from './AuthContext';
 import { supabase } from '../lib/supabase';
-import { fetchUserThreads, getOrCreateThread, createMessage, markThreadAsReadInDb, toggleMessageBookmark, toggleMessageReaction, editChatMessage, deleteChatMessage } from '../lib/messageService';
+import { fetchUserThreads, getOrCreateThread, createMessage, markThreadAsReadInDb, toggleMessageBookmark, toggleMessageReaction, editChatMessage, deleteChatMessage } from '../lib/chatService';
 import { soundService } from '../lib/soundService';
 import { createNotification } from '../lib/notificationService';
 import { uploadFileToCloudinary } from '../lib/needsService';
 
 
-const MessagesContext = createContext();
+const ChatContext = createContext();
 
-export const MessagesProvider = ({ children }) => {
+export const ChatProvider = ({ children }) => {
     const { user, profile } = useAuth();
     const [threads, setThreads] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -105,7 +105,7 @@ export const MessagesProvider = ({ children }) => {
 
                                 const updatedThread = {
                                     ...thread,
-                                    lastMessage: newMessage.text || (newMessage.fileUrl ? '📎 Attachment' : ''),
+                                    lastChat: newMessage.text || (newMessage.fileUrl ? '📎 Attachment' : ''),
                                     timestamp: newMessage.timestamp,
                                     messages: [...thread.messages, newMessage]
                                 };
@@ -583,7 +583,7 @@ export const MessagesProvider = ({ children }) => {
             if (t.withUserId === otherUserId) {
                 return {
                     ...t,
-                    lastMessage: text || (fileUrl ? '📎 Attachment' : ''),
+                    lastChat: text || (fileUrl ? '📎 Attachment' : ''),
                     timestamp: new Date().toISOString(),
                     messages: [...t.messages, optimisticMsg]
                 };
@@ -593,7 +593,7 @@ export const MessagesProvider = ({ children }) => {
 
         try {
             const threadId = await startChat(otherUserId);
-            soundService.playMessageSent(); // Play sound immediately for responsiveness
+            soundService.playChatSent(); // Play sound immediately for responsiveness
 
             const newMessageData = await createMessage(threadId, user.id, text, fileUrl, fileType, replyingTo?.id);
 
@@ -649,9 +649,9 @@ export const MessagesProvider = ({ children }) => {
         setThreads(prev => prev.map(thread => ({
             ...thread,
             messages: thread.messages.map(m => m.id === messageId ? { ...m, text: newText } : m),
-            lastMessage: thread.messages[thread.messages.length - 1]?.id === messageId
+            lastChat: thread.messages[thread.messages.length - 1]?.id === messageId
                 ? newText
-                : thread.lastMessage
+                : thread.lastChat
         })));
 
         try {
@@ -675,7 +675,7 @@ export const MessagesProvider = ({ children }) => {
             return {
                 ...thread,
                 messages: newMessages,
-                lastMessage: newMessages.length > 0
+                lastChat: newMessages.length > 0
                     ? (newMessages[newMessages.length - 1].text || (newMessages[newMessages.length - 1].fileUrl ? '📎 Attachment' : ''))
                     : ''
             };
@@ -707,7 +707,7 @@ export const MessagesProvider = ({ children }) => {
     const unreadThreadsCount = threads.filter(t => t.unread).length;
 
     return (
-        <MessagesContext.Provider value={{
+        <ChatContext.Provider value={{
             threads,
             sendMessage,
             startChat,
@@ -733,14 +733,14 @@ export const MessagesProvider = ({ children }) => {
             deleteMessage
         }}>
             {children}
-        </MessagesContext.Provider>
+        </ChatContext.Provider>
     );
 };
 
 // Export as function for better Fast Refresh / HMR support
-export function useMessages() {
-    const context = useContext(MessagesContext);
-    if (!context) throw new Error('useMessages must be used within a MessagesProvider');
+export function useChat() {
+    const context = useContext(ChatContext);
+    if (!context) throw new Error('useChat must be used within a ChatProvider');
     return context;
 }
 

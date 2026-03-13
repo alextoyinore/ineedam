@@ -20,7 +20,7 @@ const firebaseApp = initializeApp({
 
 const messaging = getMessaging(firebaseApp);
 
-// Handle FCM background messages
+// Handle FCM background chats
 onBackgroundMessage(messaging, (payload) => {
     console.log('[FCM SW] Background message received:', payload);
 
@@ -47,7 +47,7 @@ self.addEventListener('push', (event) => {
     try {
         const data = event.data.json();
         const options = {
-            body: data.body || 'You have a new message',
+            body: data.body || 'You have a new chat',
             icon: '/icon.svg',
             badge: '/favicon.svg',
             data: {

@@ -65,7 +65,7 @@ class SoundService {
         this.play('NOTIFICATION');
     }
 
-    playMessageSent() {
+    playChatSent() {
         this.play('MESSAGE_SENT');
     }
 

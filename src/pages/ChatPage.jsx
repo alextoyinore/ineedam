@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import { MessagePinOverlay } from '../components/MessagePinOverlay';
-import { MessageThreads } from './messages/MessageThreads';
+import { ChatPinOverlay } from '../components/ChatPinOverlay';
+import { ChatThreads } from './chat/ChatThreads';
 
-export const MessagesPage = () => {
+export const ChatPage = () => {
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const location = useLocation();
 
@@ -27,9 +27,9 @@ export const MessagesPage = () => {
                 width: '100%',
                 position: 'relative'
             }}>
-                <MessagePinOverlay>
+                <ChatPinOverlay>
                     <Outlet />
-                </MessagePinOverlay>
+                </ChatPinOverlay>
             </div>
         );
     }
@@ -42,7 +42,7 @@ export const MessagesPage = () => {
             width: '100%',
             position: 'relative'
         }}>
-            <MessagePinOverlay>
+            <ChatPinOverlay>
                 <div style={{ display: 'flex', width: '100%', height: '100%' }}>
                     {/* Left Pane: Thread List */}
                     <div style={{
@@ -53,7 +53,7 @@ export const MessagesPage = () => {
                         height: '100%',
                         overflowY: 'auto'
                     }}>
-                        <MessageThreads isSplitView={true} />
+                        <ChatThreads isSplitView={true} />
                     </div>
                     {/* Right Pane: Chat Detail or Placeholder */}
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
@@ -62,14 +62,14 @@ export const MessagesPage = () => {
                         ) : (
                             <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
                                 <div style={{ textAlign: 'center' }}>
-                                    <h3 style={{ marginBottom: '0.5rem' }}>Your Messages</h3>
+                                    <h3 style={{ marginBottom: '0.5rem' }}>Your Chats</h3>
                                     <p>Select a conversation from the sidebar to start chatting.</p>
                                 </div>
                             </div>
                         )}
                     </div>
                 </div>
-            </MessagePinOverlay>
+            </ChatPinOverlay>
         </div>
     );
 };

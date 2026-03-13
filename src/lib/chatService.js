@@ -44,14 +44,14 @@ export const fetchUserThreads = async (userId) => {
         const otherParticipant = thread.thread_participants.find(tp => tp.user_id !== userId);
         const myParticipant = thread.thread_participants.find(tp => tp.user_id === userId);
 
-        // Sort messages manually just in case, taking the last one
-        const sortedMessages = thread.messages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-        const lastMessage = sortedMessages[sortedMessages.length - 1];
+        // Sort chats manually just in case, taking the last one
+        const sortedChats = thread.messages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        const lastChat = sortedChats[sortedChats.length - 1];
 
         // Is it unread? If the last message is from someone else AND it's newer than the user's last_read_at
-        const isUnread = lastMessage &&
-            lastMessage.sender_id !== userId &&
-            (!myParticipant.last_read_at || new Date(lastMessage.created_at) > new Date(myParticipant.last_read_at));
+        const isUnread = lastChat &&
+            lastChat.sender_id !== userId &&
+            (!myParticipant.last_read_at || new Date(lastChat.created_at) > new Date(myParticipant.last_read_at));
 
         return {
             id: thread.id,
@@ -61,13 +61,13 @@ export const fetchUserThreads = async (userId) => {
             withUserAvatar: otherParticipant?.profiles?.avatar_url,
             withUserUsername: otherParticipant?.profiles?.username,
             withUserLastSeenAt: otherParticipant?.profiles?.last_seen_at,
-            lastMessage: lastMessage?.text || '',
+            lastChat: lastChat?.text || '',
             timestamp: thread.updated_at,
             unread: isUnread,
             // Recipient's last_read_at — used for read receipts (double ticks)
             recipientLastReadAt: otherParticipant?.last_read_at || null,
             // Only keeping full message history if actively requested, but for context we pass the array
-            messages: sortedMessages.map(m => ({
+            messages: sortedChats.map(m => ({
                 id: m.id,
                 senderId: m.sender_id,
                 sender: m.sender_id === userId ? 'Me' : (otherParticipant?.profiles?.display_name || 'Them'),

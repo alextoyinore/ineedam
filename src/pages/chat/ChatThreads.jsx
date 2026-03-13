@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Search, MailPlus, X, Loader } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useMessages } from '../../context/MessagesContext';
+import { useChat } from '../../context/ChatContext';
 import { useAuth } from '../../context/AuthContext';
 import { searchProfiles } from '../../lib/profileService';
-import { getOrCreateThread } from '../../lib/messageService';
+import { getOrCreateThread } from '../../lib/chatService';
 import { OnlineBadge } from '../../components/OnlineBadge';
 
-export const MessageThreads = ({ isSplitView = false }) => {
-    const { threads, startChat } = useMessages();
+export const ChatThreads = ({ isSplitView = false }) => {
+    const { threads, startChat } = useChat();
     const { user } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
@@ -56,7 +56,7 @@ export const MessageThreads = ({ isSplitView = false }) => {
             const threadId = await startChat(targetUserId);
             setIsSearching(false);
             setSearchQuery('');
-            navigate(`/messages/${threadId}`);
+            navigate(`/chat/${threadId}`);
         } catch (err) {
             console.error("Failed to start chat:", err);
             alert("Could not start a conversation. This usually happens if the server permissions are not set yet.");
@@ -74,7 +74,7 @@ export const MessageThreads = ({ isSplitView = false }) => {
                 zIndex: 100
             }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h2 className="h2" style={{ fontSize: '1.5rem', margin: 0 }}>Messages</h2>
+                    <h2 className="h2" style={{ fontSize: '1.5rem', margin: 0 }}>Chat</h2>
                     <button
                         onClick={() => setIsSearching(true)}
                         style={{
@@ -91,7 +91,7 @@ export const MessageThreads = ({ isSplitView = false }) => {
                         <Search size={16} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                         <input
                             type="text"
-                            placeholder="Search messages"
+                            placeholder="Search chats"
                             value={threadSearch}
                             onChange={(e) => setThreadSearch(e.target.value)}
                             style={{
@@ -174,11 +174,11 @@ export const MessageThreads = ({ isSplitView = false }) => {
                     </div>
                 ) : filteredThreads.length > 0 ? (
                     filteredThreads.map(thread => {
-                        const isActive = isSplitView && location.pathname === `/messages/${thread.id}`;
+                        const isActive = isSplitView && location.pathname === `/chat/${thread.id}`;
                         return (
                             <div
                                 key={thread.id}
-                                onClick={() => navigate(`/messages/${thread.id}`)}
+                                onClick={() => navigate(`/chat/${thread.id}`)}
                                 className={`feed-item-hover ${isActive ? 'active-thread' : ''}`}
                                 style={{
                                     padding: '1rem var(--feed-item-padding)', display: 'flex', gap: '1rem', alignItems: 'center',
@@ -212,7 +212,7 @@ export const MessageThreads = ({ isSplitView = false }) => {
                                         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                                         fontWeight: thread.unread ? 600 : 400
                                     }}>
-                                        {thread.lastMessage?.replace(/\[CALL_(SUCCESS|MISSED|REJECTED|CANCELLED)\]/, '')}
+                                        {thread.lastChat?.replace(/\[CALL_(SUCCESS|MISSED|REJECTED|CANCELLED)\]/, '')}
                                     </p>
                                 </div>
                             </div>
@@ -220,7 +220,7 @@ export const MessageThreads = ({ isSplitView = false }) => {
                     })
                 ) : (
                     <p style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '3rem' }}>
-                        {threadSearch ? `No conversations found for "${threadSearch}"` : "No messages yet."}
+                        {threadSearch ? `No conversations found for "${threadSearch}"` : "No chats yet."}
                     </p>
                 )}
             </div>

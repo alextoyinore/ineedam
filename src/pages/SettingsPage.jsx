@@ -6,15 +6,15 @@ import {
     ArrowLeft, Trash2, LogOut, Star, UserX
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useMessageSecurity } from '../context/MessageSecurityContext';
-import { MessagePinSetupModal } from '../components/MessagePinSetupModal';
-import { MessagePinVerifyModal } from '../components/MessagePinVerifyModal';
+import { useChatSecurity } from '../context/ChatSecurityContext';
+import { ChatPinSetupModal } from '../components/ChatPinSetupModal';
+import { ChatPinVerifyModal } from '../components/ChatPinVerifyModal';
 
 export const SettingsPage = () => {
     const { settings, toggleSetting, updateSetting } = useSettings();
     const { signOut } = useAuth();
     const navigate = useNavigate();
-    const { hasPinSetup, clearPin } = useMessageSecurity();
+    const { hasPinSetup, clearPin } = useChatSecurity();
     const [isPinSetupModalOpen, setIsPinSetupModalOpen] = useState(false);
     const [isPinVerifyModalOpen, setIsPinVerifyModalOpen] = useState(false);
 
@@ -30,7 +30,7 @@ export const SettingsPage = () => {
     const handleConfirmDeactivation = async () => {
         const success = await clearPin();
         if (success) {
-            alert('Message PIN deactivated successfully.');
+            alert('Chat PIN deactivated successfully.');
         } else {
             alert('Failed to deactivate message PIN.');
         }
@@ -48,7 +48,7 @@ export const SettingsPage = () => {
                 {
                     id: 'soundsEnabled',
                     label: 'Sound Effects',
-                    description: 'Play sounds for messages and notifications',
+                    description: 'Play sounds for chats and notifications',
                     type: 'toggle',
                     icon: settings.soundsEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />,
                     value: settings.soundsEnabled
@@ -110,7 +110,7 @@ export const SettingsPage = () => {
                 },
                 {
                     id: 'messagePinLock',
-                    label: 'Message PIN Lock',
+                    label: 'Chat PIN Lock',
                     description: 'Require a 4-digit PIN to access private chats',
                     type: 'toggle',
                     icon: <Shield size={20} />,
@@ -123,11 +123,11 @@ export const SettingsPage = () => {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <MessagePinSetupModal
+            <ChatPinSetupModal
                 isOpen={isPinSetupModalOpen}
                 onClose={() => setIsPinSetupModalOpen(false)}
             />
-            <MessagePinVerifyModal
+            <ChatPinVerifyModal
                 isOpen={isPinVerifyModalOpen}
                 onClose={() => setIsPinVerifyModalOpen(false)}
                 onSuccess={handleConfirmDeactivation}

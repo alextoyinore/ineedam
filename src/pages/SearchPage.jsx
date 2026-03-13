@@ -189,7 +189,7 @@ export const SearchPage = () => {
                                 ) : (
                                     <EndorsementFeedCard
                                         endorsement={item}
-                                        broadcastedBy={item.type === 'broadcast_endorsement' ? item.broadcasted_by : null}
+                                        broadcastedBy={(item.type === 'broadcast_endorsement' || item.type === 'broadcast') ? item.broadcasted_by : null}
                                     />
                                 )}
                             </motion.div>

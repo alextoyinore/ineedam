@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, User, PenSquare, Bookmark, Bell, Mail, LogOut, MoreHorizontal, Settings, Share2, Trophy } from 'lucide-react';
 import { useNotifications } from '../context/NotificationsContext';
-import { useMessages } from '../context/MessagesContext';
+import { useChat } from '../context/ChatContext';
 import { useAuth } from '../context/AuthContext';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { useSettings } from '../context/SettingsContext';
@@ -16,7 +16,7 @@ export const Sidebar = ({ onPostClick, onInviteClick, forceIconic = false }) => 
     const { isDark } = useTheme();
 
     const { unreadCount } = useNotifications();
-    const { unreadThreadsCount } = useMessages();
+    const { unreadThreadsCount } = useChat();
     const [showLogout, setShowLogout] = useState(false);
     const logoutRef = useRef(null);
 
@@ -54,7 +54,7 @@ export const Sidebar = ({ onPostClick, onInviteClick, forceIconic = false }) => 
                         { to: '/', label: 'Home', Icon: Home, isActive: location.pathname === '/', fillable: false },
                         { to: '/bookmarks', label: 'Bookmarks', Icon: Bookmark, isActive: location.pathname === '/bookmarks', fillable: true },
                         { to: '/notifications', label: 'Notifications', Icon: Bell, isActive: location.pathname === '/notifications', badge: unreadCount, fillable: true },
-                        { to: '/messages', label: 'Messages', Icon: Mail, isActive: location.pathname === '/messages', badge: unreadThreadsCount, fillable: false },
+                        { to: '/chat', label: 'Chat', Icon: Mail, isActive: location.pathname === '/chat', badge: unreadThreadsCount, fillable: false },
                         { to: profile?.username ? `/${profile.username}` : '#', label: 'Profile', Icon: User, isActive: !!(profile?.username && location.pathname === `/${profile.username}`), fillable: true },
                         { to: '#', label: 'Invite Friends', Icon: Share2, isAction: true, onClick: onInviteClick },
                     ].map(({ to, label, Icon, isActive, badge, fillable, isAction, onClick }) => (

@@ -150,7 +150,6 @@ export const fetchAllBroadcasts = async (from = 0, to = 9) => {
                 created_at: b.created_at
             };
         } else if (b.endorsements) {
-            if (b.endorsements.needs?.status === 'archived') return null;
             return {
                 ...b.endorsements,
                 category: b.endorsements.needs?.category,

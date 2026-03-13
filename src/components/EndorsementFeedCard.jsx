@@ -98,7 +98,7 @@ export const EndorsementFeedCard = ({ endorsement, broadcastedBy = null }) => {
     const handleShare = async (e) => {
         e.stopPropagation();
         const shareData = {
-            title: `Endorsement for ${endorsedUser.display_name}`,
+            title: `Endorsement for ${endorsedUser?.display_name || 'User'}`,
             text: endorsement.message,
             url: window.location.origin + `/endorsement/${endorsement.id}`
         };
@@ -389,7 +389,7 @@ export const EndorsementFeedCard = ({ endorsement, broadcastedBy = null }) => {
                             {!endorser.avatar_url && endorser.display_name?.charAt(0).toUpperCase()}
                         </div>
                         <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                            Written by <strong onClick={(e) => { e.stopPropagation(); navigate(`/${endorser.username}`); }} style={{ color: 'var(--text-primary)', cursor: 'pointer' }}>{endorser.display_name}</strong> for helping with {hasNeed ? (<strong onClick={(e) => { e.stopPropagation(); navigate(`/need/${endorsement.need_id}`); }} style={{ color: 'var(--primary)', cursor: 'pointer' }}>{endorsement.needs?.title}</strong>) : (<span style={{ fontStyle: 'italic', color: 'var(--text-muted)' }}>a need no longer available</span>)}
+                            Written by <strong onClick={(e) => { e.stopPropagation(); navigate(`/${endorser?.username || ''}`); }} style={{ color: 'var(--text-primary)', cursor: 'pointer' }}>{endorser?.display_name || 'Anonymous'}</strong> for helping with {hasNeed ? (<strong onClick={(e) => { e.stopPropagation(); navigate(`/need/${endorsement.need_id}`); }} style={{ color: 'var(--primary)', cursor: 'pointer' }}>{endorsement.needs?.title}</strong>) : (<span style={{ fontStyle: 'italic', color: 'var(--text-muted)' }}>a need no longer available</span>)}
                         </span>
                     </div>
                     {/* Decorative quote mark */}

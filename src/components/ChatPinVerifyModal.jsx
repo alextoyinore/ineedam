@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Lock, ShieldAlert, Loader } from 'lucide-react';
-import { useMessageSecurity } from '../context/MessageSecurityContext';
+import { useChatSecurity } from '../context/ChatSecurityContext';
 
-export const MessagePinVerifyModal = ({ isOpen, onClose, onSuccess }) => {
-    const { verifyPin } = useMessageSecurity();
+export const ChatPinVerifyModal = ({ isOpen, onClose, onSuccess }) => {
+    const { verifyPin } = useChatSecurity();
     const [pin, setPin] = useState(['', '', '', '']);
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -112,7 +112,7 @@ export const MessagePinVerifyModal = ({ isOpen, onClose, onSuccess }) => {
                         Verify Your PIN
                     </h2>
                     <p style={{ color: 'var(--text-muted)', textAlign: 'center', marginBottom: '2rem', fontSize: '0.95rem' }}>
-                        Enter your 4-digit PIN to deactivate the message lock.
+                        Enter your 4-digit PIN to deactivate the chat lock.
                     </p>
 
                     <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem' }}>

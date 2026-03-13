@@ -138,6 +138,7 @@ body {
   background-color: var(--bg-base);
   color: var(--text-primary);
   line-height: 1.5;
+  letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
@@ -272,7 +273,7 @@ textarea::placeholder {
   min-height: 100vh;
 }
 
-.social-layout-grid.is-messages-route {
+.social-layout-grid.is-chat-route {
   grid-template-columns: 64px 1fr;
   gap: 0;
 }
@@ -281,7 +282,7 @@ textarea::placeholder {
   width: 250px;
 }
 
-.sidebar-spacer.is-messages-route {
+.sidebar-spacer.is-chat-route {
   width: 64px;
 }
 
@@ -371,13 +372,13 @@ textarea::placeholder {
   width: 100%;
 }
 
-.social-main-wrapper.is-messages-route {
+.social-main-wrapper.is-chat-route {
   max-width: none;
   height: 100dvh;
   overflow: hidden;
 }
 
-.social-main-content.is-messages-route {
+.social-main-content.is-chat-route {
   height: 100dvh;
   max-height: 100dvh;
   display: flex;
@@ -929,7 +930,7 @@ textarea::placeholder {
     /* Space for BottomNav */
   }
 
-  .social-layout-grid.is-messages-route {
+  .social-layout-grid.is-chat-route {
     grid-template-columns: 1fr;
   }
 }

@@ -97,7 +97,7 @@ export const ChatMessageBookmarkCard = ({ message }) => {
                 {/* Footer Actions */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <Link
-                        to={`/messages/${message.thread_id}`}
+                        to={`/chat/${message.thread_id}`}
                         className="btn btn-glass"
                         style={{
                             fontSize: '0.75rem',
@@ -120,7 +120,7 @@ export const ChatMessageBookmarkCard = ({ message }) => {
                             const shareData = {
                                 title: `ChatMessage from ${message.sender?.display_name}`,
                                 text: message.text,
-                                url: window.location.origin + `/messages/${message.thread_id}`
+                                url: window.location.origin + `/chat/${message.thread_id}`
                             };
 
                             const doCopy = () => {

@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, Bookmark, Check, Edit2, Trash2, ArrowLeft, Phone, Video, MoreVertical, Paperclip, Mic, Send, Reply, Smile, PhoneOff, X, FileText } from 'lucide-react';
-import { useMessages } from '../../context/MessagesContext';
+import { useChat } from '../../context/ChatContext';
 import { OnlineBadge } from '../../components/OnlineBadge';
 import { VoiceRecorder } from '../../components/messages/VoiceRecorder';
 import { AudioBubble } from '../../components/messages/AudioBubble';
@@ -44,7 +44,7 @@ const FilePreviewBubble = ({ file, onRemove }) => {
 };
 
 // WhatsApp-style tick icons for sent messages
-const MessageStatus = ({ isRead }) => (
+const ChatStatus = ({ isRead }) => (
     <span style={{ display: 'inline-flex', alignItems: 'center', marginLeft: '2px', flexShrink: 0 }}>
         {isRead ? (
             // Double tick — blue when read
@@ -210,7 +210,7 @@ export const ChatDetail = () => {
     const {
         threads, sendMessage, markThreadAsRead, loadingThreads, setActiveThreadId, initiateCall,
         replyingTo, setReplyingTo, toggleReaction, toggleBookmark, editMessage, deleteMessage
-    } = useMessages();
+    } = useChat();
     const [messageText, setMessageText] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
@@ -221,7 +221,7 @@ export const ChatDetail = () => {
     const [activeEmojiMessageId, setActiveEmojiMessageId] = useState(null);
     const [editingMessageId, setEditingMessageId] = useState(null);
     const fileInputRef = useRef(null);
-    const messagesEndRef = useRef(null);
+    const chatsEndRef = useRef(null);
     const messageContainerRef = useRef(null);
     const emojiPickerRef = useRef(null);
 
@@ -282,7 +282,7 @@ export const ChatDetail = () => {
     if (!activeThread) {
         return (
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
-                Select a message to start chatting
+                Select a chat to start chatting
             </div>
         );
     }
@@ -326,7 +326,7 @@ export const ChatDetail = () => {
     const handleReply = (msg) => {
         setReplyingTo({
             id: msg.id,
-            text: msg.text || (msg.fileUrl ? '📎 Attachment' : 'Message'),
+            text: msg.text || (msg.fileUrl ? '📎 Attachment' : 'Chat'),
             sender: msg.sender
         });
     };
@@ -386,7 +386,7 @@ export const ChatDetail = () => {
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <button
-                        onClick={() => navigate('/messages')}
+                        onClick={() => navigate('/chat')}
                         style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '0.5rem', marginLeft: '-0.5rem', borderRadius: '50%' }}
                         className="glass-panel-hover"
                     >
@@ -446,7 +446,7 @@ export const ChatDetail = () => {
 
             {/* Messages */}
             <div
-                className={`messages-scroll-area ${activeEmojiMessageId ? 'has-active-picker' : ''}`}
+                className={`chat-scroll-area ${activeEmojiMessageId ? 'has-active-picker' : ''}`}
                 style={{
                     flex: 1,
                     overflowY: 'auto',
@@ -572,7 +572,7 @@ export const ChatDetail = () => {
                                                 {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                             </span>
                                             {isMe && !isCall && (
-                                                <MessageStatus isRead={isRead} />
+                                                <ChatStatus isRead={isRead} />
                                             )}
                                         </div>
                                     </div>
@@ -787,7 +787,7 @@ export const ChatDetail = () => {
                                         handleSendMessage(e);
                                     }
                                 }}
-                                placeholder="Message..."
+                                placeholder="Chat..."
                                 style={{
                                     width: '100%',
                                     minHeight: '40px',

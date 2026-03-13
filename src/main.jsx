@@ -15,7 +15,7 @@ import { BookmarksProvider } from './context/BookmarksContext.jsx'
 import { SocialProvider } from './context/SocialContext.jsx'
 import { DraftsProvider } from './context/DraftsContext.jsx'
 import { NotificationsProvider } from './context/NotificationsContext.jsx'
-import { MessagesProvider } from './context/MessagesContext.jsx'
+import { ChatProvider } from './context/ChatContext.jsx'
 import { LikesProvider } from './context/LikesContext.jsx'
 import { SettingsProvider } from './context/SettingsContext.jsx'
 import { BroadcastsProvider } from './context/BroadcastsContext.jsx'
@@ -33,7 +33,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
                 <SocialProvider>
                   <DraftsProvider>
                     <NotificationsProvider>
-                      <MessagesProvider>
+                      <ChatProvider>
                         <LikesProvider>
                           <BroadcastsProvider>
                             <InterestProvider>
@@ -41,7 +41,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
                             </InterestProvider>
                           </BroadcastsProvider>
                         </LikesProvider>
-                      </MessagesProvider>
+                      </ChatProvider>
                     </NotificationsProvider>
                   </DraftsProvider>
                 </SocialProvider>

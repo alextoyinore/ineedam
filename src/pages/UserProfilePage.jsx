@@ -27,7 +27,7 @@ import {
 import { getFollowStats, getFollowers, getFollowing } from '../lib/socialService';
 import { fetchResponseRate } from '../lib/profileService';
 import { fetchRepliesByUser, formatTimeAgo, updateReplyStatus } from '../lib/replyService';
-import { getOrCreateThread } from '../lib/messageService';
+import { getOrCreateThread } from '../lib/chatService';
 import { fetchBroadcastedNeeds } from '../lib/broadcastService';
 import { fetchEndorsementsForUser } from '../lib/endorsementService';
 import { checkBlockStatus, blockUser, unblockUser } from '../lib/moderationService';
@@ -245,12 +245,12 @@ export const UserProfilePage = () => {
 
     const handleMessage = async () => {
         if (!currentUser) {
-            alert("Please sign in to send messages.");
+            alert("Please sign in to start a chat.");
             return;
         }
         try {
             const threadId = await getOrCreateThread(currentUser.id, profile.id);
-            navigate(`/messages/${threadId}`);
+            navigate(`/chat/${threadId}`);
         } catch (err) {
             console.error("Failed to start conversation:", err);
             alert("Could not start a conversation. Please try again later.");

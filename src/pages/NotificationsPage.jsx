@@ -68,7 +68,7 @@ export const NotificationsPage = () => {
         } else if ((notif.type === 'reply' || notif.type === 'like' || notif.type === 'mention' || notif.type === 'reply_message') && notif.reference_id) {
             return `/need/${notif.reference_id}`;
         } else if (notif.type === 'missed_call' && notif.reference_id) {
-            return `/messages/${notif.reference_id}`;
+            return `/chat/${notif.reference_id}`;
         }
         return null;
     };

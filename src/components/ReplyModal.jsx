@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, X, Loader, Paperclip, FileText, Image } from 'lucide-react';
-import { useMessages } from '../context/MessagesContext';
+import { useChat } from '../context/ChatContext';
 import { useAuth } from '../context/AuthContext';
 import { createReply } from '../lib/replyService';
 import { uploadFileToCloudinary, uploadImageToCloudinary } from '../lib/needsService';

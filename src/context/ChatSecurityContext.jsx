@@ -3,13 +3,13 @@ import { useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { hasPinSetup, verifyMessagePin, setupMessagePin, removeMessagePin } from '../lib/securityService';
 
-const MessageSecurityContext = createContext();
+const ChatSecurityContext = createContext();
 
-export const useMessageSecurity = () => {
-    return useContext(MessageSecurityContext);
+export const useChatSecurity = () => {
+    return useContext(ChatSecurityContext);
 };
 
-export const MessageSecurityProvider = ({ children }) => {
+export const ChatSecurityProvider = ({ children }) => {
     const { user } = useAuth();
     const location = useLocation();
 
@@ -38,7 +38,7 @@ export const MessageSecurityProvider = ({ children }) => {
 
     // Route change listener: lock messages if navigating away from the messages routes
     useEffect(() => {
-        if (!location.pathname.startsWith('/messages')) {
+        if (!location.pathname.startsWith('/chat')) {
             if (hasPin) {
                 setIsLocked(true);
             }
@@ -92,8 +92,8 @@ export const MessageSecurityProvider = ({ children }) => {
     };
 
     return (
-        <MessageSecurityContext.Provider value={value}>
+        <ChatSecurityContext.Provider value={value}>
             {children}
-        </MessageSecurityContext.Provider>
+        </ChatSecurityContext.Provider>
     );
 };

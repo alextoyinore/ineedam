@@ -69,7 +69,7 @@ export const HowToUsePage = () => {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>
                         {[
                             { icon: Send, title: "1. Post Your Need", desc: "Be descriptive. Mention budget, location, and any specific constraints you have." },
-                            { icon: MessageSquare, title: "2. Receive Replies", desc: "Interested providers will reply publicly or send private proposals directly to you." },
+                            { icon: MessageSquare, title: "2. Receive Replies", desc: "Interested providers will reply publicly or start a private chat directly with you." },
                             { icon: Sparkles, title: "3. Mark as Met", desc: "Once satisfied, mark the need as 'Met' and tag the person who helped you." }
                         ].map((step, i) => (
                             <div key={i} style={{ textAlign: 'center', padding: '2rem', background: 'var(--bg-surface)', borderRadius: '24px', border: '1px solid var(--border-glass)' }}>
