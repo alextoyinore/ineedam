@@ -38,6 +38,10 @@
   --bubble-me-bg: #1a1a1a;
   --bubble-me-text: #ffffff;
   --feed-item-padding: 1.5rem;
+
+  /* Auth & Landing Specifics */
+  --auth-input-bg: rgba(0, 0, 0, 0.03);
+  --landing-grid-color: rgba(0, 0, 0, 0.02);
 }
 
 html {
@@ -82,6 +86,10 @@ html {
   --bubble-me-bg: #121212;
   --bubble-me-text: #ffffff;
   --feed-item-padding: 1.5rem;
+
+  /* Auth & Landing Specifics - AMOLED Friendly */
+  --auth-input-bg: rgba(255, 255, 255, 0.08); /* Slightly lighter than pure black */
+  --landing-grid-color: rgba(255, 255, 255, 0.08);
 }
 
 [data-theme='dark'] select,
@@ -168,6 +176,112 @@ textarea::placeholder {
   color: var(--text-muted) !important;
   opacity: 0.75 !important;
   font-weight: 400 !important;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.75rem;
+  background: var(--auth-input-bg) !important;
+  border: 1px solid var(--border-glass) !important;
+  border-radius: 12px;
+  color: var(--text-primary) !important;
+  font-size: 1rem;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.2s ease-in-out;
+}
+
+.auth-input:focus {
+  background: var(--auth-input-bg) !important;
+  opacity: 0.9;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+/* Fix browser autofill background change */
+.auth-input:-webkit-autofill,
+.auth-input:-webkit-autofill:hover,
+.auth-input:-webkit-autofill:focus,
+.auth-input:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--text-primary) !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--bg-base) inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Animations */
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.landing-grid-pattern {
+  background-image: 
+    linear-gradient(var(--landing-grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--landing-grid-color) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Bottom Sheet */
+.bottom-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  animation: fadeIn 0.3s ease-out;
+  backdrop-filter: blur(4px);
+}
+
+.bottom-sheet-content {
+  width: 100%;
+  background: var(--bg-base);
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  padding: 1.5rem;
+  padding-top: 1rem;
+  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 -10px 25px -5px rgba(0, 0, 0, 0.3);
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.bottom-sheet-content::before {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 4px;
+  background: var(--border-glass);
+  border-radius: 2px;
+  margin: 0 auto 1.5rem auto;
+}
+
+.auth-cta {
+  background: var(--primary) !important;
+  color: #fff !important;
+  padding: 0.85rem !important;
+  font-weight: 700 !important;
+  border-radius: 12px !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+  width: 100% !important;
+}
+
+.auth-cta:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.auth-cta:active {
+  transform: translateY(0);
 }
 
 /* Glassmorphism Utilities */

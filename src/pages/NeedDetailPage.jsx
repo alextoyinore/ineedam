@@ -340,6 +340,21 @@ export const NeedDetailPage = () => {
                         <meta property="twitter:card" content="summary_large_image" />
                     </>
                 )}
+                <script type="application/ld+json">
+                    {JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "SpecialAnnouncement",
+                        "name": need.title,
+                        "text": need.description,
+                        "datePosted": need.created_at,
+                        "category": need.category,
+                        "author": {
+                            "@type": "Person",
+                            "name": need.author,
+                            "url": `${window.location.origin}/${need.authorUsername}`
+                        }
+                    })}
+                </script>
             </Helmet>
 
             <ReplyModal

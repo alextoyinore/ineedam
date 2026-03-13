@@ -16,6 +16,7 @@ import { EndorsementFeedCard } from '../components/EndorsementFeedCard';
 import { ReportModal } from '../components/ReportModal';
 import { MentionText } from '../components/MentionText';
 import { OnlineBadge } from '../components/OnlineBadge';
+import { Helmet } from 'react-helmet-async';
 
 import { useSocial } from '../context/SocialContext';
 import { useAuth } from '../context/AuthContext';
@@ -365,6 +366,18 @@ export const UserProfilePage = () => {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <Helmet>
+                <title>{profile.display_name} (@{profile.username}) | Ineedam</title>
+                <meta name="description" content={profile.bio || `View ${profile.display_name}'s profile on Ineedam. Connecting real needs with real solutions.`} />
+                <meta property="og:title" content={`${profile.display_name} (@${profile.username}) | Ineedam`} />
+                <meta property="og:description" content={profile.bio || `View ${profile.display_name}'s profile on Ineedam.`} />
+                <meta property="og:type" content="profile" />
+                <meta property="og:image" content={profile.avatar_url || 'https://ineedam.com/og-image.png'} />
+                <meta name="twitter:card" content="summary" />
+                <meta name="twitter:title" content={`${profile.display_name} (@${profile.username}) | Ineedam`} />
+                <meta name="twitter:description" content={profile.bio || `View ${profile.display_name}'s profile on Ineedam.`} />
+                <meta name="twitter:image" content={profile.avatar_url || 'https://ineedam.com/og-image.png'} />
+            </Helmet>
             <EditProfileModal
                 isOpen={isEditModalOpen}
                 onClose={() => setIsEditModalOpen(false)}
