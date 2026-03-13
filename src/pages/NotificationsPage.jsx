@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Bell, Check, Trash2, UserPlus, MessageCircle, Info, Heart, PhoneOff } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Bell, UserPlus, MessageCircle, Info, Heart, PhoneOff } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useNotifications } from '../context/NotificationsContext';
 import { OnlineBadge } from '../components/OnlineBadge';
 
@@ -30,7 +30,7 @@ const InViewMarker = ({ onInView }) => {
 };
 
 export const NotificationsPage = () => {
-    const { notifications, markAsRead, markAllAsRead, clearNotifications } = useNotifications();
+    const { notifications, markAsRead } = useNotifications();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -62,6 +62,17 @@ export const NotificationsPage = () => {
         return notif.message.replace(/\[CALL_(SUCCESS|MISSED|REJECTED|CANCELLED)\]/, '');
     };
 
+    const getNotificationLink = (notif) => {
+        if ((notif.type === 'follow' || notif.type === 'incoming_call') && notif.actorProfile?.username) {
+            return `/${notif.actorProfile.username}`;
+        } else if ((notif.type === 'reply' || notif.type === 'like' || notif.type === 'mention' || notif.type === 'reply_message') && notif.reference_id) {
+            return `/need/${notif.reference_id}`;
+        } else if (notif.type === 'missed_call' && notif.reference_id) {
+            return `/messages/${notif.reference_id}`;
+        }
+        return null;
+    };
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             {/* Header */}
@@ -71,154 +82,151 @@ export const NotificationsPage = () => {
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center'
             }}>
                 <h2 className="h2" style={{ fontSize: '1.25rem', margin: 0 }}>Notifications</h2>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button
-                        onClick={markAllAsRead}
-                        className="glass-panel-hover"
-                        style={{ padding: '0.4rem', borderRadius: '50%', color: 'var(--text-primary)', border: 'none', background: 'transparent', cursor: 'pointer' }}
-                        title="Mark all as read"
-                    >
-                        <Check size={20} />
-                    </button>
-                    <button
-                        onClick={clearNotifications}
-                        className="glass-panel-hover"
-                        style={{ padding: '0.4rem', borderRadius: '50%', color: '#ef4444', border: 'none', background: 'transparent', cursor: 'pointer' }}
-                        title="Clear all"
-                    >
-                        <Trash2 size={20} />
-                    </button>
-                </div>
             </header>
 
             {/* Notifications List */}
             <div style={{ flex: 1, overflowY: 'auto' }}>
                 {notifications.length > 0 ? (
-                    notifications.map((notif, index) => (
-                        <motion.div
-                            key={notif.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.05 }}
-                            className="feed-item-hover"
-                            onClick={() => {
-                                markAsRead(notif.id);
-                                if ((notif.type === 'follow' || notif.type === 'incoming_call') && notif.actorProfile?.username) {
-                                    navigate(`/${notif.actorProfile.username}`);
-                                } else if ((notif.type === 'reply' || notif.type === 'like' || notif.type === 'mention' || notif.type === 'reply_message') && notif.reference_id) {
-                                    navigate(`/need/${notif.reference_id}`);
-                                } else if (notif.type === 'missed_call' && notif.reference_id) {
-                                    navigate(`/messages/${notif.reference_id}`);
-                                }
-                            }}
-                            style={{
-                                padding: '1.25rem var(--feed-item-padding)',
-                                borderBottom: '1px solid var(--border-glass)',
-                                display: 'flex', gap: '0.75rem',
-                                background: notif.read ? 'transparent' : 'color-mix(in srgb, var(--primary), transparent 95%)',
-                                cursor: 'pointer', position: 'relative',
-                                width: '100%'
-                            }}
-                        >
-                            {!notif.read && (
-                                <>
-                                    <InViewMarker onInView={() => markAsRead(notif.id)} />
-                                    <div style={{
-                                        position: 'absolute', left: '0.4rem', top: '50%', transform: 'translateY(-50%)',
-                                        width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary)'
-                                    }} />
-                                </>
-                            )}
-                            {notif.actors && notif.actors.length > 0 ? (
-                                <>
-                                    <div style={{ position: 'relative', flexShrink: 0, width: '44px', display: 'flex', justifyContent: 'flex-end', paddingTop: '4px' }}>
-                                        <div style={{ paddingRight: '8px' }}>
-                                            {React.cloneElement(getIcon(notif.type), { size: 28 })}
-                                        </div>
-                                    </div>
-                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                        {/* Stacked Avatars Row */}
-                                        <div style={{ display: 'flex', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
-                                            {notif.actors.slice(0, 10).map((actor, i) => (
-                                                <div key={i} style={{ 
-                                                    width: '32px', height: '32px', borderRadius: '50%',
-                                                    marginLeft: i > 0 ? '-8px' : '0',
-                                                    border: '2px solid var(--bg-surface)',
-                                                    background: actor?.avatar_url ? `url(${actor.avatar_url}) center/cover` : 'var(--bg-base)',
-                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                    zIndex: 10 - i, position: 'relative', overflow: 'hidden', flexShrink: 0
-                                                }}>
-                                                    {!actor?.avatar_url && actor?.display_name && (
-                                                        <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                                                            {actor.display_name.charAt(0).toUpperCase()}
+                    notifications.map((notif, index) => {
+                        const mainLink = getNotificationLink(notif);
+                        
+                        return (
+                            <motion.div
+                                key={notif.id}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.05 }}
+                                className="feed-item-hover"
+                                onClick={() => markAsRead(notif.id)}
+                                style={{
+                                    borderBottom: '1px solid var(--border-glass)',
+                                    background: notif.read ? 'transparent' : 'color-mix(in srgb, var(--primary), transparent 95%)',
+                                    position: 'relative',
+                                    width: '100%'
+                                }}
+                            >
+                                {!notif.read && (
+                                    <>
+                                        <InViewMarker onInView={() => markAsRead(notif.id)} />
+                                        <div style={{
+                                            position: 'absolute', left: '0.4rem', top: '50%', transform: 'translateY(-50%)',
+                                            width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary)',
+                                            zIndex: 2
+                                        }} />
+                                    </>
+                                )}
+
+                                <div style={{ position: 'relative', display: 'flex', gap: '0.75rem', padding: '1.25rem var(--feed-item-padding)' }}>
+                                    {/* Link overlay for the whole card area */}
+                                    {mainLink && (
+                                        <Link 
+                                            to={mainLink} 
+                                            style={{ position: 'absolute', inset: 0, zIndex: 1 }}
+                                            aria-label="View notification details"
+                                        />
+                                    )}
+
+                                    {notif.actors && notif.actors.length > 0 ? (
+                                        <>
+                                            <div style={{ position: 'relative', flexShrink: 0, width: '44px', display: 'flex', justifyContent: 'flex-end', paddingTop: '4px', zIndex: 2 }}>
+                                                <div style={{ paddingRight: '8px' }}>
+                                                    {React.cloneElement(getIcon(notif.type), { size: 28 })}
+                                                </div>
+                                            </div>
+                                            <div style={{ flex: 1, minWidth: 0, zIndex: 2 }}>
+                                                {/* Stacked Avatars Row */}
+                                                <div style={{ display: 'flex', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                                                    {notif.actors.slice(0, 10).map((actor, i) => (
+                                                        <Link 
+                                                            key={i} 
+                                                            to={`/${actor?.username}`}
+                                                            onClick={(e) => e.stopPropagation()}
+                                                            style={{ 
+                                                                width: '32px', height: '32px', borderRadius: '50%',
+                                                                marginLeft: i > 0 ? '-8px' : '0',
+                                                                border: '2px solid var(--bg-surface)',
+                                                                background: actor?.avatar_url ? `url(${actor.avatar_url}) center/cover` : 'var(--bg-base)',
+                                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                zIndex: 10 - i, position: 'relative', overflow: 'hidden', flexShrink: 0
+                                                            }}
+                                                        >
+                                                            {!actor?.avatar_url && actor?.display_name && (
+                                                                <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                                                                    {actor.display_name.charAt(0).toUpperCase()}
+                                                                </span>
+                                                            )}
+                                                        </Link>
+                                                    ))}
+                                                </div>
+                                                <div style={{ fontSize: '0.95rem', color: 'var(--text-primary)', lineHeight: 1.4 }}>
+                                                    <strong style={{ fontWeight: 700 }}>
+                                                        {notif.actors.length > 2 
+                                                            ? `${notif.actors[0]?.display_name || notif.actors[0]?.username}, ${notif.actors[1]?.display_name || notif.actors[1]?.username} and ${notif.actors.length - 2} others`
+                                                            : notif.actors.length === 2
+                                                                ? `${notif.actors[0]?.display_name || notif.actors[0]?.username} and ${notif.actors[1]?.display_name || notif.actors[1]?.username}`
+                                                                : notif.actors[0]?.display_name || notif.actors[0]?.username || 'System'
+                                                        }
+                                                    </strong>
+                                                    {' '}
+                                                    {formatNotificationMessage(notif)}
+                                                </div>
+                                                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                                                    {new Date(notif.created_at || notif.timestamp || Date.now()).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                </div>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div style={{ position: 'relative', flexShrink: 0, zIndex: 2 }}>
+                                                <Link 
+                                                    to={`/${notif.actorProfile?.username}`}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    style={{
+                                                        width: '44px', height: '44px', borderRadius: '50%', flexShrink: 0,
+                                                        background: notif.actorProfile?.avatar_url ? `url(${notif.actorProfile.avatar_url}) center/cover` : 'var(--bg-surface)',
+                                                        border: '1px solid var(--border-glass)',
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                        position: 'relative', overflow: 'visible'
+                                                    }}
+                                                >
+                                                    {!notif.actorProfile?.avatar_url && !notif.actorProfile?.display_name && getIcon(notif.type)}
+                                                    {!notif.actorProfile?.avatar_url && notif.actorProfile?.display_name && notif.actorProfile.display_name.charAt(0).toUpperCase()}
+                                                    <div style={{ position: 'absolute', bottom: '-2px', right: '-2px' }}>
+                                                        <OnlineBadge lastSeenAt={notif.actorProfile?.last_seen_at} size="10px" />
+                                                    </div>
+                                                    {/* Small icon overlay for notification type */}
+                                                    {notif.actorProfile?.avatar_url && (
+                                                        <div style={{
+                                                            position: 'absolute', top: '-4px', right: '-4px',
+                                                            background: 'var(--bg-base)', borderRadius: '50%',
+                                                            padding: '2px', border: '1px solid var(--border-glass)',
+                                                            lineHeight: 0
+                                                        }}>
+                                                            {React.cloneElement(getIcon(notif.type), { size: 10 })}
+                                                        </div>
+                                                    )}
+                                                </Link>
+                                            </div>
+                                            <div style={{ flex: 1, zIndex: 2 }}>
+                                                <div style={{ fontSize: '0.95rem', color: 'var(--text-primary)', lineHeight: 1.4 }}>
+                                                    {/* Fallback to actor_id UUID */}
+                                                    <strong style={{ fontWeight: 700 }}>{notif.actorProfile?.display_name || notif.actor_id?.substring(0, 6) || 'System'}</strong> {formatNotificationMessage(notif)}
+                                                    {notif.group_count > 1 && (
+                                                        <span style={{ marginLeft: '0.5rem', padding: '0.1rem 0.4rem', borderRadius: '10px', background: 'var(--primary)', color: 'white', fontSize: '0.75rem', fontWeight: 700 }}>
+                                                            {notif.group_count}
                                                         </span>
                                                     )}
                                                 </div>
-                                            ))}
-                                        </div>
-                                        <div style={{ fontSize: '0.95rem', color: 'var(--text-primary)', lineHeight: 1.4 }}>
-                                            <strong style={{ fontWeight: 700 }}>
-                                                {notif.actors.length > 2 
-                                                    ? `${notif.actors[0]?.display_name || notif.actors[0]?.username}, ${notif.actors[1]?.display_name || notif.actors[1]?.username} and ${notif.actors.length - 2} others`
-                                                    : notif.actors.length === 2
-                                                        ? `${notif.actors[0]?.display_name || notif.actors[0]?.username} and ${notif.actors[1]?.display_name || notif.actors[1]?.username}`
-                                                        : notif.actors[0]?.display_name || notif.actors[0]?.username || 'System'
-                                                }
-                                            </strong>
-                                            {' '}
-                                            {formatNotificationMessage(notif)}
-                                        </div>
-                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                                            {new Date(notif.created_at || notif.timestamp || Date.now()).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                        </div>
-                                    </div>
-                                </>
-                            ) : (
-                                <>
-                                    <div style={{ position: 'relative', flexShrink: 0 }}>
-                                        <div style={{
-                                            width: '44px', height: '44px', borderRadius: '50%', flexShrink: 0,
-                                            background: notif.actorProfile?.avatar_url ? `url(${notif.actorProfile.avatar_url}) center/cover` : 'var(--bg-surface)',
-                                            border: '1px solid var(--border-glass)',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            position: 'relative', overflow: 'visible'
-                                        }}>
-                                            {!notif.actorProfile?.avatar_url && !notif.actorProfile?.display_name && getIcon(notif.type)}
-                                            {!notif.actorProfile?.avatar_url && notif.actorProfile?.display_name && notif.actorProfile.display_name.charAt(0).toUpperCase()}
-                                            <div style={{ position: 'absolute', bottom: '-2px', right: '-2px' }}>
-                                                <OnlineBadge lastSeenAt={notif.actorProfile?.last_seen_at} size="10px" />
-                                            </div>
-                                            {/* Small icon overlay for notification type */}
-                                            {notif.actorProfile?.avatar_url && (
-                                                <div style={{
-                                                    position: 'absolute', top: '-4px', right: '-4px',
-                                                    background: 'var(--bg-base)', borderRadius: '50%',
-                                                    padding: '2px', border: '1px solid var(--border-glass)',
-                                                    lineHeight: 0
-                                                }}>
-                                                    {React.cloneElement(getIcon(notif.type), { size: 10 })}
+                                                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                                                    {new Date(notif.created_at || notif.timestamp || Date.now()).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                                 </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ fontSize: '0.95rem', color: 'var(--text-primary)', lineHeight: 1.4 }}>
-                                            {/* Fallback to actor_id UUID */}
-                                            <strong style={{ fontWeight: 700 }}>{notif.actorProfile?.display_name || notif.actor_id?.substring(0, 6) || 'System'}</strong> {formatNotificationMessage(notif)}
-                                            {notif.group_count > 1 && (
-                                                <span style={{ marginLeft: '0.5rem', padding: '0.1rem 0.4rem', borderRadius: '10px', background: 'var(--primary)', color: 'white', fontSize: '0.75rem', fontWeight: 700 }}>
-                                                    {notif.group_count}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                                            {new Date(notif.created_at || notif.timestamp || Date.now()).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                        </div>
-                                    </div>
-                                </>
-                            )}
-                        </motion.div>
-                    ))
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            </motion.div>
+                        );
+                    })
                 ) : (
                     <div style={{
                         height: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',

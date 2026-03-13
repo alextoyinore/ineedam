@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Home, Bookmark, Search, User, MessageSquare, Sparkles, HelpCircle, Info, Hand, Award, Clock } from 'lucide-react';
+import { Home, Bookmark, Search, User, MessageSquare, Sparkles, HelpCircle, Info, Hand, Award, Clock, Shield } from 'lucide-react';
 
 const HelpSection = ({ title, icon: Icon, children }) => (
     <div style={{ marginBottom: '2.5rem' }}>
@@ -59,7 +59,15 @@ export const HelpPage = () => {
                 </HelpSection>
 
                 <HelpSection title="Leaderboard" icon={Award}>
-                    <p>The <strong>Leaderboard</strong> (<a href="/leaderboard" style={{ color: 'var(--primary)', textDecoration: 'none' }}>view here</a>) highlights the top helpers in our community. Points are awarded when you reply to needs and when you receive Endorsements for fulfilling them.</p>
+                    <p>The <strong>Leaderboard</strong> (<a href="/who-to-follow?tab=leaderboard" style={{ color: 'var(--primary)', textDecoration: 'none' }}>view here</a>) highlights the top helpers in our community. Points are awarded when you reply to needs and when you receive Endorsements for fulfilling them.</p>
+                </HelpSection>
+
+                <HelpSection title="Broadcasts" icon={Sparkles}>
+                    <p>The <strong>Broadcast</strong> feature allows you to share needs or endorsements with your followers, helping them reach a wider audience. Simply tap the broadcast icon on any post you want to spread the word about.</p>
+                </HelpSection>
+
+                <HelpSection title="Security PIN" icon={Shield}>
+                    <p>Protect your private conversations by setting a <strong>Message PIN</strong> in your settings. Once enabled, your messages will lock automatically after 1 minute of inactivity, ensuring your privacy even if someone else holds your device.</p>
                 </HelpSection>
 
                 <HelpSection title="Response Metrics" icon={Clock}>

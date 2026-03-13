@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Users, Loader, Trophy, Award, MessageSquare } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useSocial } from '../context/SocialContext';
@@ -14,11 +14,17 @@ export const MobileWhoToFollowPage = () => {
     const { user } = useAuth();
     const { toggleFollow, isFollowing } = useSocial();
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const activeTab = searchParams.get('tab') === 'leaderboard' ? 'leaderboard' : 'suggested';
+    
+    const setActiveTab = (tab) => {
+        setSearchParams({ tab });
+    };
+
     const [suggestedUsers, setSuggestedUsers] = useState([]);
     const [leaders, setLeaders] = useState([]);
     const [loadingSuggested, setLoadingSuggested] = useState(true);
     const [loadingLeaders, setLoadingLeaders] = useState(true);
-    const [activeTab, setActiveTab] = useState('suggested'); // 'suggested' | 'leaderboard'
 
     useEffect(() => {
         const loadSuggestedUsers = async () => {

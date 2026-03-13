@@ -7,7 +7,7 @@ const UseCaseSection = ({ title, items, icon: Icon, color = 'var(--primary)' }) 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
             <div style={{
                 width: '40px', height: '40px', borderRadius: '12px',
-                background: `rgba(${color === 'var(--primary)' ? '16, 185, 129' : '236, 72, 153'}, 0.1)`,
+                background: `color-mix(in srgb, ${color}, transparent 90%)`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 color: color
             }}>
@@ -35,20 +35,23 @@ const UseCaseSection = ({ title, items, icon: Icon, color = 'var(--primary)' }) 
 export const HowToUsePage = () => {
     const obviousCases = [
         { title: "Finding Services", description: "Need a plumber, local electrician, or a dog walker? Post your location and budget, and let local experts come to you." },
-        { title: "Tech & Development", description: "Looking for a React developer or a UI designer? Skip the recruiter fees and broadcast your specific project needs." },
-        { title: "Buying Products", description: "Searching for a specific laptop model or a rare collectible? Tell the community what you're willing to pay." }
+        { title: "Tech & Development", description: "Looking for a React developer or a UI designer? Skip recruiter fees and broadcast your specific project needs." },
+        { title: "Buying Products", description: "Searching for a specific laptop model or a rare collectible? Tell the community what you're willing to pay." },
+        { title: "Local Errands", description: "Need someone to pick up a prescription, drop off dry cleaning, or do a quick grocery run? Your neighbors can help." }
     ];
 
     const cleverCases = [
-        { title: "Relocation Assistance", description: "Need help unpacking boxes for 3 hours or a specialized item moved? It's the perfect place for high-intensity, short-duration tasks." },
-        { title: "Skill Exchange", description: "Need to learn Photoshop but can teach Guitar? Post it as a 'Service' need and find a barter partner." },
+        { title: "Relocation Assistance", description: "Need help unpacking boxes for 3 hours or moving a specialized item? Perfect for high-intensity, short-duration tasks." },
+        { title: "Lost & Found", description: "Lost a pet or an heirloom? Broadcast the details to the community for a much larger set of eyes than a telephone pole flyer." },
+        { title: "Skill Exchange", description: "Need to learn Photoshop but can teach Guitar? Post it as a 'Service' need and find a local barter partner." },
         { title: "Event Planning", description: "Looking for a venue that allows outside catering for 15 people? Broadcasters give you options you won't find on Google." }
     ];
 
     const edgeCases = [
         { title: "Market Validation", description: "Thinking of starting a service? Post a 'Need' for it to see how many professionals exist and what they're charging." },
-        { title: "Research Help", description: "Need someone to find a specific out-of-print book or data point? Crowdsource the research to someone with the time." },
-        { title: "Emergency Backup", description: "Phone died and you're stranded? Post a quick need for a jump-start or a charger loan if you can get online." }
+        { title: "Emergency Support", description: "Car won't start or basement flooded? Ineedam connects you to helpers faster than traditional directory searches." },
+        { title: "Research Help", description: "Need someone to find a specific out-of-print book or local data point? Crowdsource the research to local experts." },
+        { title: "Tool & Rental Hub", description: "Need a hammer drill for just one hour? Post a need to borrow or rent it from someone nearby instead of buying new." }
     ];
 
     return (
