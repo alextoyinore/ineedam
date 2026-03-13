@@ -6,5 +6,6 @@
     </linearGradient>
   </defs>
   <rect width="512" height="512" rx="120" fill="url(#brandGradient)"/>
-  <rect width="80" height="260" x="216" y="126" rx="40" fill="white"/>
+  <!-- Logo mark scaled down for better padding (compact look) -->
+  <rect width="60" height="200" x="226" y="156" rx="30" fill="white"/>
 </svg>
