@@ -46,8 +46,8 @@ export const fetchMixedFeed = async (from = 0, to = 5) => {
             .neq('status', 'archived')
             .order('created_at', { ascending: false })
             .range(from, to),
-        fetchAllEndorsements(0, 199),
-        fetchAllBroadcasts(0, 199)
+        fetchAllEndorsements(from, to),
+        fetchAllBroadcasts(from, to)
     ]);
 
     if (needsError) throw needsError;

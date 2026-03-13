@@ -43,14 +43,20 @@ export const ExplorePage = () => {
             const to = from + PAGE_SIZE - 1;
 
             const mixedItems = await fetchMixedFeed(from, to);
+            const newItems = mixedItems || [];
 
             if (isInitial) {
-                setItems(mixedItems || []);
+                setItems(newItems);
             } else {
-                setItems(prev => [...prev, ...(mixedItems || [])]);
+                setItems(prev => {
+                    // Deduplicate by ID
+                    const existingIds = new Set(prev.map(i => i.broadcast_id || i.id));
+                    const uniqueNewItems = newItems.filter(i => !existingIds.has(i.broadcast_id || i.id));
+                    return [...prev, ...uniqueNewItems];
+                });
             }
 
-            if (!mixedItems || mixedItems.length < PAGE_SIZE) {
+            if (newItems.length < PAGE_SIZE) {
                 setHasMore(false);
             } else {
                 setHasMore(true);
