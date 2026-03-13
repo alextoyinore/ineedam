@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HelpCircle, ChevronDown, MessageCircle, Shield, CreditCard, User, Hand, Award } from 'lucide-react';
+import { HelpCircle, ChevronDown, MessageCircle, Shield, CreditCard, User, Hand, Award, ArrowLeft } from 'lucide-react';
 
 const FAQItem = ({ question, answer, icon: Icon }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -69,6 +70,7 @@ const FAQItem = ({ question, answer, icon: Icon }) => {
 };
 
 export const FAQPage = () => {
+    const navigate = useNavigate();
     const faqs = [
         {
             icon: HelpCircle,
@@ -148,7 +150,17 @@ export const FAQPage = () => {
     ];
 
     return (
-        <div style={{ padding: '2rem 1rem', maxWidth: '800px', margin: '0 auto' }}>
+        <div style={{ padding: '1rem 1rem 4rem 1rem', maxWidth: '800px', margin: '0 auto' }}>
+            <div style={{ marginBottom: '2rem' }}>
+                <button
+                    type="button"
+                    onClick={() => navigate(-1)}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.9rem', padding: 0 }}
+                    className="nav-link-hover"
+                >
+                    <ArrowLeft size={16} /> Back
+                </button>
+            </div>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                 <header style={{ textAlign: 'center', marginBottom: '3rem' }}>
                     <h1 className="h1" style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>Frequently Asked Questions</h1>

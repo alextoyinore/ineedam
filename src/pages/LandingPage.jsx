@@ -159,6 +159,7 @@ export const LandingPage = () => {
                         <a href="/about" style={{ color: 'inherit', textDecoration: 'none' }} className="nav-link-hover">About</a>
                         <a href="/how-to-use" style={{ color: 'inherit', textDecoration: 'none' }} className="nav-link-hover">Use Cases</a>
                         <a href="/faq" style={{ color: 'inherit', textDecoration: 'none' }} className="nav-link-hover">FAQ</a>
+                        <a href="/contact" style={{ color: 'inherit', textDecoration: 'none' }} className="nav-link-hover">Contact</a>
                         <a href="/privacy" style={{ color: 'inherit', textDecoration: 'none' }} className="nav-link-hover">Privacy</a>
                         <a href="/terms" style={{ color: 'inherit', textDecoration: 'none' }} className="nav-link-hover">Terms</a>
                     </div>

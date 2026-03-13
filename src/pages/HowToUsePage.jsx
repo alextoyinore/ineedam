@@ -1,6 +1,7 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Lightbulb, Target, Sparkles, AlertCircle, Search, MessageSquare, Send } from 'lucide-react';
+import { Lightbulb, Target, Sparkles, AlertCircle, Search, MessageSquare, Send, ArrowLeft } from 'lucide-react';
 
 const UseCaseSection = ({ title, items, icon: Icon, color = 'var(--primary)' }) => (
     <div style={{ marginBottom: '3rem' }}>
@@ -33,6 +34,7 @@ const UseCaseSection = ({ title, items, icon: Icon, color = 'var(--primary)' }) 
 );
 
 export const HowToUsePage = () => {
+    const navigate = useNavigate();
     const obviousCases = [
         { title: "Finding Services", description: "Need a plumber, local electrician, or a dog walker? Post your location and budget, and let local experts come to you." },
         { title: "Tech & Development", description: "Looking for a React developer or a UI designer? Skip recruiter fees and broadcast your specific project needs." },
@@ -55,7 +57,17 @@ export const HowToUsePage = () => {
     ];
 
     return (
-        <div style={{ padding: '2rem 1rem', maxWidth: '1000px', margin: '0 auto' }}>
+        <div style={{ padding: '1rem 1rem 4rem 1rem', maxWidth: '1000px', margin: '0 auto' }}>
+            <div style={{ marginBottom: '2rem' }}>
+                <button
+                    type="button"
+                    onClick={() => navigate(-1)}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.9rem', padding: 0 }}
+                    className="nav-link-hover"
+                >
+                    <ArrowLeft size={16} /> Back
+                </button>
+            </div>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                 <header style={{ textAlign: 'center', marginBottom: '4rem' }}>
                     <h1 className="h1" style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>Use Cases</h1>
@@ -104,18 +116,18 @@ export const HowToUsePage = () => {
                 />
 
                 <div style={{
-                    marginTop: '2rem',
-                    padding: '3rem',
-                    borderRadius: '32px',
-                    background: 'var(--text-primary)',
-                    color: 'var(--bg-base)',
+                    marginTop: '4rem',
+                    padding: '3rem 2rem',
+                    borderRadius: '24px',
+                    background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(236, 72, 153, 0.05) 100%)',
+                    border: '1px solid var(--border-glass)',
                     textAlign: 'center'
                 }}>
-                    <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Ready to start?</h2>
-                    <p style={{ opacity: 0.8, marginBottom: '2rem', fontSize: '1.1rem' }}>
+                    <h3 className="h3" style={{ marginBottom: '1rem' }}>Ready to start?</h3>
+                    <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '1.1rem' }}>
                         The community is waiting to fill your next need.
                     </p>
-                    <a href="/" className="btn btn-primary" style={{ padding: '1rem 2.5rem', fontSize: '1.1rem' }}>
+                    <a href="/" className="btn btn-primary" style={{ padding: '0.8rem 2rem' }}>
                         Go to Explore
                     </a>
                 </div>

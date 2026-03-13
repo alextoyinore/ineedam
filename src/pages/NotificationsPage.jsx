@@ -116,7 +116,7 @@ export const NotificationsPage = () => {
                                     </>
                                 )}
 
-                                <div style={{ position: 'relative', display: 'flex', gap: '0.75rem', padding: '1.25rem var(--feed-item-padding)' }}>
+                                <div style={{ position: 'relative', display: 'flex', gap: '0.75rem', padding: '0.75rem var(--feed-item-padding)' }}>
                                     {/* Link overlay for the whole card area */}
                                     {mainLink && (
                                         <Link 

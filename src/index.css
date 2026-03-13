@@ -564,6 +564,21 @@ textarea::placeholder {
   }
 }
 
+/* Public Pages Header */
+.public-header {
+  padding: 0 2rem;
+}
+
+@media (max-width: 768px) {
+  .public-header {
+    padding: 0 var(--feed-item-padding) !important;
+  }
+
+  .theme-toggle-label {
+    display: none;
+  }
+}
+
 /* Responsive Layout Utilities */
 .explore-layout-grid {
   display: grid;

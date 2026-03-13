@@ -1,10 +1,23 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Target, Users, Zap, ShieldCheck } from 'lucide-react';
+import { Target, Users, Zap, ShieldCheck, ArrowLeft } from 'lucide-react';
 
 export const AboutPage = () => {
+    const navigate = useNavigate();
+
     return (
-        <div style={{ padding: '4rem 1rem', maxWidth: '1000px', margin: '0 auto', color: 'var(--text-primary)' }}>
+        <div style={{ padding: '1rem 1rem 4rem 1rem', maxWidth: '1000px', margin: '0 auto', color: 'var(--text-primary)' }}>
+            <div style={{ marginBottom: '2rem' }}>
+                <button
+                    type="button"
+                    onClick={() => navigate(-1)}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.9rem', padding: 0 }}
+                    className="nav-link-hover"
+                >
+                    <ArrowLeft size={16} /> Back
+                </button>
+            </div>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
 
                 {/* Hero Section */}
@@ -36,7 +49,7 @@ export const AboutPage = () => {
                 </div>
 
                 {/* The Story Section */}
-                <section style={{ marginBottom: '5rem' }}>
+                <section className="story-section" style={{ marginBottom: '5rem' }}>
                     <h2 className="h2" style={{ fontSize: '2rem', marginBottom: '1.5rem' }}>Our Story</h2>
                     <div style={{ lineHeight: 1.8, color: 'var(--text-secondary)', fontSize: '1.1rem' }}>
                         <p style={{ marginBottom: '1.5rem' }}>
@@ -49,9 +62,9 @@ export const AboutPage = () => {
                 </section>
 
                 {/* Values */}
-                <section style={{ padding: '4rem', background: 'var(--bg-surface)', border: '1px solid var(--border-glass)', borderRadius: '32px' }}>
+                <section className="values-section" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-glass)', borderRadius: '32px' }}>
                     <h2 className="h2" style={{ textAlign: 'center', marginBottom: '3rem' }}>What we stand for</h2>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '3rem' }}>
                         <div style={{ display: 'flex', gap: '1rem' }}>
                             <Zap size={24} style={{ color: 'var(--primary)', flexShrink: 0 }} />
                             <div>
@@ -70,6 +83,22 @@ export const AboutPage = () => {
                 </section>
 
             </motion.div>
+
+            <style dangerouslySetInnerHTML={{ __html: `
+                .values-section {
+                    padding: 4rem;
+                }
+                @media (max-width: 768px) {
+                    .values-section {
+                        padding: 2rem 1.5rem !important;
+                    }
+                    .story-section {
+                        padding: 0 0.25rem !important;
+                    }
+                    header h1 { font-size: 2.5rem !important; }
+                    header { margin-bottom: 3rem !important; }
+                }
+            `}} />
         </div>
     );
 };

@@ -1,9 +1,22 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { ArrowLeft } from 'lucide-react';
 
 export const PrivacyPolicyPage = () => {
+    const navigate = useNavigate();
     return (
-        <div style={{ padding: '2rem var(--feed-item-padding)', maxWidth: '800px', margin: '0 auto', color: 'var(--text-primary)' }}>
+        <div style={{ padding: '1rem var(--feed-item-padding) 4rem var(--feed-item-padding)', maxWidth: '800px', margin: '0 auto', color: 'var(--text-primary)' }}>
+            <div style={{ marginBottom: '2rem' }}>
+                <button
+                    type="button"
+                    onClick={() => navigate(-1)}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.9rem', padding: 0 }}
+                    className="nav-link-hover"
+                >
+                    <ArrowLeft size={16} /> Back
+                </button>
+            </div>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
                 <h1 className="h1" style={{ marginBottom: '1.5rem', fontSize: '2.5rem' }}>Privacy Policy</h1>
                 <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>Last updated: March 13, 2026</p>

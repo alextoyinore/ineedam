@@ -28,6 +28,7 @@ const RuleOfEngagementPage = lazy(() => import('./pages/RuleOfEngagementPage').t
 const MobileWhoToFollowPage = lazy(() => import('./pages/MobileWhoToFollowPage').then(module => ({ default: module.MobileWhoToFollowPage })));
 const MobileWhatsHappeningPage = lazy(() => import('./pages/MobileWhatsHappeningPage').then(module => ({ default: module.MobileWhatsHappeningPage })));
 const CategoriesPage = lazy(() => import('./pages/CategoriesPage').then(module => ({ default: module.CategoriesPage })));
+const ContactPage = lazy(() => import('./pages/ContactPage').then(module => ({ default: module.ContactPage })));
 const PremiumPage = lazy(() => import('./pages/PremiumPage').then(module => ({ default: module.PremiumPage })));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage').then(module => ({ default: module.NotFoundPage })));
 const ServerErrorPage = lazy(() => import('./pages/ServerErrorPage').then(module => ({ default: module.ServerErrorPage })));
@@ -70,6 +71,7 @@ function App() {
         <Route path="/reset-password" element={<PublicPageWrapper><ResetPasswordPage /></PublicPageWrapper>} />
         <Route path="/privacy" element={<PublicPageWrapper><PrivacyPolicyPage /></PublicPageWrapper>} />
         <Route path="/terms" element={<PublicPageWrapper><TermsOfServicePage /></PublicPageWrapper>} />
+        <Route path="/contact" element={<PublicPageWrapper><ContactPage /></PublicPageWrapper>} />
         <Route path="/rules" element={<PublicPageWrapper><RuleOfEngagementPage /></PublicPageWrapper>} />
 
         {/* ── Protected: all app routes inside social layout ────── */}

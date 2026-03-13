@@ -24,7 +24,7 @@ export const PublicPageWrapper = ({ children }) => {
     return (
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
             {/* Minimal header */}
-            <header style={{
+            <header className="public-header" style={{
                 position: 'sticky', top: 0, zIndex: 50,
                 padding: '0 2rem',
                 height: '64px',
@@ -32,35 +32,15 @@ export const PublicPageWrapper = ({ children }) => {
                 background: 'var(--bg-surface-glass)', backdropFilter: 'blur(16px)',
                 borderBottom: '1px solid var(--border-glass)',
             }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <a
-                        href="#"
-                        onClick={handleBack}
-                        style={{
-                            display: 'flex', alignItems: 'center', gap: '0.4rem',
-                            color: 'var(--text-muted)', textDecoration: 'none',
-                            fontSize: '0.9rem', fontWeight: 500,
-                            transition: 'color 0.2s',
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
-                        onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
-                    >
-                        <ArrowLeft size={16} />
-                        Back
-                    </a>
-
-                    <div style={{ width: '1px', height: '20px', background: 'var(--border-glass)' }} />
-
-                    <Link to={backLink} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
-                        <div style={{
-                            width: '28px', height: '28px', borderRadius: '8px',
-                            background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontWeight: 'bold', color: 'white', fontSize: '0.9rem',
-                        }}>I</div>
-                        <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>Ineedam</span>
-                    </Link>
-                </div>
+                <Link to={backLink} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
+                    <div style={{
+                        width: '28px', height: '28px', borderRadius: '8px',
+                        background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontWeight: 'bold', color: 'white', fontSize: '0.9rem',
+                    }}>I</div>
+                    <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>Ineedam</span>
+                </Link>
 
                 <ThemeToggle />
             </header>
@@ -74,12 +54,15 @@ export const PublicPageWrapper = ({ children }) => {
             <footer style={{
                 padding: '1.5rem 2rem',
                 borderTop: '1px solid var(--border-glass)',
-                display: 'flex', justifyContent: 'center', gap: '1.5rem',
-                color: 'var(--text-muted)', fontSize: '0.85rem',
+                display: 'flex', justifyContent: 'center', gap: '1rem 1.5rem', flexWrap: 'wrap',
+                color: 'var(--text-muted)', fontSize: '0.85rem', textAlign: 'center'
             }}>
-                <Link to="/about" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>About</Link>
-                <Link to="/privacy" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Privacy</Link>
-                <Link to="/terms" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Terms</Link>
+                <Link to="/about" style={{ color: 'var(--text-muted)', textDecoration: 'none' }} className="nav-link-hover">About</Link>
+                <Link to="/how-to-use" style={{ color: 'var(--text-muted)', textDecoration: 'none' }} className="nav-link-hover">Use Cases</Link>
+                <Link to="/faq" style={{ color: 'var(--text-muted)', textDecoration: 'none' }} className="nav-link-hover">FAQ</Link>
+                <Link to="/contact" style={{ color: 'var(--text-muted)', textDecoration: 'none' }} className="nav-link-hover">Contact</Link>
+                <Link to="/privacy" style={{ color: 'var(--text-muted)', textDecoration: 'none' }} className="nav-link-hover">Privacy</Link>
+                <Link to="/terms" style={{ color: 'var(--text-muted)', textDecoration: 'none' }} className="nav-link-hover">Terms</Link>
             </footer>
         </div>
     );
