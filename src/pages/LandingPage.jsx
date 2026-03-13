@@ -4,11 +4,11 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { Helmet } from 'react-helmet-async';
 import { AuthForm } from '../components/AuthForm';
-import { Sun, Moon } from 'lucide-react';
+import { ThemeToggle } from '../components/ThemeToggle';
 
 export const LandingPage = () => {
     const { session, loading } = useAuth();
-    const { isDark, toggleTheme } = useTheme();
+    const { isDark } = useTheme();
     const navigate = useNavigate();
     const [isMobileAuthOpen, setIsMobileAuthOpen] = React.useState(false);
     const [authTab, setAuthTab] = React.useState('signup');
@@ -33,30 +33,9 @@ export const LandingPage = () => {
             transition: 'background-color 0.3s ease'
         }} className="landing-container">
             {/* Theme Toggle */}
-            <button
-                onClick={toggleTheme}
-                style={{
-                    position: 'absolute',
-                    top: '2rem',
-                    right: '2rem',
-                    zIndex: 10,
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '50%',
-                    background: 'var(--bg-surface)',
-                    border: '1px solid var(--border-glass)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    color: 'var(--text-primary)',
-                    transition: 'all 0.2s'
-                }}
-                className="nav-link-hover"
-                title={isDark ? "Switch to light mode" : "Switch to dark mode"}
-            >
-                {isDark ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
+            <div style={{ position: 'absolute', top: '2rem', right: '2rem', zIndex: 10 }}>
+                <ThemeToggle />
+            </div>
 
             {/* Background Layers */}
             <div style={{
