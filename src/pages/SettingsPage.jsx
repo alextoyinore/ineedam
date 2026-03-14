@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { useChatSecurity } from '../context/ChatSecurityContext';
 import { ChatPinSetupModal } from '../components/ChatPinSetupModal';
 import { ChatPinVerifyModal } from '../components/ChatPinVerifyModal';
+import packageInfo from '../../package.json';
 
 export const SettingsPage = () => {
     const { settings, toggleSetting, updateSetting } = useSettings();
@@ -418,7 +419,7 @@ export const SettingsPage = () => {
                 </div>
 
                 <p style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
-                    iNeedAm v1.0.4 · Made with love for the world.
+                    iNeedAm v{packageInfo.version} · Made with love for the world.
                 </p>
             </div>
         </div>

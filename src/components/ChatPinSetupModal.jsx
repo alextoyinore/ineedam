@@ -117,9 +117,8 @@ export const ChatPinSetupModal = ({ isOpen, onClose }) => {
                     exit={{ scale: 0.95, opacity: 0, y: 20 }}
                     onClick={e => e.stopPropagation()}
                     style={{
-                        background: 'var(--bg-base)', border: '1px solid var(--border-glass)',
-                        borderRadius: '24px', width: '100%', maxWidth: '380px',
-                        padding: '2.5rem 2rem', display: 'flex', flexDirection: 'column', alignItems: 'center'
+                        width: '100%', maxWidth: '380px',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center'
                     }}
                 >
                     <button

@@ -158,12 +158,12 @@ export const ChatPinOverlay = ({ children }) => {
                         initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         style={{
-                            background: 'var(--bg-surface)', border: '1px solid var(--border-glass)',
-                            borderRadius: '24px', padding: '2.5rem 2rem', width: '100%', maxWidth: '380px',
+                            width: '100%', maxWidth: '380px',
                             display: 'flex', flexDirection: 'column', alignItems: 'center'
                         }}
                     >
                         <div style={{
+
                             width: '64px', height: '64px', borderRadius: '50%',
                             background: isSetup ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.1)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem',
