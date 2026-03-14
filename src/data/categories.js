@@ -298,7 +298,7 @@ export const CATEGORY_METADATA = {
     "Dating": { icon: "Heart" },
     "Networking": { icon: "Users" },
     "Mentorship": { icon: "UserPlus" },
-    "Collaboration": { icon: "UserGroup" },
+    "Collaboration": { icon: "Users" },
     "Support": { icon: "LifeBuoy" },
     
     // Travel

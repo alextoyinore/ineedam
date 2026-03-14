@@ -4,9 +4,9 @@ import {
     Code, Laptop, Music, Palette, Trophy, Home, Car, ShoppingBag, 
     Settings, Briefcase, Shirt, PawPrint, Heart, Plane, MoreHorizontal, 
     Globe, Terminal, Smartphone, HelpCircle, Layout, Shield, BarChart, 
-    Cloud, Mouse, Wifi, Guitar, Gamepad2, Tv, Mic2, GlassWater, Tent, 
+    Cloud, Mouse, Wifi, Guitar, Gamepad2, Tv, Monitor, Mic2, GlassWater, Tent, 
     Calendar, Scissors, Camera, PenTool, Sparkles, Dribbble, Activity, 
-    Building, Palmtree, Building2, Mountain, Bike, Truck, Ship, Wrench, 
+    Building, Palmtree, Building2, Mountain, Bike, Truck, Bus, Ship, Wrench, 
     Key, Armchair, Lamp, Utensils, Bed, Flower2, Hammer, Wind, BookOpen, 
     UtensilsCrossed, Scale, HeartPulse, Lock, Clock as ClockIcon, 
     UserCheck, GraduationCap, Footprints, Watch, Cat, Bone, HeartHandshake, 
@@ -21,13 +21,13 @@ const CategoryIcon = ({ iconName, ...props }) => {
         Code, Laptop, Music, Palette, Trophy, Home, Car, ShoppingBag,
         Settings, Briefcase, Shirt, PawPrint, Users, Heart, Plane, MoreHorizontal,
         Globe, Terminal, Smartphone, HelpCircle, Layout, Shield, BarChart,
-        Cloud, Mouse, Wifi, Guitar, Gamepad2, Tv, Mic2, GlassWater, Tent,
+        Cloud, Mouse, Wifi, Guitar, Gamepad2, Tv, Monitor, Mic2, GlassWater, Tent,
         Calendar, Scissors, Camera, PenTool, Sparkles, Dribbble, Activity,
-        Building, Palmtree, Building2, Mountain, Bike, Truck, Ship, Wrench,
+        Building, Palmtree, Building2, Mountain, Bike, Truck, Bus, Ship, Wrench,
         Key, Armchair, Lamp, Utensils, Bed, Flower2, Hammer, Wind, BookOpen,
         UtensilsCrossed, Scale, HeartPulse, Lock, UserCheck, GraduationCap,
         Footprints, Watch, Cat, Bone, Search, HeartHandshake, Book, Smile,
-        UserPlus, Compass, Package, Repeat, Gift
+        UserPlus, Users, Compass, Package, Repeat, Gift
     };
     const IconComponent = icons[iconName] || Globe;
     return <IconComponent {...props} />;

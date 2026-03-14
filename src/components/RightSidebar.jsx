@@ -4,14 +4,13 @@ import {
     Search, UserPlus, TrendingUp, Globe, Code, Laptop, Music, Palette, 
     Trophy, Home, Car, ShoppingBag, Settings, Briefcase, Shirt, PawPrint, 
     Users, Heart, Plane, MoreHorizontal, Terminal, Smartphone, HelpCircle, 
-    Layout, Shield, BarChart, Cloud, Mouse, Wifi, Guitar, Gamepad2, Tv, 
+    Layout, Shield, BarChart, Cloud, Mouse, Wifi, Guitar, Gamepad2, Tv, Monitor,
     Mic2, GlassWater, Tent, Calendar, Scissors, Camera, PenTool, Sparkles, 
     Dribbble, Activity, Building, Palmtree, Building2, Mountain, Bike, 
-    Truck, Ship, Wrench, Key, Armchair, Lamp, Utensils, Bed, Flower2, 
+    Truck, Bus, Ship, Wrench, Key, Armchair, Lamp, Utensils, Bed, Flower2, 
     Hammer, Wind, BookOpen, UtensilsCrossed, Scale, HeartPulse, Lock, 
     Clock, UserCheck, GraduationCap, Footprints, Watch, Cat, Bone, 
-    HeartHandshake, Book, Smile, UserPlus as UserAdd, UserGroup, Compass, 
-    Package, Repeat, Gift
+    HeartHandshake, Book, Smile, Compass, Package, Repeat, Gift
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useSocial } from '../context/SocialContext';
@@ -26,13 +25,13 @@ const CategoryIcon = ({ iconName, ...props }) => {
         Code, Laptop, Music, Palette, Trophy, Home, Car, ShoppingBag,
         Settings, Briefcase, Shirt, PawPrint, Users, Heart, Plane, MoreHorizontal,
         Globe, Terminal, Smartphone, HelpCircle, Layout, Shield, BarChart,
-        Cloud, Mouse, Wifi, Guitar, Gamepad2, Tv, Mic2, GlassWater, Tent,
+        Cloud, Mouse, Wifi, Guitar, Gamepad2, Tv, Monitor, Mic2, GlassWater, Tent,
         Calendar, Scissors, Camera, PenTool, Sparkles, Dribbble, Activity,
-        Building, Palmtree, Building2, Mountain, Bike, Truck, Ship, Wrench,
+        Building, Palmtree, Building2, Mountain, Bike, Truck, Bus, Ship, Wrench,
         Key, Armchair, Lamp, Utensils, Bed, Flower2, Hammer, Wind, BookOpen,
         UtensilsCrossed, Scale, HeartPulse, Lock, Clock, UserCheck, GraduationCap,
         Footprints, Watch, Cat, Bone, Search, HeartHandshake, Book, Smile,
-        UserAdd, UserGroup, Compass, Package, Repeat, Gift
+        UserPlus, Compass, Package, Repeat, Gift
     };
     const IconComponent = icons[iconName] || Globe;
     return <IconComponent {...props} />;

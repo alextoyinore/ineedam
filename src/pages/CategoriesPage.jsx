@@ -1,35 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, LayoutGrid, ChevronRight, ChevronDown, Loader } from 'lucide-react';
-import { getCategoryPreviews } from '../lib/needsService';
-import { CATEGORY_GROUPS } from '../data/categories';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getCategoryPreviews } from '../lib/needsService';
+import { CATEGORY_GROUPS, getCategoryIcon } from '../data/categories';
+
+// Icons
 import { 
+    ArrowLeft, LayoutGrid, ChevronRight, ChevronDown, Loader,
     Code, Laptop, Music, Palette, Trophy, Home, Car, ShoppingBag, 
     Settings, Briefcase, Shirt, PawPrint, Users, Heart, Plane, MoreHorizontal, 
     Globe, Terminal, Smartphone, HelpCircle, Layout, Shield, BarChart, 
-    Cloud, Mouse, Wifi, Guitar, Gamepad2, Tv, Mic2, GlassWater, Tent, 
+    Cloud, Mouse, Wifi, Guitar, Gamepad2, Tv, Monitor, Mic2, GlassWater, Tent, 
     Calendar, Scissors, Camera, PenTool, Sparkles, Dribbble, Activity, 
-    Building, Palmtree, Building2, Mountain, Bike, Truck, Ship, Wrench, 
+    Building, Palmtree, Building2, Mountain, Bike, Truck, Bus, Ship, Wrench, 
     Key, Armchair, Lamp, Utensils, Bed, Flower2, Hammer, Wind, BookOpen, 
     UtensilsCrossed, Scale, HeartPulse, Lock, Clock, UserCheck, GraduationCap, 
     Footprints, Watch, Cat, Bone, Search, HeartHandshake, Book, Smile, 
-    UserPlus, Users as UserGroup, LifeBuoy, Compass, Package, Repeat, Gift
+    UserPlus, LifeBuoy, Compass, Package, Repeat, Gift
 } from 'lucide-react';
-import { getCategoryIcon } from '../data/categories';
 
 const CategoryIcon = ({ iconName, ...props }) => {
     const icons = {
         Code, Laptop, Music, Palette, Trophy, Home, Car, ShoppingBag,
         Settings, Briefcase, Shirt, PawPrint, Users, Heart, Plane, MoreHorizontal,
         Globe, Terminal, Smartphone, HelpCircle, Layout, Shield, BarChart,
-        Cloud, Mouse, Wifi, Guitar, Gamepad2, Tv, Mic2, GlassWater, Tent,
+        Cloud, Mouse, Wifi, Guitar, Gamepad2, Tv, Monitor, Mic2, GlassWater, Tent,
         Calendar, Scissors, Camera, PenTool, Sparkles, Dribbble, Activity,
-        Building, Palmtree, Building2, Mountain, Bike, Truck, Ship, Wrench,
+        Building, Palmtree, Building2, Mountain, Bike, Truck, Bus, Ship, Wrench,
         Key, Armchair, Lamp, Utensils, Bed, Flower2, Hammer, Wind, BookOpen,
         UtensilsCrossed, Scale, HeartPulse, Lock, Clock, UserCheck, GraduationCap,
         Footprints, Watch, Cat, Bone, Search, HeartHandshake, Book, Smile,
-        UserPlus, UserGroup, LifeBuoy, Compass, Package, Repeat, Gift
+        UserPlus, LifeBuoy, Compass, Package, Repeat, Gift
     };
     const IconComponent = icons[iconName] || Globe;
     return <IconComponent {...props} />;

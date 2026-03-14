@@ -1,50 +1,48 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader } from 'lucide-react';
-import { NeedCard } from '../components/NeedCard';
-import { useSocial } from '../context/SocialContext';
-import { fetchMixedFeed } from '../lib/feedService';
-import { supabase } from '../lib/supabase';
-import { shapeNeed } from '../lib/needsService';
-import { EndorsementFeedCard } from '../components/EndorsementFeedCard';
 import { useNavigate } from 'react-router-dom';
-import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
-import { getSuggestedProfiles } from '../lib/profileService';
+import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
-import { Users, LayoutGrid, ChevronRight } from 'lucide-react';
-import { HomeComposer } from '../components/HomeComposer';
-import { getCategoryPreviews } from '../lib/needsService';
-import { CATEGORY_GROUPS } from '../data/categories';
-import { ChevronDown } from 'lucide-react';
+import { useSocial } from '../context/SocialContext';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
+import { fetchMixedFeed } from '../lib/feedService';
+import { getNeedById, updateNeed, shapeNeed, getCategoryPreviews } from '../lib/needsService';
+import { getSuggestedProfiles } from '../lib/profileService';
+import { CATEGORY_GROUPS, getCategoryIcon } from '../data/categories';
 
+// Components
+import { NeedCard } from '../components/NeedCard';
+import { EndorsementFeedCard } from '../components/EndorsementFeedCard';
+import { HomeComposer } from '../components/HomeComposer';
 import { EditNeedModal } from '../components/EditNeedModal';
-import { getNeedById, updateNeed } from '../lib/needsService';
+
+// Icons
 import { 
+    Loader, Users, LayoutGrid, ChevronRight, ChevronDown,
     Code, Laptop, Music, Palette, Trophy, Home, Car, ShoppingBag, 
     Settings, Briefcase, Shirt, PawPrint, Heart, Plane, MoreHorizontal, 
     Globe, Terminal, Smartphone, HelpCircle, Layout, Shield, BarChart, 
-    Cloud, Mouse, Wifi, Guitar, Gamepad2, Tv, Mic2, GlassWater, Tent, 
+    Cloud, Mouse, Wifi, Guitar, Gamepad2, Tv, Monitor, Mic2, GlassWater, Tent, 
     Calendar, Scissors, Camera, PenTool, Sparkles, Dribbble, Activity, 
-    Building, Palmtree, Building2, Mountain, Bike, Truck, Ship, Wrench, 
+    Building, Palmtree, Building2, Mountain, Bike, Truck, Bus, Ship, Wrench, 
     Key, Armchair, Lamp, Utensils, Bed, Flower2, Hammer, Wind, BookOpen, 
     UtensilsCrossed, Scale, HeartPulse, Lock, Clock, UserCheck, GraduationCap, 
     Footprints, Watch, Cat, Bone, Search, HeartHandshake, Book, Smile, 
-    UserPlus, Users as UserGroup, LifeBuoy, Compass, Package, Repeat, Gift
+    UserPlus, LifeBuoy, Compass, Package, Repeat, Gift
 } from 'lucide-react';
-import { getCategoryIcon } from '../data/categories';
 
 const CategoryIcon = ({ iconName, ...props }) => {
     const icons = {
         Code, Laptop, Music, Palette, Trophy, Home, Car, ShoppingBag,
         Settings, Briefcase, Shirt, PawPrint, Heart, Plane, MoreHorizontal,
         Globe, Terminal, Smartphone, HelpCircle, Layout, Shield, BarChart,
-        Cloud, Mouse, Wifi, Guitar, Gamepad2, Tv, Mic2, GlassWater, Tent,
+        Cloud, Mouse, Wifi, Guitar, Gamepad2, Tv, Monitor, Mic2, GlassWater, Tent,
         Calendar, Scissors, Camera, PenTool, Sparkles, Dribbble, Activity,
-        Building, Palmtree, Building2, Mountain, Bike, Truck, Ship, Wrench,
+        Building, Palmtree, Building2, Mountain, Bike, Truck, Bus, Ship, Wrench,
         Key, Armchair, Lamp, Utensils, Bed, Flower2, Hammer, Wind, BookOpen,
         UtensilsCrossed, Scale, HeartPulse, Lock, Clock, UserCheck, GraduationCap,
         Footprints, Watch, Cat, Bone, Search, HeartHandshake, Book, Smile,
-        UserPlus, UserGroup, LifeBuoy, Compass, Package, Repeat, Gift, Users
+        UserPlus, LifeBuoy, Compass, Package, Repeat, Gift, Users
     };
     const IconComponent = icons[iconName] || Globe;
     return <IconComponent {...props} />;
