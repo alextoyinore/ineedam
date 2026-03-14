@@ -284,23 +284,6 @@ export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false, onInvit
                                 </div>
                             </div>
 
-                            {/* Newsletter Selection */}
-                            {profile && (
-                                <div style={{
-                                    padding: '0.75rem 1.5rem',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
-                                    marginBottom: '0.5rem'
-                                }}>
-                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                        <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)' }}>Ineedam Newsletter</span>
-                                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>High-value need notifications</span>
-                                    </div>
-                                    <MobileNewsletterToggle profile={profile} updateProfile={updateProfile} />
-                                </div>
-                            )}
-
                         </div>
 
                         {/* Logout */}

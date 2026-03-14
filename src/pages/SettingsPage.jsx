@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import {
     Volume2, VolumeX, Bell, Shield, Moon, Sun, Monitor,
-    ArrowLeft, Trash2, LogOut, Star, UserX, Mail
+    ArrowLeft, Trash2, LogOut, Star, UserX, Mail, Newspaper
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useChatSecurity } from '../context/ChatSecurityContext';
@@ -20,17 +20,22 @@ export const SettingsPage = () => {
     const [isPinVerifyModalOpen, setIsPinVerifyModalOpen] = useState(false);
     const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(true);
     const [savingEmailPref, setSavingEmailPref] = useState(false);
+    const [newsletterSubscribed, setNewsletterSubscribed] = useState(false);
+    const [savingNewsletter, setSavingNewsletter] = useState(false);
 
     // Sync email notifications preference from profile
     useEffect(() => {
         if (profile?.email_notifications_enabled !== undefined) {
             setEmailNotificationsEnabled(profile.email_notifications_enabled);
         }
-    }, [profile?.email_notifications_enabled]);
+        if (profile?.newsletter_subscribed !== undefined) {
+            setNewsletterSubscribed(profile.newsletter_subscribed);
+        }
+    }, [profile?.email_notifications_enabled, profile?.newsletter_subscribed]);
 
     const handleEmailNotificationsToggle = async () => {
         const newValue = !emailNotificationsEnabled;
-        setEmailNotificationsEnabled(newValue); // Optimistic update
+        setEmailNotificationsEnabled(newValue);
         setSavingEmailPref(true);
         try {
             await supabase
@@ -39,9 +44,26 @@ export const SettingsPage = () => {
                 .eq('id', profile.id);
         } catch (err) {
             console.error('Failed to update email notification preference:', err);
-            setEmailNotificationsEnabled(!newValue); // Revert on failure
+            setEmailNotificationsEnabled(!newValue);
         } finally {
             setSavingEmailPref(false);
+        }
+    };
+
+    const handleNewsletterToggle = async () => {
+        const newValue = !newsletterSubscribed;
+        setNewsletterSubscribed(newValue);
+        setSavingNewsletter(true);
+        try {
+            await supabase
+                .from('profiles')
+                .update({ newsletter_subscribed: newValue })
+                .eq('id', profile.id);
+        } catch (err) {
+            console.error('Failed to update newsletter preference:', err);
+            setNewsletterSubscribed(!newValue);
+        } finally {
+            setSavingNewsletter(false);
         }
     };
 
@@ -115,6 +137,16 @@ export const SettingsPage = () => {
                     value: emailNotificationsEnabled,
                     customToggle: handleEmailNotificationsToggle,
                     disabled: savingEmailPref
+                },
+                {
+                    id: 'newsletter',
+                    label: 'Ineedam Newsletter',
+                    description: 'High-value need alerts & platform updates',
+                    type: 'toggle',
+                    icon: <Newspaper size={20} />,
+                    value: newsletterSubscribed,
+                    customToggle: handleNewsletterToggle,
+                    disabled: savingNewsletter
                 }
             ]
         },

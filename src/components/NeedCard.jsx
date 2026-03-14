@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Tag, MapPin, Banknote, Clock, MessageSquare, Bookmark, Heart, MessageCircle, Repeat2, Award, Trash2, MoreVertical, Archive, Flag, UserPlus, UserMinus, VolumeX, Share2, FileText, Download, Edit3, CheckCircle, Hand } from 'lucide-react';
+import { PreviewableImage } from './ImageLightbox';
 import { ReplyModal } from './ReplyModal';
 import { supabase } from '../lib/supabase';
 import { useBookmarks } from '../context/BookmarksContext';
@@ -527,7 +528,7 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                 {/* Rich Media */}
                 {need.imageUrl && (
                     <div style={{ marginTop: '0.75rem', marginBottom: '0.75rem', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-glass)' }}>
-                        <img
+                        <PreviewableImage
                             src={need.imageUrl}
                             alt={need.title}
                             style={{ width: '100%', maxHeight: '400px', objectFit: 'cover', display: 'block' }}

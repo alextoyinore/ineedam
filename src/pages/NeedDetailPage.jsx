@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Send, Loader, Lock, Globe, MessageSquare, Archive, Paperclip, FileText, Download, X, Image } from 'lucide-react';
+import { ImageLightbox } from '../components/ImageLightbox';
 import { OnlineBadge } from '../components/OnlineBadge';
 import { NeedCard } from '../components/NeedCard';
 import { getNeedById, shapeNeed, uploadFileToCloudinary, uploadImageToCloudinary, updateNeed, updateNeedStatus } from '../lib/needsService';
@@ -315,48 +316,12 @@ export const NeedDetailPage = () => {
         }
     };
 
-    if (loading) {
-        return (
-            <div style={{ padding: '4rem', display: 'flex', justifyContent: 'center', color: 'var(--primary)' }}>
-                <Loader size={32} className="animate-spin" />
-            </div>
-        );
-    }
+    const isMediaLayout = !isMobile && !!need.imageUrl;
 
-    if (!need) return null;
-
-    return (
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <Helmet>
-                <title>{need.title} | Ineedam</title>
-                <meta property="og:title" content={`${need.title} | Ineedam`} />
-                <meta property="og:description" content={need.description} />
-                <meta property="twitter:title" content={`${need.title} | Ineedam`} />
-                <meta property="twitter:description" content={need.description} />
-                {need.imageUrl && (
-                    <>
-                        <meta property="og:image" content={need.imageUrl} />
-                        <meta property="twitter:image" content={need.imageUrl} />
-                        <meta property="twitter:card" content="summary_large_image" />
-                    </>
-                )}
-                <script type="application/ld+json">
-                    {JSON.stringify({
-                        "@context": "https://schema.org",
-                        "@type": "SpecialAnnouncement",
-                        "name": need.title,
-                        "text": need.description,
-                        "datePosted": need.created_at,
-                        "category": need.category,
-                        "author": {
-                            "@type": "Person",
-                            "name": need.author,
-                            "url": `${window.location.origin}/${need.authorUsername}`
-                        }
-                    })}
-                </script>
-            </Helmet>
-
+    // The right-panel content (shared between layouts)
+    const rightPanelContent = (
+        <>
+            {/* Modals */}
             <ReplyModal
                 isOpen={isReplyModalOpen}
                 onClose={handleModalClose}
@@ -391,11 +356,10 @@ export const NeedDetailPage = () => {
                 isOpen={isEndorseModalOpen}
                 onClose={() => setIsEndorseModalOpen(false)}
                 need={needToEndorse}
-                onSuccess={async () => {
-                    // Refetch if needed, though endorsements are on profile usually
-                }}
+                onSuccess={async () => {}}
             />
 
+            {/* Sticky Header */}
             <header style={{
                 position: 'sticky', top: 0, zIndex: 40,
                 padding: '0.75rem var(--feed-item-padding)', display: 'flex', alignItems: 'center', gap: '1.5rem',
@@ -413,13 +377,14 @@ export const NeedDetailPage = () => {
                 <h2 className="h2" style={{ fontSize: '1.25rem', margin: 0 }}>Thread</h2>
             </header>
 
+            {/* Post Card */}
             <div style={{ padding: '', borderBottom: '1px solid var(--border-glass)' }}>
                 <NeedCard
                     need={need}
                     isFullDetail={true}
                     onEdit={() => setIsEditModalOpen(true)}
                     onMarkMet={() => setIsMarkMetModalOpen(true)}
-                    firstResponseTime={firstResponseTime} // Pass firstResponseTime as a prop
+                    firstResponseTime={firstResponseTime}
                 />
             </div>
 
@@ -514,7 +479,7 @@ export const NeedDetailPage = () => {
                                     setReplyFile(null);
                                 }
                             }} style={{ display: 'none' }} />
-                            
+
                             <button
                                 type="button"
                                 onClick={() => imageInputRef.current?.click()}
@@ -549,6 +514,7 @@ export const NeedDetailPage = () => {
                 </form>
             </div>
 
+            {/* Reply Thread */}
             <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {replyTree.map(reply => (
                     <ReplyItem
@@ -566,6 +532,97 @@ export const NeedDetailPage = () => {
             <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
                 End of thread
             </div>
+        </>
+    );
+
+    // Twitter-style media layout (desktop + has image)
+    if (isMediaLayout) {
+        return (
+            <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: 'var(--bg-base)' }}>
+                <Helmet>
+                    <title>{need.title} | Ineedam</title>
+                    <meta property="og:title" content={`${need.title} | Ineedam`} />
+                    <meta property="og:description" content={need.description} />
+                    {need.imageUrl && <meta property="og:image" content={need.imageUrl} />}
+                </Helmet>
+
+                {/* Left: Image Panel */}
+                <div style={{
+                    flex: '0 0 55%', background: '#000',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    position: 'relative', overflow: 'hidden'
+                }}>
+                    <button
+                        onClick={() => navigate(-1)}
+                        style={{
+                            position: 'absolute', top: '1rem', left: '1rem', zIndex: 10,
+                            padding: '0.5rem', borderRadius: '50%',
+                            background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.15)',
+                            color: 'white', cursor: 'pointer'
+                        }}
+                        className="nav-link-hover"
+                    >
+                        <ArrowLeft size={20} />
+                    </button>
+                    <ImageLightbox src={need.imageUrl} isOpen={false} onClose={() => {}} />
+                    <img
+                        src={need.imageUrl}
+                        alt={need.title}
+                        style={{
+                            maxWidth: '100%', maxHeight: '100%',
+                            objectFit: 'contain',
+                            cursor: 'zoom-in'
+                        }}
+                        onClick={() => {/* lightbox via PreviewableImage in NeedCard handles this */}}
+                    />
+                </div>
+
+                {/* Right: Thread Panel */}
+                <div style={{
+                    flex: 1, overflowY: 'auto',
+                    borderLeft: '1px solid var(--border-glass)',
+                    display: 'flex', flexDirection: 'column'
+                }}>
+                    {rightPanelContent}
+                </div>
+            </div>
+        );
+    }
+
+    // Standard stacked layout (mobile or no image)
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <Helmet>
+                <title>{need.title} | Ineedam</title>
+                <meta property="og:title" content={`${need.title} | Ineedam`} />
+                <meta property="og:description" content={need.description} />
+                <meta property="twitter:title" content={`${need.title} | Ineedam`} />
+                <meta property="twitter:description" content={need.description} />
+                {need.imageUrl && (
+                    <>
+                        <meta property="og:image" content={need.imageUrl} />
+                        <meta property="twitter:image" content={need.imageUrl} />
+                        <meta property="twitter:card" content="summary_large_image" />
+                    </>
+                )}
+                <script type="application/ld+json">
+                    {JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "SpecialAnnouncement",
+                        "name": need.title,
+                        "text": need.description,
+                        "datePosted": need.created_at,
+                        "category": need.category,
+                        "author": {
+                            "@type": "Person",
+                            "name": need.author,
+                            "url": `${window.location.origin}/${need.authorUsername}`
+                        }
+                    })}
+                </script>
+            </Helmet>
+            {rightPanelContent}
         </div>
     );
 };
+

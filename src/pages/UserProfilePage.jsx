@@ -31,9 +31,11 @@ import { fetchRepliesByUser, formatTimeAgo, updateReplyStatus } from '../lib/rep
 import { getOrCreateThread } from '../lib/chatService';
 import { fetchBroadcastedNeeds } from '../lib/broadcastService';
 import { fetchEndorsementsForUser } from '../lib/endorsementService';
+import { BlockedAccountsPage } from './BlockedAccountsPage';
 import { checkBlockStatus, blockUser, unblockUser } from '../lib/moderationService';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 import { useProfileCompletion } from '../hooks/useProfileCompletion';
+import { ImageLightbox } from '../components/ImageLightbox';
 
 const ProfileCompletionBannerPrompt = () => {
     const { completionItems, isComplete } = useProfileCompletion();
@@ -91,6 +93,7 @@ export const UserProfilePage = () => {
     });
     const [responseRate, setResponseRate] = useState(null);
     const [shareCopied, setShareCopied] = useState(false);
+    const [lightboxSrc, setLightboxSrc] = useState(null);
 
     const { scrollY } = useScroll();
     // Animate tabs background relative to typical scroll position for profile details
@@ -373,6 +376,7 @@ export const UserProfilePage = () => {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <ImageLightbox src={lightboxSrc} isOpen={!!lightboxSrc} onClose={() => setLightboxSrc(null)} />
             <Helmet>
                 <title>{profile.display_name} (@{profile.username}) | Ineedam</title>
                 <meta name="description" content={profile.bio || `View ${profile.display_name}'s profile on Ineedam. Connecting real needs with real solutions.`} />
@@ -441,11 +445,21 @@ export const UserProfilePage = () => {
                 </div>
             </header>
 
-            {/* Banner */}
+            {/* Banner - clickable if there's a banner image */}
             <div className="profile-banner" style={{
                 background: profile.banner_url ? `url(${profile.banner_url}) center/cover` : 'linear-gradient(135deg, var(--primary), var(--secondary))',
                 position: 'relative'
             }}>
+                {profile.banner_url && (
+                    <button
+                        aria-label="View banner"
+                        onClick={() => setLightboxSrc(profile.banner_url)}
+                        style={{
+                            position: 'absolute', inset: 0, width: '100%', height: '100%',
+                            background: 'transparent', border: 'none', cursor: 'zoom-in'
+                        }}
+                    />
+                )}
                 {/* Profile Completion Prompt (Owner Only) */}
                 {isOwnProfile && <ProfileCompletionBannerPrompt />}
             </div>
@@ -459,8 +473,12 @@ export const UserProfilePage = () => {
                         border: '4px solid var(--bg-base)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontWeight: 'bold', color: 'var(--text-primary)',
-                        overflow: 'hidden'
-                    }}>
+                        overflow: 'hidden',
+                        cursor: profile.avatar_url ? 'zoom-in' : 'default'
+                    }}
+                        onClick={() => profile.avatar_url && setLightboxSrc(profile.avatar_url)}
+                        title={profile.avatar_url ? 'View photo' : undefined}
+                    >
                         {!profile.avatar_url && profile.display_name.charAt(0).toUpperCase()}
                     </div>
 
