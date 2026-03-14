@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSettings } from '../context/SettingsContext';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 import {
     Volume2, VolumeX, Bell, Shield, Moon, Sun, Monitor,
-    ArrowLeft, Trash2, LogOut, Star, UserX
+    ArrowLeft, Trash2, LogOut, Star, UserX, Mail
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useChatSecurity } from '../context/ChatSecurityContext';
@@ -12,11 +13,37 @@ import { ChatPinVerifyModal } from '../components/ChatPinVerifyModal';
 
 export const SettingsPage = () => {
     const { settings, toggleSetting, updateSetting } = useSettings();
-    const { signOut } = useAuth();
+    const { signOut, profile } = useAuth();
     const navigate = useNavigate();
     const { hasPinSetup, clearPin } = useChatSecurity();
     const [isPinSetupModalOpen, setIsPinSetupModalOpen] = useState(false);
     const [isPinVerifyModalOpen, setIsPinVerifyModalOpen] = useState(false);
+    const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(true);
+    const [savingEmailPref, setSavingEmailPref] = useState(false);
+
+    // Sync email notifications preference from profile
+    useEffect(() => {
+        if (profile?.email_notifications_enabled !== undefined) {
+            setEmailNotificationsEnabled(profile.email_notifications_enabled);
+        }
+    }, [profile?.email_notifications_enabled]);
+
+    const handleEmailNotificationsToggle = async () => {
+        const newValue = !emailNotificationsEnabled;
+        setEmailNotificationsEnabled(newValue); // Optimistic update
+        setSavingEmailPref(true);
+        try {
+            await supabase
+                .from('profiles')
+                .update({ email_notifications_enabled: newValue })
+                .eq('id', profile.id);
+        } catch (err) {
+            console.error('Failed to update email notification preference:', err);
+            setEmailNotificationsEnabled(!newValue); // Revert on failure
+        } finally {
+            setSavingEmailPref(false);
+        }
+    };
 
     // Sync state for toggle
     const handlePinToggle = async () => {
@@ -78,6 +105,16 @@ export const SettingsPage = () => {
                     type: 'toggle',
                     icon: <Bell size={20} />,
                     value: settings.pushNotifications
+                },
+                {
+                    id: 'emailNotifications',
+                    label: 'Email Notifications',
+                    description: 'Receive emails about follower activity, replies & endorsements',
+                    type: 'toggle',
+                    icon: <Mail size={20} />,
+                    value: emailNotificationsEnabled,
+                    customToggle: handleEmailNotificationsToggle,
+                    disabled: savingEmailPref
                 }
             ]
         },

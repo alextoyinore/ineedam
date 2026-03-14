@@ -11,9 +11,10 @@ import {
     Truck, Bus, Ship, Wrench, Key, Armchair, Lamp, Utensils, Bed, Flower2, 
     Hammer, Wind, BookOpen, UtensilsCrossed, Scale, HeartPulse, Lock, 
     UserCheck, GraduationCap, Footprints, Watch, Cat, Bone, HeartHandshake, 
-    Book, Smile, UserPlus, Users, Compass, Package, Repeat, Gift
+    Book, Smile, UserPlus, Users, Compass, Package, Repeat, Gift, Trash2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useDrafts } from '../context/DraftsContext';
 import { createNeed, uploadImageToCloudinary, uploadFileToCloudinary } from '../lib/needsService';
 import { CATEGORIES, CATEGORY_GROUPS, getCategoryGroup, getCategoryIcon } from '../data/categories';
 
@@ -36,7 +37,9 @@ const CategoryIcon = ({ iconName, ...props }) => {
 
 export const HomeComposer = () => {
     const { profile } = useAuth();
+    const { drafts, saveDraft, deleteDraft } = useDrafts();
     const [isExpanded, setIsExpanded] = useState(false);
+    const [showDrafts, setShowDrafts] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState('');
     const [imageFile, setImageFile] = useState(null);
@@ -135,12 +138,35 @@ export const HomeComposer = () => {
             setImagePreview('');
             setAttachedFile(null);
             setIsExpanded(false);
+            setShowDrafts(false);
         } catch (err) {
             setSubmitError(err.message || 'Failed to post need. Please try again.');
         } finally {
             setSubmitting(false);
             setUploadingImage(false);
         }
+    };
+
+    const handleSaveDraft = () => {
+        if (!formData.title && !formData.description) return;
+        saveDraft(formData);
+        alert('Draft saved successfully!');
+        setFormData({ 
+            title: '', category: 'General Product', description: '', currency: '$', 
+            budgetMode: 'fixed', budgetMin: '', budgetMax: '', location: '', 
+            flexibility: 'Flexible start', imageUrl: '' 
+        });
+        setImageFile(null);
+        setImagePreview('');
+        setAttachedFile(null);
+        setIsExpanded(false);
+        setShowDrafts(false);
+    };
+
+    const loadDraft = (draft) => {
+        setFormData(draft);
+        setShowDrafts(false);
+        setIsExpanded(true);
     };
 
     const handleChange = (e) => {
@@ -176,6 +202,22 @@ export const HomeComposer = () => {
                 </div>
 
                 <form onSubmit={handleSubmit} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                            {profile?.display_name || profile?.username || 'You'}
+                        </div>
+                        {isExpanded && drafts.length > 0 && (
+                            <button
+                                type="button"
+                                onClick={() => setShowDrafts(!showDrafts)}
+                                style={{ fontSize: '0.75rem', color: 'var(--primary)', background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 600, padding: '2px 8px', borderRadius: '4px' }}
+                                className="nav-link-hover"
+                            >
+                                {showDrafts ? 'Hide Drafts' : `View Drafts (${drafts.length})`}
+                            </button>
+                        )}
+                    </div>
+
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <input
                             type="text"
@@ -197,6 +239,67 @@ export const HomeComposer = () => {
                                 width: '100%'
                             }}
                         />
+
+                        {/* Drafts List */}
+                        <AnimatePresence>
+                            {isExpanded && showDrafts && (
+                                <motion.div
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: 'auto', opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    style={{ 
+                                        overflow: 'hidden', 
+                                        borderBottom: drafts.length > 0 ? '1px solid var(--border-glass)' : 'none',
+                                        background: 'rgba(255, 255, 255, 0.02)',
+                                        borderRadius: '8px',
+                                        margin: '0.5rem 0'
+                                    }}
+                                >
+                                    {drafts.length === 0 ? (
+                                        <div style={{ padding: '1rem', textAlign: 'center', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                                            No drafts saved
+                                        </div>
+                                    ) : (
+                                        <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                                            {drafts.map(draft => (
+                                                <div 
+                                                    key={draft.id} 
+                                                    onClick={() => loadDraft(draft)} 
+                                                    style={{ 
+                                                        display: 'flex', 
+                                                        justifyContent: 'space-between', 
+                                                        alignItems: 'center', 
+                                                        padding: '0.75rem 1rem', 
+                                                        borderBottom: '1px solid var(--border-glass)', 
+                                                        cursor: 'pointer' 
+                                                    }} 
+                                                    className="nav-link-hover"
+                                                >
+                                                    <div style={{ flex: 1 }}>
+                                                        <div style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-primary)' }}>{draft.title || '(Untitled Draft)'}</div>
+                                                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{new Date(draft.savedAt).toLocaleDateString()}</div>
+                                                    </div>
+                                                    <button 
+                                                        onClick={(e) => { e.stopPropagation(); deleteDraft(draft.id); }} 
+                                                        style={{ 
+                                                            color: 'var(--text-muted)', 
+                                                            background: 'none', 
+                                                            border: 'none', 
+                                                            cursor: 'pointer',
+                                                            padding: '4px',
+                                                            borderRadius: '4px'
+                                                        }}
+                                                        className="nav-link-hover"
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                         <AnimatePresence>
                             {isExpanded && (
                                 <motion.div
@@ -417,23 +520,51 @@ export const HomeComposer = () => {
                             </button>
                         </div>
 
-                        <button
-                            type="submit"
-                            disabled={submitting || !formData.title || !formData.description}
-                            className="btn-primary"
-                            style={{
-                                padding: '0.5rem 1.25rem',
-                                borderRadius: '9999px',
-                                height: '36px',
-                                fontSize: '0.9rem',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.4rem'
-                            }}
-                        >
-                            {submitting ? <Loader size={16} className="animate-spin" /> : <Send size={16} />}
-                            <span>{submitting ? 'Posting...' : 'Post'}</span>
-                        </button>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            {isExpanded && (
+                                <button 
+                                    type="button" 
+                                    onClick={handleSaveDraft} 
+                                    disabled={!formData.title && !formData.description} 
+                                    style={{ 
+                                        padding: '0.5rem 1rem', 
+                                        borderRadius: '9999px',
+                                        fontSize: '0.85rem', 
+                                        fontWeight: 600, 
+                                        cursor: 'pointer',
+                                        background: 'rgba(255, 255, 255, 0.05)',
+                                        border: '1px solid var(--border-glass)',
+                                        color: 'var(--text-secondary)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.4rem',
+                                        height: '36px'
+                                    }}
+                                    className="glass-panel-hover"
+                                >
+                                    <Archive size={16} />
+                                    <span>Draft</span>
+                                </button>
+                            )}
+                            
+                            <button
+                                type="submit"
+                                disabled={submitting || !formData.title || !formData.description}
+                                className="btn-primary"
+                                style={{
+                                    padding: '0.5rem 1.25rem',
+                                    borderRadius: '9999px',
+                                    height: '36px',
+                                    fontSize: '0.9rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.4rem'
+                                }}
+                            >
+                                {submitting ? <Loader size={16} className="animate-spin" /> : <Send size={16} />}
+                                <span>{submitting ? 'Posting...' : 'Post'}</span>
+                            </button>
+                        </div>
                     </div>
 
                     {submitError && (

@@ -59,37 +59,47 @@ export const TermsOfServicePage = () => {
                             The Service and its original content (excluding Content provided by users), features, and functionality are and will remain the exclusive property of Ineedam and its licensors. Our trademarks and trade dress may not be used in connection with any product or service without the prior written consent of Ineedam.
                         </p>
                     </section>
+                    
+                    <section>
+                        <h2 className="h2" style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>5. Electronic Communications</h2>
+                        <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                            By creating an account, you agree that we may send you electronic communications, including emails and push notifications, regarding your account activity, updates to the Service, and activities of users you follow (such as new posts, replies, follows, and endorsements).
+                        </p>
+                        <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginTop: '1rem' }}>
+                            You can manage your notification preferences and opt-out of optional communications at any time through your Profile Settings. However, certain essential system notifications cannot be disabled while you maintain an active account.
+                        </p>
+                    </section>
 
                     <section>
-                        <h2 className="h2" style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>5. Termination</h2>
+                        <h2 className="h2" style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>6. Termination</h2>
                         <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                             We may terminate or suspend your account immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms. Upon termination, your right to use the Service will immediately cease.
                         </p>
                     </section>
 
                     <section>
-                        <h2 className="h2" style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>6. Disclaimer of Warranties</h2>
+                        <h2 className="h2" style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>7. Disclaimer of Warranties</h2>
                         <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                             The Service is provided on an "AS IS" and "AS AVAILABLE" basis. Ineedam makes no representations or warranties of any kind, express or implied, as to the operation of the Service, or the information, content, or materials included therein.
                         </p>
                     </section>
 
                     <section>
-                        <h2 className="h2" style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>7. Limitation of Liability</h2>
+                        <h2 className="h2" style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>8. Limitation of Liability</h2>
                         <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                             Ineedam shall not be liable for any indirect, incidental, special, consequential, or punitive damages. We are a connection platform only and are not responsible for any transactions, agreements, or disputes that arise between users offline or outside the platform.
                         </p>
                     </section>
 
                     <section>
-                        <h2 className="h2" style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>8. Governing Law</h2>
+                        <h2 className="h2" style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>9. Governing Law</h2>
                         <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                             These Terms shall be governed and construed in accordance with the laws of the jurisdiction in which the company is registered, without regard to its conflict of law provisions.
                         </p>
                     </section>
 
                     <section style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-glass)', borderRadius: '16px', padding: '1.5rem' }}>
-                        <h2 className="h2" style={{ marginBottom: '0.75rem', fontSize: '1.5rem' }}>9. Contact Us</h2>
+                        <h2 className="h2" style={{ marginBottom: '0.75rem', fontSize: '1.5rem' }}>10. Contact Us</h2>
                         <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                             If you have questions about these Terms, please contact us at{' '}
                             <a href="mailto:support@ineedam.com" style={{ color: 'var(--primary)', fontWeight: 600 }}>support@ineedam.com</a>.
