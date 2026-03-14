@@ -202,11 +202,8 @@ export const HomeComposer = () => {
                 </div>
 
                 <form onSubmit={handleSubmit} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                            {profile?.display_name || profile?.username || 'You'}
-                        </div>
-                        {isExpanded && drafts.length > 0 && (
+                    {isExpanded && drafts.length > 0 && (
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                             <button
                                 type="button"
                                 onClick={() => setShowDrafts(!showDrafts)}
@@ -215,8 +212,8 @@ export const HomeComposer = () => {
                             >
                                 {showDrafts ? 'Hide Drafts' : `View Drafts (${drafts.length})`}
                             </button>
-                        )}
-                    </div>
+                        </div>
+                    )}
 
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <input
@@ -235,7 +232,7 @@ export const HomeComposer = () => {
                                 fontSize: '1.2rem',
                                 fontWeight: 500,
                                 fontFamily: 'inherit',
-                                padding: '0.5rem 0',
+                                padding: '0.1rem 0 0.5rem 0', // Reduced top padding to align with avatar
                                 width: '100%'
                             }}
                         />
