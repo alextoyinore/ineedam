@@ -9,7 +9,7 @@ import { getFollowStats } from '../lib/socialService';
 import { fetchEndorsementsForUser } from '../lib/endorsementService';
 
 export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false, onInviteClick }) => {
-    const { profile, signOut } = useAuth();
+    const { profile, signOut, updateProfile } = useAuth();
     const { isDark } = useTheme();
     const navigate = useNavigate();
     const location = useLocation();
@@ -283,6 +283,50 @@ export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false, onInvit
                                     <span style={{ fontWeight: 500 }}>Rules of Engagement</span>
                                 </div>
                             </div>
+
+                            {/* Newsletter Selection */}
+                            {profile && (
+                                <div style={{
+                                    padding: '1.25rem 1.5rem',
+                                    borderTop: '1px solid var(--border-glass)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between'
+                                }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                        <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)' }}>Premium Newsletter</span>
+                                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>High-value need notifications</span>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => updateProfile({ newsletter_subscribed: !profile?.newsletter_subscribed })}
+                                        style={{
+                                            width: '44px',
+                                            height: '24px',
+                                            borderRadius: '12px',
+                                            background: profile?.newsletter_subscribed ? 'var(--primary)' : 'rgba(255, 255, 255, 0.1)',
+                                            position: 'relative',
+                                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                            cursor: 'pointer',
+                                            padding: 0,
+                                            border: 'none',
+                                            flexShrink: 0
+                                        }}
+                                    >
+                                        <div style={{
+                                            width: '18px',
+                                            height: '18px',
+                                            borderRadius: '50%',
+                                            background: '#fff',
+                                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                                            position: 'absolute',
+                                            top: '3px',
+                                            left: profile?.newsletter_subscribed ? '23px' : '3px',
+                                            transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                                        }} />
+                                    </button>
+                                </div>
+                            )}
 
                         </div>
 

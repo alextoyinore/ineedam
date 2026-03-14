@@ -27,7 +27,7 @@ const CategoryIcon = ({ iconName, ...props }) => {
         Key, Armchair, Lamp, Utensils, Bed, Flower2, Hammer, Wind, BookOpen,
         UtensilsCrossed, Scale, HeartPulse, Lock, UserCheck, GraduationCap,
         Footprints, Watch, Cat, Bone, Search, HeartHandshake, Book, Smile,
-        UserPlus, Users, Compass, Package, Repeat, Gift
+        UserPlus, Compass, Package, Repeat, Gift
     };
     const IconComponent = icons[iconName] || Globe;
     return <IconComponent {...props} />;

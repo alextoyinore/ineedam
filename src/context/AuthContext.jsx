@@ -209,13 +209,30 @@ export const AuthProvider = ({ children }) => {
         return { error };
     };
 
+    const updateProfile = async (updates) => {
+        if (!user) return { error: new Error('No user logged in') };
+        try {
+            const { error } = await supabase
+                .from('profiles')
+                .update(updates)
+                .eq('id', user.id);
+            if (error) throw error;
+            await fetchProfile(user.id); // Refresh local profile state
+            return { error: null };
+        } catch (err) {
+            console.error("Error updating profile:", err);
+            return { error: err };
+        }
+    };
+
     const loading = session === undefined;
 
     return (
         <AuthContext.Provider value={{
             session, user, profile, loading,
             signUp, signIn, signOut, fetchProfile,
-            resendVerification, resetPassword, updatePassword
+            resendVerification, resetPassword, updatePassword,
+            updateProfile
         }}>
             {children}
         </AuthContext.Provider>

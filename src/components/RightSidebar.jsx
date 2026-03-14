@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { 
     Search, UserPlus, TrendingUp, Globe, Code, Laptop, Music, Palette, 
     Trophy, Home, Car, ShoppingBag, Settings, Briefcase, Shirt, PawPrint, 
@@ -12,7 +13,6 @@ import {
     Clock, UserCheck, GraduationCap, Footprints, Watch, Cat, Bone, 
     HeartHandshake, Book, Smile, Compass, Package, Repeat, Gift
 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
 import { useSocial } from '../context/SocialContext';
 import { getSuggestedProfiles } from '../lib/profileService';
 import { getCategoryStats } from '../lib/needsService';
@@ -38,7 +38,7 @@ const CategoryIcon = ({ iconName, ...props }) => {
 };
 
 export const RightSidebar = () => {
-    const { user } = useAuth();
+    const { user, profile, updateProfile } = useAuth();
     const { toggleFollow } = useSocial();
     const [query, setQuery] = useState('');
     const [suggestedUsers, setSuggestedUsers] = useState([]);
@@ -328,6 +328,50 @@ export const RightSidebar = () => {
                         See all →
                     </span>
                 </div> */}
+
+                {/* Newsletter Selection */}
+                {profile && (
+                    <div style={{
+                        padding: '0 1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        marginBottom: '1.25rem'
+                    }}>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)' }}>Ineedam Newsletter</span>
+                            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>High-value need alerts</span>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => updateProfile({ newsletter_subscribed: !profile?.newsletter_subscribed })}
+                            style={{
+                                width: '36px',
+                                height: '20px',
+                                borderRadius: '10px',
+                                background: profile?.newsletter_subscribed ? 'var(--primary)' : 'rgba(255, 255, 255, 0.1)',
+                                position: 'relative',
+                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                cursor: 'pointer',
+                                padding: 0,
+                                border: 'none',
+                                flexShrink: 0
+                            }}
+                        >
+                            <div style={{
+                                width: '14px',
+                                height: '14px',
+                                borderRadius: '50%',
+                                background: '#fff',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                                position: 'absolute',
+                                top: '3px',
+                                left: profile?.newsletter_subscribed ? '19px' : '3px',
+                                transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                            }} />
+                        </button>
+                    </div>
+                )}
 
                 {/* Footer Links */}
                 <div style={{ padding: '0 0 1rem 1rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem 1rem', marginBottom: '2rem' }}>
