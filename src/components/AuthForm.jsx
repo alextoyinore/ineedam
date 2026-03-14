@@ -13,6 +13,7 @@ export const AuthForm = ({ onAuthSuccess, initialTab = 'signin', variant = 'inli
     const [error, setError] = useState('');
     const [successMsg, setSuccessMsg] = useState('');
     const [isUnconfirmed, setIsUnconfirmed] = useState(false);
+    const [subscribeToNewsletter, setSubscribeToNewsletter] = useState(true);
     const { signIn, signUp, resendVerification, resetPassword } = useAuth();
     const { isDark } = useTheme();
     const navigate = useNavigate();
@@ -44,7 +45,9 @@ export const AuthForm = ({ onAuthSuccess, initialTab = 'signin', variant = 'inli
                 navigate('/');
             }
         } else {
-            const { data, error } = await signUp(email, password);
+            const { data, error } = await signUp(email, password, {
+                newsletter_subscribed: subscribeToNewsletter
+            });
             setLoading(false);
             if (error) {
                 setError(error.message);
@@ -270,7 +273,51 @@ export const AuthForm = ({ onAuthSuccess, initialTab = 'signin', variant = 'inli
                 </button>
 
                 {tab === 'signup' && (
-                    <p style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.5, margin: '0.75rem 0 0 0' }}>
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.75rem',
+                        marginTop: '0.15rem',
+                        padding: '0.25rem 0.5rem',
+                        borderRadius: '12px',
+                        cursor: 'pointer'
+                    }} onClick={() => setSubscribeToNewsletter(!subscribeToNewsletter)}>
+                        <button
+                            type="button"
+                            style={{
+                                width: '36px',
+                                height: '20px',
+                                borderRadius: '10px',
+                                background: subscribeToNewsletter ? 'var(--primary)' : 'rgba(255, 255, 255, 0.1)',
+                                position: 'relative',
+                                transition: 'background 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                cursor: 'pointer',
+                                padding: 0,
+                                border: 'none',
+                                flexShrink: 0
+                            }}
+                        >
+                            <div style={{
+                                width: '14px',
+                                height: '14px',
+                                borderRadius: '50%',
+                                background: '#fff',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                                position: 'absolute',
+                                top: '3px',
+                                left: subscribeToNewsletter ? '19px' : '3px',
+                                transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                            }} />
+                        </button>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', userSelect: 'none' }}>
+                            Subscribe to high-value need notifications
+                        </span>
+                    </div>
+                )}
+
+                {tab === 'signup' && (
+                    <p style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.5, margin: '0.25rem 0 0 0' }}>
                         By creating an account, you agree to our{' '}
                         <a href="/terms" style={{ color: 'var(--text-secondary)', textDecoration: 'underline' }}>Terms of Service</a>
                         {' '}and{' '}
@@ -279,7 +326,7 @@ export const AuthForm = ({ onAuthSuccess, initialTab = 'signin', variant = 'inli
                 )}
             </form>
 
-            <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '1.5rem' }}>
+            <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.75rem' }}>
                 {tab === 'forgot' ? (
                     <button
                         type="button"

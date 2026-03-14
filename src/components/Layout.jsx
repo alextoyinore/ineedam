@@ -15,6 +15,7 @@ import { useAuth } from '../context/AuthContext';
 import { useProfileCompletion } from '../hooks/useProfileCompletion';
 import { ProfileCompletionPopup } from './ProfileCompletionPopup';
 import { EditProfileModal } from './EditProfileModal';
+import { CookieBanner } from './CookieBanner';
 
 export const Layout = ({ children }) => {
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
@@ -157,6 +158,8 @@ export const Layout = ({ children }) => {
           localAvatar={profile?.avatar_url}
         />
       )}
+
+      <CookieBanner />
     </div>
   );
 };
