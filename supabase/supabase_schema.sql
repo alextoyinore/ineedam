@@ -17,6 +17,8 @@ create table public.profiles (
   avatar_url text,
   banner_url text,
   bio text,
+  newsletter_subscribed boolean default false,
+  last_seen_at timestamp with time zone,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 

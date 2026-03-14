@@ -297,34 +297,7 @@ export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false, onInvit
                                         <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)' }}>Ineedam Newsletter</span>
                                         <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>High-value need notifications</span>
                                     </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => updateProfile({ newsletter_subscribed: !profile?.newsletter_subscribed })}
-                                        style={{
-                                            width: '44px',
-                                            height: '24px',
-                                            borderRadius: '12px',
-                                            background: profile?.newsletter_subscribed ? 'var(--primary)' : 'rgba(255, 255, 255, 0.1)',
-                                            position: 'relative',
-                                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                            cursor: 'pointer',
-                                            padding: 0,
-                                            border: 'none',
-                                            flexShrink: 0
-                                        }}
-                                    >
-                                        <div style={{
-                                            width: '18px',
-                                            height: '18px',
-                                            borderRadius: '50%',
-                                            background: '#fff',
-                                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                                            position: 'absolute',
-                                            top: '3px',
-                                            left: profile?.newsletter_subscribed ? '23px' : '3px',
-                                            transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-                                        }} />
-                                    </button>
+                                    <MobileNewsletterToggle profile={profile} updateProfile={updateProfile} />
                                 </div>
                             )}
 
@@ -347,5 +320,99 @@ export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false, onInvit
                 </div>
             )}
         </AnimatePresence>
+    );
+};
+
+const MobileNewsletterToggle = ({ profile, updateProfile }) => {
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [localNewsletter, setLocalNewsletter] = useState(profile?.newsletter_subscribed || false);
+    const [showSubscribedFeedback, setShowSubscribedFeedback] = useState(false);
+
+    useEffect(() => {
+        setLocalNewsletter(profile?.newsletter_subscribed || false);
+    }, [profile?.newsletter_subscribed]);
+
+    const handleToggle = async () => {
+        if (isUpdating) return;
+        const newState = !localNewsletter;
+        setLocalNewsletter(newState);
+        setIsUpdating(true);
+
+        if (newState === true) {
+            setShowSubscribedFeedback(true);
+            setTimeout(() => setShowSubscribedFeedback(false), 2000);
+        }
+
+        try {
+            const { error } = await updateProfile({ newsletter_subscribed: newState });
+            if (error) {
+                setLocalNewsletter(!newState);
+                if (newState === true) setShowSubscribedFeedback(false);
+            }
+        } catch (err) {
+            console.error("Error toggling newsletter in drawer:", err);
+            setLocalNewsletter(!newState);
+            if (newState === true) setShowSubscribedFeedback(false);
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.25rem' }}>
+            <button
+                type="button"
+                onClick={handleToggle}
+                disabled={isUpdating}
+                style={{
+                    width: '44px',
+                    height: '24px',
+                    borderRadius: '12px',
+                    background: localNewsletter ? 'var(--primary)' : 'rgba(255, 255, 255, 0.1)',
+                    position: 'relative',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    cursor: isUpdating ? 'wait' : 'pointer',
+                    padding: 0,
+                    border: 'none',
+                    flexShrink: 0,
+                    opacity: isUpdating ? 0.7 : 1
+                }}
+            >
+                <div style={{
+                    width: '18px',
+                    height: '18px',
+                    borderRadius: '50%',
+                    background: '#fff',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                    position: 'absolute',
+                    top: '3px',
+                    left: localNewsletter ? '23px' : '3px',
+                    transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                }}>
+                    {isUpdating && (
+                        <div className="loading-spinner-small" style={{ width: '10px', height: '10px', border: '1px solid var(--primary)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.6s linear infinite' }} />
+                    )}
+                </div>
+            </button>
+            <AnimatePresence>
+                {showSubscribedFeedback && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, transition: { duration: 0.5 } }}
+                        style={{ 
+                            fontSize: '0.75rem', 
+                            fontWeight: 700, 
+                            color: 'var(--primary)'
+                        }}
+                    >
+                        Subscribed!
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
     );
 };

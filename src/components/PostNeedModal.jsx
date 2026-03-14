@@ -459,24 +459,46 @@ export const PostNeedModal = ({ isOpen, onClose }) => {
                                 <button type="button" onClick={() => attachmentInputRef.current?.click()} className="btn-icon" style={{ color: 'var(--primary)', padding: '0.5rem', borderRadius: '50%', background: 'transparent', border: 'none', cursor: 'pointer' }} title="Attach File">
                                     <Paperclip size={20} />
                                 </button>
-                                <button type="button" onClick={handleSaveDraft} disabled={!formData.title && !formData.description} className="btn-icon" style={{ color: 'var(--primary)', padding: '0.5rem', borderRadius: '50%', background: 'transparent', border: 'none', cursor: 'pointer' }} title="Save Draft">
-                                    <Archive size={20} />
-                                </button>
                             </div>
 
-                            <button
-                                type="submit"
-                                className="btn-primary"
-                                disabled={submitting || !formData.title || !formData.description}
-                                style={{
-                                    padding: '0.6rem 1.5rem', borderRadius: '9999px',
-                                    display: 'flex', alignItems: 'center', gap: '0.5rem',
-                                    fontSize: '0.9rem', border: 'none', fontWeight: 600, cursor: 'pointer'
-                                }}
-                            >
-                                {submitting ? <Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Send size={16} />}
-                                <span>{submitting ? 'Posting...' : 'Post Need'}</span>
-                            </button>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <button 
+                                    type="button" 
+                                    onClick={handleSaveDraft} 
+                                    disabled={!formData.title && !formData.description} 
+                                    style={{ 
+                                        padding: '0.5rem 1rem', 
+                                        borderRadius: '9999px',
+                                        fontSize: '0.85rem', 
+                                        fontWeight: 600, 
+                                        cursor: 'pointer',
+                                        background: 'rgba(255, 255, 255, 0.05)',
+                                        border: '1px solid var(--border-glass)',
+                                        color: 'var(--text-secondary)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.4rem'
+                                    }}
+                                    className="glass-panel-hover"
+                                >
+                                    <Archive size={16} />
+                                    <span>Draft</span>
+                                </button>
+
+                                <button
+                                    type="submit"
+                                    className="btn-primary"
+                                    disabled={submitting || !formData.title || !formData.description}
+                                    style={{
+                                        padding: '0.6rem 1.5rem', borderRadius: '9999px',
+                                        display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                        fontSize: '0.9rem', border: 'none', fontWeight: 600, cursor: 'pointer'
+                                    }}
+                                >
+                                    {submitting ? <Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Send size={16} />}
+                                    <span>{submitting ? 'Posting...' : 'Post Need'}</span>
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </motion.div >

@@ -38,16 +38,16 @@ export const LandingPage = () => {
                 <button
                     onClick={() => navigate('/intro')}
                     style={{
-                        display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+                        display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
                         background: 'color-mix(in srgb, var(--primary) 15%, transparent)',
                         color: 'var(--primary)', border: '1px solid color-mix(in srgb, var(--primary) 30%, transparent)',
-                        height: '40px', padding: '0 1rem', borderRadius: '9999px',
-                        fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s'
+                        height: '32px', padding: '0 0.75rem', borderRadius: '9999px',
+                        fontWeight: 600, fontSize: '0.75rem', cursor: 'pointer', transition: 'all 0.2s'
                     }}
                     onMouseOver={(e) => { e.currentTarget.style.background = 'color-mix(in srgb, var(--primary) 25%, transparent)'; }}
                     onMouseOut={(e) => { e.currentTarget.style.background = 'color-mix(in srgb, var(--primary) 15%, transparent)'; }}
                 >
-                    <Play size={16} fill="currentColor" /> Watch Intro
+                    <Play size={14} fill="currentColor" /> Watch Intro
                 </button>
                 <ThemeToggle />
             </div>

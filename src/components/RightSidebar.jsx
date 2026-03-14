@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
@@ -49,7 +50,7 @@ export const RightSidebar = () => {
     const [trendLoading, setTrendLoading] = useState(false);
     const navigate = useNavigate();
 
-    const sidebarRef = React.useRef(null);
+    const sidebarRef = useRef(null);
     const [stickyTop, setStickyTop] = useState(0);
 
     useEffect(() => {
@@ -140,6 +141,45 @@ export const RightSidebar = () => {
     const handleFollow = async (userId) => {
         await toggleFollow(userId);
         setSuggestedUsers(prev => prev.filter(u => u.id !== userId));
+    };
+
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [localNewsletter, setLocalNewsletter] = useState(profile?.newsletter_subscribed || false);
+    const [showSubscribedFeedback, setShowSubscribedFeedback] = useState(false);
+
+    useEffect(() => {
+        setLocalNewsletter(profile?.newsletter_subscribed || false);
+    }, [profile?.newsletter_subscribed]);
+
+    const handleNewsletterToggle = async () => {
+        if (isUpdating) return;
+
+        const newState = !localNewsletter;
+        console.log('[RightSidebar] Newsletter toggle clicked. New state:', newState);
+        setLocalNewsletter(newState); // Optimistic update
+        setIsUpdating(true);
+
+        if (newState === true) {
+            setShowSubscribedFeedback(true);
+            setTimeout(() => setShowSubscribedFeedback(false), 2000);
+        }
+
+        try {
+            const { error } = await updateProfile({ newsletter_subscribed: newState });
+            if (error) {
+                console.error('[RightSidebar] Failed to update newsletter:', error);
+                setLocalNewsletter(!newState); // Revert on error
+                if (newState === true) setShowSubscribedFeedback(false);
+            } else {
+                console.log('[RightSidebar] Newsletter updated successfully');
+            }
+        } catch (err) {
+            console.error('[RightSidebar] Error in newsletter toggle handler:', err);
+            setLocalNewsletter(!newState);
+            if (newState === true) setShowSubscribedFeedback(false);
+        } finally {
+            setIsUpdating(false);
+        }
     };
 
     // Sort trending by engagement for selected timeframe, top 3
@@ -334,42 +374,75 @@ export const RightSidebar = () => {
                     <div style={{
                         padding: '0 1rem',
                         display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
+                        flexDirection: 'column',
+                        gap: '0.25rem',
                         marginBottom: '1.25rem'
                     }}>
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)' }}>Ineedam Newsletter</span>
-                            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>High-value need alerts</span>
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between'
+                        }}>
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)' }}>Ineedam Newsletter</span>
+                                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>High-value need alerts</span>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={handleNewsletterToggle}
+                                disabled={isUpdating}
+                                style={{
+                                    width: '36px',
+                                    height: '20px',
+                                    borderRadius: '10px',
+                                    background: localNewsletter ? 'var(--primary)' : 'rgba(255, 255, 255, 0.1)',
+                                    position: 'relative',
+                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                    cursor: isUpdating ? 'wait' : 'pointer',
+                                    padding: 0,
+                                    border: 'none',
+                                    flexShrink: 0,
+                                    opacity: isUpdating ? 0.7 : 1
+                                }}
+                            >
+                                <div style={{
+                                    width: '14px',
+                                    height: '14px',
+                                    borderRadius: '50%',
+                                    background: '#fff',
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                                    position: 'absolute',
+                                    top: '3px',
+                                    left: localNewsletter ? '19px' : '3px',
+                                    transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}>
+                                    {isUpdating && (
+                                        <div className="loading-spinner-small" style={{ width: '8px', height: '8px', border: '1px solid var(--primary)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.6s linear infinite' }} />
+                                    )}
+                                </div>
+                            </button>
                         </div>
-                        <button
-                            type="button"
-                            onClick={() => updateProfile({ newsletter_subscribed: !profile?.newsletter_subscribed })}
-                            style={{
-                                width: '36px',
-                                height: '20px',
-                                borderRadius: '10px',
-                                background: profile?.newsletter_subscribed ? 'var(--primary)' : 'rgba(255, 255, 255, 0.1)',
-                                position: 'relative',
-                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                cursor: 'pointer',
-                                padding: 0,
-                                border: 'none',
-                                flexShrink: 0
-                            }}
-                        >
-                            <div style={{
-                                width: '14px',
-                                height: '14px',
-                                borderRadius: '50%',
-                                background: '#fff',
-                                boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                                position: 'absolute',
-                                top: '3px',
-                                left: profile?.newsletter_subscribed ? '19px' : '3px',
-                                transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-                            }} />
-                        </button>
+                        
+                        <AnimatePresence>
+                            {showSubscribedFeedback && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, transition: { duration: 0.5 } }}
+                                    style={{ 
+                                        fontSize: '0.7rem', 
+                                        fontWeight: 700, 
+                                        color: 'var(--primary)',
+                                        textAlign: 'right'
+                                    }}
+                                >
+                                    Subscribed!
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
                 )}
 
