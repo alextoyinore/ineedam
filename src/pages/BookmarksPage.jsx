@@ -7,14 +7,17 @@ import { ChatMessageBookmarkCard } from '../components/messages/ChatMessageBookm
 import { useBookmarks } from '../context/BookmarksContext';
 import { useAuth } from '../context/AuthContext';
 import { fetchBookmarkedItems } from '../lib/bookmarkService';
-import { shapeNeed, timeAgo } from '../lib/needsService';
+import { shapeNeed, timeAgo, updateNeed, getNeedById } from '../lib/needsService';
 import { Link } from 'react-router-dom';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
+import { EditNeedModal } from '../components/EditNeedModal';
 
 export const BookmarksPage = () => {
     const { user, profile } = useAuth();
     const { bookmarkedIds } = useBookmarks();
     const [items, setItems] = useState([]);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [selectedNeed, setSelectedNeed] = useState(null);
     const [loading, setLoading] = useState(true);
 
     // UI Pagination State
@@ -70,6 +73,21 @@ export const BookmarksPage = () => {
         loadBookmarkedItems();
     }, [user, bookmarkedIds]); // Re-fetch if user or bookmarks change state
 
+    const handleEditUpdate = async (needId, updates) => {
+        try {
+            await updateNeed(needId, updates);
+            const fullData = await getNeedById(needId);
+            const shaped = { ...shapeNeed(fullData), type: 'need' };
+
+            setItems(prev => prev.map(item => 
+                (item.id === needId && item.type === 'need') ? shaped : item
+            ));
+        } catch (err) {
+            console.error("Failed to update need:", err);
+            throw err;
+        }
+    };
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
 
@@ -101,7 +119,13 @@ export const BookmarksPage = () => {
                             transition={{ duration: 0.2 }}
                         >
                             {item.type === 'need' ? (
-                                <NeedCard need={item} />
+                                <NeedCard 
+                                    need={item} 
+                                    onEdit={item.authorId === user?.id ? (n) => {
+                                        setSelectedNeed(n);
+                                        setIsEditModalOpen(true);
+                                    } : null}
+                                />
                             ) : item.type === 'endorsement' ? (
                                 <EndorsementFeedCard endorsement={item} />
                             ) : (
@@ -132,7 +156,12 @@ export const BookmarksPage = () => {
                     </div>
                 )}
             </div>
-
+            <EditNeedModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                need={selectedNeed}
+                onUpdate={handleEditUpdate}
+            />
         </div>
     );
 };

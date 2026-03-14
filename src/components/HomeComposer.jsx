@@ -1,9 +1,38 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, MapPin, Clock, X, Archive, Image, Loader, Paperclip, FileText, Search } from 'lucide-react';
+import { 
+    Send, MapPin, Clock, X, Archive, Image, Loader, Paperclip, 
+    FileText, Search, Code, Laptop, Music, Palette, Trophy, Home, 
+    Car, ShoppingBag, Settings, Briefcase, Shirt, PawPrint, 
+    Heart, Plane, MoreHorizontal, Globe, Terminal, Smartphone, HelpCircle, 
+    Layout, Shield, BarChart, Cloud, Mouse, Wifi, Guitar, Gamepad2, Tv, 
+    Mic2, GlassWater, Tent, Calendar, Scissors, Camera, PenTool, Sparkles, 
+    Dribbble, Activity, Building, Palmtree, Building2, Mountain, Bike, 
+    Truck, Ship, Wrench, Key, Armchair, Lamp, Utensils, Bed, Flower2, 
+    Hammer, Wind, BookOpen, UtensilsCrossed, Scale, HeartPulse, Lock, 
+    UserCheck, GraduationCap, Footprints, Watch, Cat, Bone, HeartHandshake, 
+    Book, Smile, UserPlus, Users, Compass, Package, Repeat, Gift
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { createNeed, uploadImageToCloudinary, uploadFileToCloudinary } from '../lib/needsService';
-import { CATEGORIES } from '../data/categories';
+import { CATEGORIES, CATEGORY_GROUPS, getCategoryGroup, getCategoryIcon } from '../data/categories';
+
+const CategoryIcon = ({ iconName, ...props }) => {
+    const icons = {
+        Code, Laptop, Music, Palette, Trophy, Home, Car, ShoppingBag,
+        Settings, Briefcase, Shirt, PawPrint, Users, Heart, Plane, MoreHorizontal,
+        Globe, Terminal, Smartphone, HelpCircle, Layout, Shield, BarChart,
+        Cloud, Mouse, Wifi, Guitar, Gamepad2, Tv, Mic2, GlassWater, Tent,
+        Calendar, Scissors, Camera, PenTool, Sparkles, Dribbble, Activity,
+        Building, Palmtree, Building2, Mountain, Bike, Truck, Ship, Wrench,
+        Key, Armchair, Lamp, Utensils, Bed, Flower2, Hammer, Wind, BookOpen,
+        UtensilsCrossed, Scale, HeartPulse, Lock, Clock, UserCheck, GraduationCap,
+        Footprints, Watch, Cat, Bone, Search, HeartHandshake, Book, Smile,
+        UserPlus, Compass, Package, Repeat, Gift
+    };
+    const IconComponent = icons[iconName] || Globe;
+    return <IconComponent {...props} />;
+};
 
 export const HomeComposer = () => {
     const { profile } = useAuth();
@@ -206,7 +235,7 @@ export const HomeComposer = () => {
                                                 style={pillStyles}
                                                 className="glass-panel-hover"
                                             >
-                                                <Archive size={14} />
+                                                <CategoryIcon iconName={getCategoryGroup(formData.category).icon} size={14} />
                                                 <span>{formData.category}</span>
                                             </div>
                                             {showCategoryDropdown && (
@@ -222,22 +251,66 @@ export const HomeComposer = () => {
                                                             style={searchInputStyles}
                                                         />
                                                     </div>
-                                                    <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                                                        {CATEGORIES.filter(cat => cat.toLowerCase().includes(categorySearch.toLowerCase())).map(cat => (
-                                                            <div
-                                                                key={cat}
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    setFormData(prev => ({ ...prev, category: cat }));
-                                                                    setShowCategoryDropdown(false);
-                                                                    setCategorySearch('');
-                                                                }}
-                                                                style={{ padding: '0.6rem 1rem', cursor: 'pointer', fontSize: '0.85rem' }}
-                                                                className="nav-link-hover"
-                                                            >
-                                                                {cat}
-                                                            </div>
-                                                        ))}
+                                                     <div style={{ maxHeight: '250px', overflowY: 'auto' }}>
+                                                        {categorySearch ? (
+                                                            // Flat list for search
+                                                            CATEGORIES.filter(cat => cat.toLowerCase().includes(categorySearch.toLowerCase())).map(cat => (
+                                                                    <div
+                                                                        key={cat}
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setFormData(prev => ({ ...prev, category: cat }));
+                                                                            setShowCategoryDropdown(false);
+                                                                            setCategorySearch('');
+                                                                        }}
+                                                                        style={{ padding: '0.6rem 1rem', cursor: 'pointer', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}
+                                                                        className="nav-link-hover"
+                                                                    >
+                                                                        <CategoryIcon iconName={getCategoryIcon(cat)} size={14} color="var(--text-muted)" />
+                                                                        {cat}
+                                                                    </div>
+                                                            ))
+                                                        ) : (
+                                                            // Hierarchical list for default view
+                                                            CATEGORY_GROUPS.map(group => (
+                                                                <div key={group.name}>
+                                                                    <div style={{
+                                                                        padding: '0.6rem 1rem',
+                                                                        fontSize: '0.75rem',
+                                                                        fontWeight: 700,
+                                                                        color: 'var(--primary)',
+                                                                        textTransform: 'uppercase',
+                                                                        letterSpacing: '0.05em',
+                                                                        background: 'var(--bg-base)',
+                                                                        position: 'sticky',
+                                                                        top: 0,
+                                                                        zIndex: 1,
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        gap: '0.5rem'
+                                                                    }}>
+                                                                        <CategoryIcon iconName={group.icon} size={14} />
+                                                                        {group.name}
+                                                                    </div>
+                                                                    {group.categories.map(cat => (
+                                                                        <div
+                                                                            key={cat}
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                setFormData(prev => ({ ...prev, category: cat }));
+                                                                                setShowCategoryDropdown(false);
+                                                                                setCategorySearch('');
+                                                                            }}
+                                                                            style={{ padding: '0.6rem 1.25rem', cursor: 'pointer', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}
+                                                                            className="nav-link-hover"
+                                                                        >
+                                                                            <CategoryIcon iconName={getCategoryIcon(cat)} size={14} color="var(--text-muted)" />
+                                                                            {cat}
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            ))
+                                                        )}
                                                     </div>
                                                 </div>
                                             )}

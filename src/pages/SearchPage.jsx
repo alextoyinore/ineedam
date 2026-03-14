@@ -6,14 +6,20 @@ import { NeedCard } from '../components/NeedCard';
 import { searchMixedFeed } from '../lib/feedService';
 import { EndorsementFeedCard } from '../components/EndorsementFeedCard';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
+import { EditNeedModal } from '../components/EditNeedModal';
+import { getNeedById, shapeNeed, updateNeed } from '../lib/needsService';
+import { useAuth } from '../context/AuthContext';
 
 export const SearchPage = () => {
+    const { user } = useAuth();
     const [searchParams] = useSearchParams();
     const query = searchParams.get('q') || '';
     const category = searchParams.get('cat') || '';
     const trending = searchParams.get('trend') || '';
 
     const [results, setResults] = useState([]);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [selectedNeed, setSelectedNeed] = useState(null);
     const [loading, setLoading] = useState(true);
     const [showFilters, setShowFilters] = useState(false);
     const [minBudget, setMinBudget] = useState('');
@@ -77,6 +83,21 @@ export const SearchPage = () => {
     }, [query, category, trending, minBudget, maxBudget]);
 
     const lastElementRef = useInfiniteScroll(performSearch, hasMore, loading || loadingMore);
+
+    const handleEditUpdate = async (needId, updates) => {
+        try {
+            await updateNeed(needId, updates);
+            const fullData = await getNeedById(needId);
+            const shaped = { ...shapeNeed(fullData), type: 'need' };
+
+            setResults(prev => prev.map(item => 
+                (item.id === needId && item.type === 'need') ? shaped : item
+            ));
+        } catch (err) {
+            console.error("Failed to update need:", err);
+            throw err;
+        }
+    };
 
     const viewTitle = useMemo(() => {
         if (category) return 'Category';
@@ -185,6 +206,10 @@ export const SearchPage = () => {
                                     <NeedCard
                                         need={item}
                                         broadcastedBy={item.type === 'broadcast' ? item.broadcasted_by : null}
+                                        onEdit={item.authorId === user?.id ? (n) => {
+                                            setSelectedNeed(n);
+                                            setIsEditModalOpen(true);
+                                        } : null}
                                     />
                                 ) : (
                                     <EndorsementFeedCard
@@ -220,6 +245,12 @@ export const SearchPage = () => {
                 )}
             </div>
 
+            <EditNeedModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                need={selectedNeed}
+                onUpdate={handleEditUpdate}
+            />
         </div>
     );
 };

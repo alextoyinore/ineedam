@@ -1,12 +1,45 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, LayoutGrid, ChevronRight, Loader } from 'lucide-react';
+import { ArrowLeft, LayoutGrid, ChevronRight, ChevronDown, Loader } from 'lucide-react';
 import { getCategoryPreviews } from '../lib/needsService';
+import { CATEGORY_GROUPS } from '../data/categories';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+    Code, Laptop, Music, Palette, Trophy, Home, Car, ShoppingBag, 
+    Settings, Briefcase, Shirt, PawPrint, Users, Heart, Plane, MoreHorizontal, 
+    Globe, Terminal, Smartphone, HelpCircle, Layout, Shield, BarChart, 
+    Cloud, Mouse, Wifi, Guitar, Gamepad2, Tv, Mic2, GlassWater, Tent, 
+    Calendar, Scissors, Camera, PenTool, Sparkles, Dribbble, Activity, 
+    Building, Palmtree, Building2, Mountain, Bike, Truck, Ship, Wrench, 
+    Key, Armchair, Lamp, Utensils, Bed, Flower2, Hammer, Wind, BookOpen, 
+    UtensilsCrossed, Scale, HeartPulse, Lock, Clock, UserCheck, GraduationCap, 
+    Footprints, Watch, Cat, Bone, Search, HeartHandshake, Book, Smile, 
+    UserPlus, Users as UserGroup, LifeBuoy, Compass, Package, Repeat, Gift
+} from 'lucide-react';
+import { getCategoryIcon } from '../data/categories';
+
+const CategoryIcon = ({ iconName, ...props }) => {
+    const icons = {
+        Code, Laptop, Music, Palette, Trophy, Home, Car, ShoppingBag,
+        Settings, Briefcase, Shirt, PawPrint, Users, Heart, Plane, MoreHorizontal,
+        Globe, Terminal, Smartphone, HelpCircle, Layout, Shield, BarChart,
+        Cloud, Mouse, Wifi, Guitar, Gamepad2, Tv, Mic2, GlassWater, Tent,
+        Calendar, Scissors, Camera, PenTool, Sparkles, Dribbble, Activity,
+        Building, Palmtree, Building2, Mountain, Bike, Truck, Ship, Wrench,
+        Key, Armchair, Lamp, Utensils, Bed, Flower2, Hammer, Wind, BookOpen,
+        UtensilsCrossed, Scale, HeartPulse, Lock, Clock, UserCheck, GraduationCap,
+        Footprints, Watch, Cat, Bone, Search, HeartHandshake, Book, Smile,
+        UserPlus, UserGroup, LifeBuoy, Compass, Package, Repeat, Gift
+    };
+    const IconComponent = icons[iconName] || Globe;
+    return <IconComponent {...props} />;
+};
 
 export const CategoriesPage = () => {
     const navigate = useNavigate();
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [expandedGroups, setExpandedGroups] = useState({});
 
     useEffect(() => {
         const load = async () => {
@@ -52,53 +85,121 @@ export const CategoriesPage = () => {
                         <Loader size={32} className="animate-spin" />
                     </div>
                 ) : categories.length > 0 ? (
-                    categories.map(({ category, count, latestNeed }, idx) => (
-                        <div
-                            key={category}
-                            onClick={() => navigate(`/search?cat=${encodeURIComponent(category)}`)}
-                            style={{
-                                padding: '1.25rem 1.5rem',
-                                borderBottom: '1px solid var(--border-glass)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                cursor: 'pointer', gap: '1rem'
-                            }}
-                            className="nav-link-hover"
-                        >
-                            {/* Rank badge */}
-                            <div style={{
-                                minWidth: '2.25rem', height: '2.25rem', borderRadius: '50%',
-                                background: idx < 3 ? 'var(--primary)' : 'var(--bg-surface)',
-                                border: '1px solid var(--border-glass)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                fontSize: '0.75rem', fontWeight: 800,
-                                color: idx < 3 ? 'white' : 'var(--text-muted)',
-                                flexShrink: 0
-                            }}>
-                                #{idx + 1}
-                            </div>
+                    CATEGORY_GROUPS.map((group) => {
+                        const groupCategories = categories.filter(c => group.categories.includes(c.category));
+                        if (groupCategories.length === 0) return null;
 
-                            {/* Info */}
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                                <p style={{ margin: 0, fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>
-                                    {category}
-                                </p>
-                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                                    {count} {count === 1 ? 'need' : 'needs'} posted
-                                </span>
-                                {latestNeed && (
-                                    <p style={{
-                                        margin: '0.25rem 0 0 0', fontSize: '0.8rem',
-                                        color: 'var(--text-secondary)',
-                                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
-                                    }}>
-                                        Latest: "{latestNeed.title}" by {latestNeed.author}
-                                    </p>
-                                )}
-                            </div>
+                        const isExpanded = expandedGroups[group.name];
+                        const totalNeeds = groupCategories.reduce((sum, c) => sum + c.count, 0);
 
-                            <ChevronRight size={18} color="var(--text-muted)" style={{ opacity: 0.5, flexShrink: 0 }} />
-                        </div>
-                    ))
+                        return (
+                            <div key={group.name} style={{ borderBottom: '1px solid var(--border-glass)' }}>
+                                <div
+                                    onClick={() => setExpandedGroups(prev => ({ ...prev, [group.name]: !isExpanded }))}
+                                    style={{
+                                        padding: '1.25rem 1.5rem',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                        cursor: 'pointer', background: isExpanded ? 'var(--bg-base)' : 'transparent'
+                                    }}
+                                    className="nav-link-hover"
+                                >
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+                                        <div style={{
+                                            width: '44px', height: '44px', borderRadius: '14px',
+                                            background: 'color-mix(in srgb, var(--primary) 10%, transparent)',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            color: 'var(--primary)'
+                                        }}>
+                                            <CategoryIcon iconName={group.icon} size={22} />
+                                        </div>
+                                        <div>
+                                            <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)' }}>{group.name}</h3>
+                                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{groupCategories.length} subcategories • {totalNeeds} needs</span>
+                                        </div>
+                                    </div>
+                                    {isExpanded ? <ChevronDown size={20} color="var(--text-muted)" /> : <ChevronRight size={20} color="var(--text-muted)" />}
+                                </div>
+
+                                <AnimatePresence>
+                                    {isExpanded && (
+                                        <motion.div
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: 'auto', opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            style={{ overflow: 'hidden', background: 'var(--bg-surface)' }}
+                                        >
+                                            <div style={{
+                                                display: 'grid',
+                                                gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))',
+                                                gap: '0.75rem',
+                                                padding: '0.5rem 1.25rem 1.5rem 1.25rem'
+                                            }}>
+                                                {group.categories.map(category => {
+                                                    const count = categoryStats[category] || 0;
+                                                    const latestNeed = latestNeeds[category];
+                                                    // Only render if the category has needs
+                                                    if (count === 0) return null;
+                                                    return (
+                                                        <div
+                                                            key={category}
+                                                            onClick={() => navigate(`/search?cat=${encodeURIComponent(category)}`)}
+                                                            className="glass-panel-hover"
+                                                            style={{
+                                                                display: 'flex',
+                                                                flexDirection: 'column',
+                                                                gap: '0.75rem',
+                                                                padding: '1.25rem',
+                                                                background: 'var(--bg-surface)',
+                                                                borderRadius: '16px',
+                                                                cursor: 'pointer',
+                                                                height: '100%'
+                                                            }}
+                                                        >
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                                                <div style={{
+                                                                    width: '40px', height: '40px', borderRadius: '12px',
+                                                                    background: 'var(--bg-base)',
+                                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                    color: 'var(--primary)', flexShrink: 0,
+                                                                    border: '1px solid var(--border-glass)'
+                                                                }}>
+                                                                    <CategoryIcon iconName={getCategoryIcon(category)} size={20} />
+                                                                </div>
+                                                                <div style={{ flex: 1, minWidth: 0 }}>
+                                                                    <p style={{ margin: 0, fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>
+                                                                        {category}
+                                                                    </p>
+                                                                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                                                                        {count} {count === 1 ? 'need' : 'needs'} posted
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            {latestNeed && (
+                                                                <div style={{
+                                                                    marginTop: 'auto',
+                                                                    paddingTop: '0.75rem',
+                                                                    borderTop: '1px dashed var(--border-glass)'
+                                                                }}>
+                                                                    <p style={{
+                                                                        margin: 0, fontSize: '0.85rem',
+                                                                        color: 'var(--text-secondary)',
+                                                                        display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+                                                                        overflow: 'hidden'
+                                                                    }}>
+                                                                        Latest: {latestNeed.title}
+                                                                    </p>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        );
+                    })
                 ) : (
                     <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
                         <LayoutGrid size={48} style={{ opacity: 0.3 }} />

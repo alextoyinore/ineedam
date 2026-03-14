@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Loader } from 'lucide-react';
 import { NeedCard } from '../components/NeedCard';
 import { useSocial } from '../context/SocialContext';
@@ -11,14 +11,52 @@ import { useNavigate } from 'react-router-dom';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 import { getSuggestedProfiles } from '../lib/profileService';
 import { useAuth } from '../context/AuthContext';
-import { Users } from 'lucide-react';
+import { Users, LayoutGrid, ChevronRight } from 'lucide-react';
 import { HomeComposer } from '../components/HomeComposer';
+import { getCategoryPreviews } from '../lib/needsService';
+import { CATEGORY_GROUPS } from '../data/categories';
+import { ChevronDown } from 'lucide-react';
+
+import { EditNeedModal } from '../components/EditNeedModal';
+import { getNeedById, updateNeed } from '../lib/needsService';
+import { 
+    Code, Laptop, Music, Palette, Trophy, Home, Car, ShoppingBag, 
+    Settings, Briefcase, Shirt, PawPrint, Heart, Plane, MoreHorizontal, 
+    Globe, Terminal, Smartphone, HelpCircle, Layout, Shield, BarChart, 
+    Cloud, Mouse, Wifi, Guitar, Gamepad2, Tv, Mic2, GlassWater, Tent, 
+    Calendar, Scissors, Camera, PenTool, Sparkles, Dribbble, Activity, 
+    Building, Palmtree, Building2, Mountain, Bike, Truck, Ship, Wrench, 
+    Key, Armchair, Lamp, Utensils, Bed, Flower2, Hammer, Wind, BookOpen, 
+    UtensilsCrossed, Scale, HeartPulse, Lock, Clock, UserCheck, GraduationCap, 
+    Footprints, Watch, Cat, Bone, Search, HeartHandshake, Book, Smile, 
+    UserPlus, Users as UserGroup, LifeBuoy, Compass, Package, Repeat, Gift
+} from 'lucide-react';
+import { getCategoryIcon } from '../data/categories';
+
+const CategoryIcon = ({ iconName, ...props }) => {
+    const icons = {
+        Code, Laptop, Music, Palette, Trophy, Home, Car, ShoppingBag,
+        Settings, Briefcase, Shirt, PawPrint, Heart, Plane, MoreHorizontal,
+        Globe, Terminal, Smartphone, HelpCircle, Layout, Shield, BarChart,
+        Cloud, Mouse, Wifi, Guitar, Gamepad2, Tv, Mic2, GlassWater, Tent,
+        Calendar, Scissors, Camera, PenTool, Sparkles, Dribbble, Activity,
+        Building, Palmtree, Building2, Mountain, Bike, Truck, Ship, Wrench,
+        Key, Armchair, Lamp, Utensils, Bed, Flower2, Hammer, Wind, BookOpen,
+        UtensilsCrossed, Scale, HeartPulse, Lock, Clock, UserCheck, GraduationCap,
+        Footprints, Watch, Cat, Bone, Search, HeartHandshake, Book, Smile,
+        UserPlus, UserGroup, LifeBuoy, Compass, Package, Repeat, Gift, Users
+    };
+    const IconComponent = icons[iconName] || Globe;
+    return <IconComponent {...props} />;
+};
 
 export const ExplorePage = () => {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [feedTab, setFeedTab] = useState('foryou');
     const [items, setItems] = useState([]);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [selectedNeed, setSelectedNeed] = useState(null);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(0);
     const [hasMore, setHasMore] = useState(true);
@@ -29,6 +67,9 @@ export const ExplorePage = () => {
     const [suggestedUsers, setSuggestedUsers] = useState([]);
     const [loadingSuggestions, setLoadingSuggestions] = useState(false);
     const [visibleCommunityCount, setVisibleCommunityCount] = useState(10);
+    const [categories, setCategories] = useState([]);
+    const [loadingCategories, setLoadingCategories] = useState(false);
+    const [expandedGroups, setExpandedGroups] = useState({});
 
     const loadMoreCommunity = useCallback(() => {
         setTimeout(() => {
@@ -97,6 +138,23 @@ export const ExplorePage = () => {
         loadSuggestions();
     }, [user]);
 
+    useEffect(() => {
+        if (feedTab === 'categories' && categories.length === 0) {
+            const load = async () => {
+                setLoadingCategories(true);
+                try {
+                    const data = await getCategoryPreviews();
+                    setCategories(data);
+                } catch (err) {
+                    console.error('Failed to load category previews:', err);
+                } finally {
+                    setLoadingCategories(false);
+                }
+            };
+            load();
+        }
+    }, [feedTab, categories.length]);
+
     const lastElementRef = useInfiniteScroll(loadItems, hasMore, loading || loadingMore);
 
     const visibleCommunityUsers = suggestedUsers.slice(0, visibleCommunityCount);
@@ -161,12 +219,31 @@ export const ExplorePage = () => {
         return true;
     });
 
+    const handleEditUpdate = async (needId, updates) => {
+        try {
+            await updateNeed(needId, updates);
+            const fullData = await getNeedById(needId);
+            const shaped = { ...shapeNeed(fullData), type: 'need' };
+
+            setItems(prev => prev.map(item => 
+                (item.id === needId && item.type === 'need') ? shaped : item
+            ));
+        } catch (err) {
+            console.error("Failed to update need:", err);
+            throw err;
+        }
+    };
+
     const renderItem = (item) => {
         if (item.type === 'need' || item.type === 'broadcast') {
             return (
                 <NeedCard
                     need={item}
                     broadcastedBy={item.type === 'broadcast' ? item.broadcasted_by : null}
+                    onEdit={item.authorId === user?.id ? (n) => {
+                        setSelectedNeed(n);
+                        setIsEditModalOpen(true);
+                    } : null}
                 />
             );
         }
@@ -187,7 +264,7 @@ export const ExplorePage = () => {
             {/* Timeline Header */}
             <header className="sticky-header">
                 <div style={{ display: 'flex' }}>
-                    {['foryou', 'following', 'whotofollow'].map(tab => (
+                    {['foryou', 'following', 'whotofollow', 'categories'].map(tab => (
                         <button
                             key={tab}
                             onClick={() => setFeedTab(tab)}
@@ -200,7 +277,7 @@ export const ExplorePage = () => {
                             }}
                             className="nav-link-hover"
                         >
-                            {tab === 'foryou' ? 'For You' : tab === 'following' ? 'Following' : 'Community'}
+                            {tab === 'foryou' ? 'For You' : tab === 'following' ? 'Following' : tab === 'whotofollow' ? 'Community' : 'Categories'}
                             {feedTab === tab && (
                                 <motion.div
                                     layoutId="activeTab"
@@ -298,6 +375,110 @@ export const ExplorePage = () => {
                             </div>
                         )}
                     </div>
+                ) : feedTab === 'categories' ? (
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        {loadingCategories ? (
+                            <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem', color: 'var(--primary)' }}>
+                                <Loader size={32} className="animate-spin" />
+                            </div>
+                        ) : categories.length > 0 ? (
+                            CATEGORY_GROUPS.map((group) => {
+                                const groupCategories = categories.filter(c => group.categories.includes(c.category));
+                                if (groupCategories.length === 0) return null;
+
+                                const isExpanded = expandedGroups[group.name];
+                                const totalNeeds = groupCategories.reduce((sum, c) => sum + c.count, 0);
+
+                                return (
+                                    <div key={group.name} style={{ borderBottom: '1px solid var(--border-glass)' }}>
+                                        <div
+                                            onClick={() => setExpandedGroups(prev => ({ ...prev, [group.name]: !isExpanded }))}
+                                            style={{
+                                                padding: '1.25rem 1.5rem',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                cursor: 'pointer', background: isExpanded ? 'var(--bg-base)' : 'transparent'
+                                            }}
+                                            className="nav-link-hover"
+                                        >
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                                <div style={{
+                                                    width: '40px', height: '40px', borderRadius: '12px',
+                                                    background: 'color-mix(in srgb, var(--primary) 10%, transparent)',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    color: 'var(--primary)'
+                                                }}>
+                                                    <CategoryIcon iconName={group.icon} size={20} />
+                                                </div>
+                                                <div>
+                                                    <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)' }}>{group.name}</h3>
+                                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{groupCategories.length} subcategories • {totalNeeds} needs</span>
+                                                </div>
+                                            </div>
+                                            {isExpanded ? <ChevronDown size={20} color="var(--text-muted)" /> : <ChevronRight size={20} color="var(--text-muted)" />}
+                                        </div>
+
+                                        <AnimatePresence>
+                                            {isExpanded && (
+                                                <motion.div
+                                                    initial={{ height: 0, opacity: 0 }}
+                                                    animate={{ height: 'auto', opacity: 1 }}
+                                                    exit={{ height: 0, opacity: 0 }}
+                                                    style={{ overflow: 'hidden', background: 'var(--bg-surface)' }}
+                                                >
+                                                    <div style={{
+                                                        display: 'grid',
+                                                        gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))',
+                                                        gap: '0.75rem',
+                                                        padding: '0.75rem 1.5rem 1.5rem 1.5rem'
+                                                    }}>
+                                                        {groupCategories.map(({ category, count, latestNeed }) => (
+                                                            <div
+                                                                key={category}
+                                                                onClick={() => navigate(`/search?cat=${encodeURIComponent(category)}`)}
+                                                                className="glass-panel-hover"
+                                                                style={{
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    gap: '1rem',
+                                                                    padding: '1rem',
+                                                                    background: 'var(--bg-base)',
+                                                                    borderRadius: '12px',
+                                                                    cursor: 'pointer'
+                                                                }}
+                                                            >
+                                                                <div style={{
+                                                                    width: '36px', height: '36px', borderRadius: '10px',
+                                                                    background: 'var(--bg-base)',
+                                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                    color: 'var(--text-secondary)', flexShrink: 0
+                                                                }}>
+                                                                    <CategoryIcon iconName={getCategoryIcon(category)} size={18} />
+                                                                </div>
+                                                                <div style={{ flex: 1, minWidth: 0 }}>
+                                                                    <p style={{ margin: 0, fontWeight: 600, fontSize: '0.95rem', color: 'var(--text-primary)' }}>
+                                                                        {category}
+                                                                    </p>
+                                                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                                                                        {count} {count === 1 ? 'need' : 'needs'}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                                <LayoutGrid size={48} style={{ opacity: 0.3 }} />
+                                <h3 className="h3">No categories yet</h3>
+                                <p>When users post needs, categories will appear here.</p>
+                            </div>
+                        )}
+                    </div>
                 ) : (
                     <>
                         {loading ? (
@@ -339,6 +520,12 @@ export const ExplorePage = () => {
                     </>
                 )}
             </div>
+            <EditNeedModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                need={selectedNeed}
+                onUpdate={handleEditUpdate}
+            />
         </div>
     );
 };

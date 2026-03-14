@@ -63,7 +63,7 @@ export const fetchBroadcastedNeeds = async (userId) => {
                 id, title, description, category, budget_mode, budget_min, budget_max,
                 currency, location, flexibility, image_url, status, created_at,
                 profiles!needs_user_id_fkey (
-                    id, display_name, username, avatar_url, last_seen_at
+                    id, display_name, username, avatar_url, bio, last_seen_at
                 )
             ),
             endorsements (
@@ -120,7 +120,7 @@ export const fetchAllBroadcasts = async (from = 0, to = 9) => {
                 id, title, description, category, budget_mode, budget_min, budget_max,
                 currency, location, flexibility, image_url, status, created_at,
                 profiles!needs_user_id_fkey (
-                    id, display_name, username, avatar_url, last_seen_at
+                    id, display_name, username, avatar_url, bio, last_seen_at
                 )
             ),
             endorsements (

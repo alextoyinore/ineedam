@@ -311,9 +311,16 @@ export const UserProfilePage = () => {
 
     const handleEditUpdate = async (needId, updates) => {
         try {
-            await updateNeed(needId, updates);
-            const needsData = await fetchNeedsByUser(profile.id);
-            setUserNeeds(needsData ? needsData.map(shapeNeed) : []);
+            const updatedRow = await updateNeed(needId, updates);
+            // Re-fetch formatted version from DB to get profiles if needed, 
+            // though for the current user we already have profile data usually.
+            const fullData = await getNeedById(needId);
+            const shaped = { ...shapeNeed(fullData), type: 'need' };
+
+            // Update state in-place to maintain mixed feed (replies, endorsements etc)
+            setUserNeeds(prev => prev.map(item => 
+                (item.id === needId && item.type === 'need') ? shaped : item
+            ));
         } catch (err) {
             console.error("Failed to update need:", err);
             throw err;

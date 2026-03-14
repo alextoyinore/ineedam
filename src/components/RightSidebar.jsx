@@ -1,12 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, UserPlus, TrendingUp } from 'lucide-react';
+import { 
+    Search, UserPlus, TrendingUp, Globe, Code, Laptop, Music, Palette, 
+    Trophy, Home, Car, ShoppingBag, Settings, Briefcase, Shirt, PawPrint, 
+    Users, Heart, Plane, MoreHorizontal, Terminal, Smartphone, HelpCircle, 
+    Layout, Shield, BarChart, Cloud, Mouse, Wifi, Guitar, Gamepad2, Tv, 
+    Mic2, GlassWater, Tent, Calendar, Scissors, Camera, PenTool, Sparkles, 
+    Dribbble, Activity, Building, Palmtree, Building2, Mountain, Bike, 
+    Truck, Ship, Wrench, Key, Armchair, Lamp, Utensils, Bed, Flower2, 
+    Hammer, Wind, BookOpen, UtensilsCrossed, Scale, HeartPulse, Lock, 
+    Clock, UserCheck, GraduationCap, Footprints, Watch, Cat, Bone, 
+    HeartHandshake, Book, Smile, UserPlus as UserAdd, UserGroup, Compass, 
+    Package, Repeat, Gift
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useSocial } from '../context/SocialContext';
 import { getSuggestedProfiles } from '../lib/profileService';
 import { getCategoryStats } from '../lib/needsService';
 import { OnlineBadge } from './OnlineBadge';
 import { ProfileCompletionList } from './ProfileCompletionList';
+import { getCategoryGroup, getCategoryIcon } from '../data/categories';
+
+const CategoryIcon = ({ iconName, ...props }) => {
+    const icons = {
+        Code, Laptop, Music, Palette, Trophy, Home, Car, ShoppingBag,
+        Settings, Briefcase, Shirt, PawPrint, Users, Heart, Plane, MoreHorizontal,
+        Globe, Terminal, Smartphone, HelpCircle, Layout, Shield, BarChart,
+        Cloud, Mouse, Wifi, Guitar, Gamepad2, Tv, Mic2, GlassWater, Tent,
+        Calendar, Scissors, Camera, PenTool, Sparkles, Dribbble, Activity,
+        Building, Palmtree, Building2, Mountain, Bike, Truck, Ship, Wrench,
+        Key, Armchair, Lamp, Utensils, Bed, Flower2, Hammer, Wind, BookOpen,
+        UtensilsCrossed, Scale, HeartPulse, Lock, Clock, UserCheck, GraduationCap,
+        Footprints, Watch, Cat, Bone, Search, HeartHandshake, Book, Smile,
+        UserAdd, UserGroup, Compass, Package, Repeat, Gift
+    };
+    const IconComponent = icons[iconName] || Globe;
+    return <IconComponent {...props} />;
+};
 
 export const RightSidebar = () => {
     const { user } = useAuth();
@@ -196,7 +226,10 @@ export const RightSidebar = () => {
                                 style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem', cursor: 'pointer' }}
                                 className="nav-link-hover"
                             >
-                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Trending in {cat}</span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                    <CategoryIcon iconName={getCategoryIcon(cat)} size={14} color="var(--text-muted)" />
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Trending in {getCategoryGroup(cat).name}</span>
+                                </div>
                                 <p style={{ fontWeight: 600, margin: 0, fontSize: '0.95rem' }}>{cat} Needs</p>
                                 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{count} {count === 1 ? 'need' : 'needs'} posted</span>
                             </div>
