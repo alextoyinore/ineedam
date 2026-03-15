@@ -110,7 +110,7 @@ export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false, onInvit
                         }}
                     >
                         {/* Drawer Header */}
-                        <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border-glass)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ padding: '1.25rem 1rem', borderBottom: '1px solid var(--border-glass)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div
                                 onClick={() => handleNavigation('/')}
                                 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}
@@ -130,7 +130,7 @@ export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false, onInvit
                             {profile && (
                                 <div
                                     onClick={() => handleNavigation(`/${profile.username}`)}
-                                    style={{ padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'flex-start', gap: '1rem', cursor: 'pointer', marginBottom: '1rem' }}
+                                    style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'flex-start', gap: '1rem', cursor: 'pointer', marginBottom: '1rem' }}
                                     className="nav-link-hover"
                                 >
                                     <div style={{
@@ -172,7 +172,7 @@ export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false, onInvit
                             )}
 
                             {/* Search Bar */}
-                            <div style={{ padding: '0.5rem 1.5rem 1rem' }}>
+                            <div style={{ padding: '0.5rem 1rem 1rem' }}>
                                 <form
                                     onSubmit={(e) => {
                                         e.preventDefault();
@@ -208,7 +208,7 @@ export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false, onInvit
                             <div style={{ padding: '0.5rem 0', borderBottom: '1px solid var(--border-glass)' }}>
                                 <div
                                     onClick={() => handleNavigation('/who-to-follow')}
-                                    style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', color: 'var(--text-primary)' }}
+                                    style={{ padding: '1rem 1rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', color: 'var(--text-primary)' }}
                                     className="nav-link-hover"
                                 >
                                     <Users size={20} color="var(--primary)" />
@@ -216,7 +216,7 @@ export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false, onInvit
                                 </div>
                                 <div
                                     onClick={() => handleNavigation('/whats-happening')}
-                                    style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', color: 'var(--text-primary)' }}
+                                    style={{ padding: '1rem 1rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', color: 'var(--text-primary)' }}
                                     className="nav-link-hover"
                                 >
                                     <TrendingUp size={20} color="var(--accent)" />
@@ -228,7 +228,7 @@ export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false, onInvit
                             <div style={{ padding: '0.5rem 0', borderBottom: '1px solid var(--border-glass)' }}>
                                 <div
                                     onClick={() => { onInviteClick(); onClose(); }}
-                                    style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', color: 'var(--text-primary)' }}
+                                    style={{ padding: '1rem 1rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', color: 'var(--text-primary)' }}
                                     className="nav-link-hover"
                                 >
                                     <Share2 size={20} color="var(--primary)" />
@@ -236,7 +236,7 @@ export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false, onInvit
                                 </div>
                                 <div
                                     onClick={() => handleNavigation('/settings')}
-                                    style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', color: 'var(--text-primary)' }}
+                                    style={{ padding: '1rem 1rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', color: 'var(--text-primary)' }}
                                     className="nav-link-hover"
                                 >
                                     <Settings size={20} />
@@ -244,7 +244,7 @@ export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false, onInvit
                                 </div>
                                 <div
                                     onClick={() => handleNavigation('/support')}
-                                    style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', color: 'var(--text-primary)' }}
+                                    style={{ padding: '1rem 1rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', color: 'var(--text-primary)' }}
                                     className="nav-link-hover"
                                 >
                                     <LifeBuoy size={20} color="var(--accent)" />
@@ -252,7 +252,7 @@ export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false, onInvit
                                 </div>
                                 <div
                                     onClick={() => handleNavigation('/how-to-use')}
-                                    style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', color: 'var(--text-primary)' }}
+                                    style={{ padding: '1rem 1rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', color: 'var(--text-primary)' }}
                                     className="nav-link-hover"
                                 >
                                     <HelpCircle size={20} />
@@ -260,7 +260,7 @@ export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false, onInvit
                                 </div>
                                 <div
                                     onClick={() => handleNavigation('/privacy')}
-                                    style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', color: 'var(--text-primary)' }}
+                                    style={{ padding: '1rem 1rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', color: 'var(--text-primary)' }}
                                     className="nav-link-hover"
                                 >
                                     <Shield size={20} />
@@ -268,7 +268,7 @@ export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false, onInvit
                                 </div>
                                 <div
                                     onClick={() => handleNavigation('/terms')}
-                                    style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', color: 'var(--text-primary)' }}
+                                    style={{ padding: '1rem 1rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', color: 'var(--text-primary)' }}
                                     className="nav-link-hover"
                                 >
                                     <FileText size={20} />
@@ -276,7 +276,7 @@ export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false, onInvit
                                 </div>
                                 <div
                                     onClick={() => handleNavigation('/rules')}
-                                    style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', color: 'var(--text-primary)' }}
+                                    style={{ padding: '1rem 1rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', color: 'var(--text-primary)' }}
                                     className="nav-link-hover"
                                 >
                                     <BookOpen size={20} />

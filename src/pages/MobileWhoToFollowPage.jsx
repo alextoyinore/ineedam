@@ -123,7 +123,7 @@ export const MobileWhoToFollowPage = () => {
                 </div>
 
                 {/* Tabs */}
-                <div style={{ display: 'flex', padding: '0 1rem' }}>
+                <div style={{ display: 'flex', padding: '0 var(--feed-item-padding)' }}>
                     <button
                         onClick={() => setActiveTab('suggested')}
                         style={{

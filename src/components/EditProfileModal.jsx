@@ -74,9 +74,26 @@ export const EditProfileModal = ({ isOpen, onClose, currentProfile, onProfileUpd
         setSubmitting(true);
 
         try {
+            // Clean and validate username
+            let cleanUsername = formData.username.trim().toLowerCase().replace(/^@/, '');
+            
+            // If empty or just '@', revert to previous
+            if (!cleanUsername) {
+                cleanUsername = currentProfile.username;
+            }
+
+            // Enforce minimum length (standard 3 chars)
+            if (cleanUsername.length < 3) {
+                setError('Username must be at least 3 characters long.');
+                setSubmitting(false);
+                return;
+            }
+
+            const finalData = { ...formData, username: cleanUsername };
+
             // Check username availability if changed
-            if (formData.username !== currentProfile.username) {
-                const available = await isUsernameAvailable(formData.username, currentProfile.id);
+            if (cleanUsername !== currentProfile.username) {
+                const available = await isUsernameAvailable(cleanUsername, currentProfile.id);
                 if (!available) {
                     setError('This username is already taken. Please choose another.');
                     setSubmitting(false);
@@ -84,7 +101,7 @@ export const EditProfileModal = ({ isOpen, onClose, currentProfile, onProfileUpd
                 }
             }
 
-            const updated = await updateProfile(currentProfile.id, formData);
+            const updated = await updateProfile(currentProfile.id, finalData);
             onProfileUpdate(updated);
             onClose();
         } catch (err) {

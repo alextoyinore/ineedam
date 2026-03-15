@@ -180,7 +180,7 @@ export const HomeComposer = () => {
             className="glass-panel"
             style={{
                 margin: '0',
-                padding: '1rem 1.25rem',
+                padding: '1rem',
                 borderTop: 'none',
                 borderLeft: 'none',
                 borderRight: 'none',

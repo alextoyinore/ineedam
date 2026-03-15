@@ -61,7 +61,7 @@ export const CategoriesPage = () => {
 
             {/* Header */}
             <header className="sticky-header" style={{
-                padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem'
+                padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '1.25rem'
             }}>
                 <button
                     onClick={() => navigate(-1)}
@@ -98,7 +98,7 @@ export const CategoriesPage = () => {
                                 <div
                                     onClick={() => setExpandedGroups(prev => ({ ...prev, [group.name]: !isExpanded }))}
                                     style={{
-                                        padding: '1.25rem 1.5rem',
+                                        padding: '1.25rem 1rem',
                                         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                                         cursor: 'pointer', background: isExpanded ? 'var(--bg-base)' : 'transparent'
                                     }}
@@ -133,7 +133,7 @@ export const CategoriesPage = () => {
                                                 display: 'grid',
                                                 gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))',
                                                 gap: '0.75rem',
-                                                padding: '0.5rem 1.25rem 1.5rem 1.25rem'
+                                                padding: '0.5rem 1rem 1.5rem 1rem'
                                             }}>
                                                 {group.categories.map(category => {
                                                     const count = categoryStats[category] || 0;

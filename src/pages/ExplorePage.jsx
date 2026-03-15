@@ -298,7 +298,7 @@ export const ExplorePage = () => {
                         <div
                             onClick={() => navigate('/who-to-follow')}
                             style={{
-                                padding: '1rem 1.5rem',
+                                padding: '1rem',
                                 borderBottom: '1px solid var(--border-glass)',
                                 color: 'var(--primary)',
                                 fontWeight: 600,
@@ -323,7 +323,7 @@ export const ExplorePage = () => {
                                     key={profile.id}
                                     onClick={() => navigate(`/${profile.username}`)}
                                     style={{
-                                        padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border-glass)',
+                                        padding: '1.25rem 1rem', borderBottom: '1px solid var(--border-glass)',
                                         display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer'
                                     }}
                                     className="nav-link-hover"
@@ -392,7 +392,7 @@ export const ExplorePage = () => {
                                         <div
                                             onClick={() => setExpandedGroups(prev => ({ ...prev, [group.name]: !isExpanded }))}
                                             style={{
-                                                padding: '1.25rem 1.5rem',
+                                                padding: '1.25rem 1rem',
                                                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                                                 cursor: 'pointer', background: isExpanded ? 'var(--bg-base)' : 'transparent'
                                             }}
@@ -427,7 +427,7 @@ export const ExplorePage = () => {
                                                         display: 'grid',
                                                         gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))',
                                                         gap: '0.75rem',
-                                                        padding: '0.75rem 1.5rem 1.5rem 1.5rem'
+                                                        padding: '0.75rem 1rem 1.5rem 1rem'
                                                     }}>
                                                         {groupCategories.map(({ category, count, latestNeed }) => (
                                                             <div

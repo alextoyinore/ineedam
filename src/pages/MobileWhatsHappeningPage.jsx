@@ -28,7 +28,7 @@ export const MobileWhatsHappeningPage = () => {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--bg-base)' }}>
             <header className="sticky-header" style={{
-                padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '1rem',
+                padding: '0.75rem var(--feed-item-padding)', display: 'flex', alignItems: 'center', gap: '1rem',
                 borderBottom: '1px solid var(--border-glass)'
             }}>
                 <button onClick={() => navigate(-1)} style={{ padding: '0.5rem', borderRadius: '50%', background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }}>
@@ -40,7 +40,7 @@ export const MobileWhatsHappeningPage = () => {
             </header>
 
             <div style={{ flex: 1, overflowY: 'auto', padding: '0' }}>
-                <div style={{ padding: '1.5rem 1.5rem 0.5rem 1.5rem' }}>
+                <div style={{ padding: '1.5rem var(--feed-item-padding) 0.5rem var(--feed-item-padding)' }}>
                     <h3 className="h3" style={{ fontSize: '1.1rem', margin: '0 0 0.5rem 0' }}>Trending Categories</h3>
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>Explore what needs people are posting most.</p>
                 </div>
@@ -56,7 +56,7 @@ export const MobileWhatsHappeningPage = () => {
                                 key={cat}
                                 onClick={() => navigate(`/search?cat=${encodeURIComponent(cat)}`)}
                                 style={{
-                                    padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border-glass)',
+                                    padding: '1.25rem var(--feed-item-padding)', borderBottom: '1px solid var(--border-glass)',
                                     display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer'
                                 }}
                                 className="nav-link-hover"

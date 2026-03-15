@@ -48,118 +48,116 @@ export const ChatMessageBookmarkCard = ({ message }) => {
                             Chat Message
                         </span>
                     </div>
-                </div>
-            </div>
 
-            {/* Message Content */}
-            <div style={{ marginLeft: '3.25rem', position: 'relative' }}>
-                <div style={{
-                    padding: '0.5rem .75rem',
-                    borderRadius: '12px',
-                    background: 'var(--bg-base)',
-                    border: '1px solid var(--border-glass)',
-                    fontSize: '0.92rem',
-                    color: 'var(--text-primary)',
-                    lineHeight: 1.5,
-                    marginBottom: '1rem',
-                    position: 'relative'
-                }}>
-                    {message.text && <p style={{ margin: 0 }}>{message.text}</p>}
+                    {/* Message Content - Now part of the same column for alignment */}
+                    <div style={{ marginTop: '0.75rem', marginBottom: '0.25rem' }}>
+                        {message.text && (
+                            <p style={{
+                                margin: 0,
+                                fontSize: '0.95rem',
+                                color: 'var(--text-primary)',
+                                lineHeight: 1.5,
+                                whiteSpace: 'pre-wrap'
+                            }}>
+                                {message.text}
+                            </p>
+                        )}
 
-                    {message.file_url && (
-                        <div style={{ marginTop: message.text ? '0.5rem' : 0 }}>
-                            {isImage ? (
-                                <img
-                                    src={message.file_url}
-                                    alt="attachment"
-                                    style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '8px', objectFit: 'cover' }}
-                                />
-                            ) : (
-                                <div style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.5rem',
-                                    padding: '0.5rem',
-                                    borderRadius: '8px',
-                                    background: 'rgba(99,102,241,0.05)',
-                                    border: '1px solid var(--border-glass)'
-                                }}>
-                                    {isAudio ? <FileText size={18} color="var(--primary)" /> : <FileText size={18} color="var(--primary)" />}
-                                    <span style={{ fontSize: '0.82rem', fontWeight: 500, color: 'var(--text-primary)' }}>
-                                        {isAudio ? 'Voice Note' : 'Attachment'}
-                                    </span>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
+                        {message.file_url && (
+                            <div style={{ marginTop: message.text ? '0.75rem' : 0 }}>
+                                {isImage ? (
+                                    <img
+                                        src={message.file_url}
+                                        alt="attachment"
+                                        style={{ maxWidth: '100%', maxHeight: '300px', borderRadius: '12px', objectFit: 'cover', border: '1px solid var(--border-glass)' }}
+                                    />
+                                ) : (
+                                    <div style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.5rem',
+                                        padding: '0.75rem',
+                                        borderRadius: '12px',
+                                        background: 'var(--bg-base)',
+                                        border: '1px solid var(--border-glass)'
+                                    }}>
+                                        {isAudio ? <FileText size={18} color="var(--primary)" /> : <FileText size={18} color="var(--primary)" />}
+                                        <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+                                            {isAudio ? 'Voice Note' : 'Attachment'}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
 
-                {/* Footer Actions */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <Link
-                        to={`/chat/${message.thread_id}`}
-                        className="btn btn-glass"
-                        style={{
-                            fontSize: '0.75rem',
-                            padding: '0.4rem 0.75rem',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            color: 'var(--primary)',
-                            textDecoration: 'none'
-                        }}
-                    >
-                        View in Conversation
-                        <ArrowRight size={14} />
-                    </Link>
+                    {/* Footer Actions */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <Link
+                            to={`/chat/${message.thread_id}`}
+                            className="btn btn-glass"
+                            style={{
+                                fontSize: '0.75rem',
+                                padding: '0.4rem 0.5rem 0.4rem 0',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                color: 'var(--primary)',
+                                textDecoration: 'none'
+                            }}
+                        >
+                            View in Conversation
+                            <ArrowRight size={14} />
+                        </Link>
 
-                    <button
-                        onClick={async (e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            const shareData = {
-                                title: `ChatMessage from ${message.sender?.display_name}`,
-                                text: message.text,
-                                url: window.location.origin + `/chat/${message.thread_id}`
-                            };
+                        <button
+                            onClick={async (e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                const shareData = {
+                                    title: `ChatMessage from ${message.sender?.display_name}`,
+                                    text: message.text,
+                                    url: window.location.origin + `/chat/${message.thread_id}`
+                                };
 
-                            const doCopy = () => {
-                                navigator.clipboard.writeText(shareData.url);
-                                setShareCopied(true);
-                                setTimeout(() => setShareCopied(false), 2500);
-                            };
+                                const doCopy = () => {
+                                    navigator.clipboard.writeText(shareData.url);
+                                    setShareCopied(true);
+                                    setTimeout(() => setShareCopied(false), 2500);
+                                };
 
-                            if (navigator.share) {
-                                try {
-                                    await navigator.share(shareData);
-                                } catch (err) {
-                                    if (err.name !== 'AbortError') {
-                                        console.error('Share failed', err);
-                                        doCopy();
+                                if (navigator.share) {
+                                    try {
+                                        await navigator.share(shareData);
+                                    } catch (err) {
+                                        if (err.name !== 'AbortError') {
+                                            console.error('Share failed', err);
+                                            doCopy();
+                                        }
                                     }
+                                } else {
+                                    doCopy();
                                 }
-                            } else {
-                                doCopy();
-                            }
-                        }}
-                        className="nav-link-hover"
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.4rem',
-                            color: shareCopied ? '#22c55e' : 'var(--text-muted)',
-                            fontSize: '0.75rem',
-                            background: 'transparent',
-                            cursor: 'pointer',
-                            padding: '0.4rem 0.6rem',
-                            borderRadius: '8px',
-                            transition: 'color 0.2s'
-                        }}
-                        title={shareCopied ? 'Link Copied!' : 'Share'}
-                    >
-                        <Share2 size={14} />
-                        {shareCopied ? 'Link Copied!' : 'Share'}
-                    </button>
+                            }}
+                            className="nav-link-hover"
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.4rem',
+                                color: shareCopied ? '#22c55e' : 'var(--text-muted)',
+                                fontSize: '0.75rem',
+                                background: 'transparent',
+                                cursor: 'pointer',
+                                padding: '0.4rem 0',
+                                borderRadius: '8px',
+                                transition: 'color 0.2s'
+                            }}
+                            title={shareCopied ? 'Link Copied!' : 'Share'}
+                        >
+                            <Share2 size={14} />
+                            {shareCopied ? 'Link Copied!' : 'Share'}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

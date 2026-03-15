@@ -29,6 +29,14 @@ export const AuthForm = ({ onAuthSuccess, initialTab = 'signin', variant = 'inli
         e.preventDefault();
         setError('');
         setSuccessMsg('');
+        
+        // Strict email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            setError('Please enter a valid email address (e.g., user@example.com).');
+            return;
+        }
+
         setLoading(true);
 
         if (tab === 'signin') {
