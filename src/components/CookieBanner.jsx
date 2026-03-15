@@ -51,20 +51,19 @@ export const CookieBanner = () => {
                     <div style={{
                         padding: isMobile ? '1.5rem 1.25rem 2rem' : '1.5rem',
                         borderRadius: isMobile ? '24px 24px 0 0' : '20px',
-                        boxShadow: '0 -10px 40px rgba(0,0,0,0.5)',
+                        boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
                         display: 'flex',
                         flexDirection: 'column',
                         gap: '1.25rem',
-                        background: 'var(--bg-card)', // Solid background
-                        border: isMobile ? 'none' : '1px solid var(--border-glass)',
-                        borderTop: isMobile ? '1px solid var(--border-glass)' : '1px solid var(--border-glass)',
+                        background: 'var(--bg-surface)',
+                        border: '1px solid var(--border-glass)',
                     }}>
                         <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
                             <div style={{
                                 width: '48px',
                                 height: '48px',
                                 borderRadius: '14px',
-                                background: 'rgba(255, 255, 255, 0.05)',
+                                background: 'var(--bg-base)',
                                 border: '1px solid var(--border-glass)',
                                 display: 'flex',
                                 alignItems: 'center',
@@ -131,7 +130,7 @@ export const CookieBanner = () => {
                                     fontSize: '0.95rem',
                                     fontWeight: 600,
                                     borderRadius: '14px',
-                                    background: 'rgba(255, 255, 255, 0.05)',
+                                    background: 'var(--bg-base)',
                                     color: 'var(--text-primary)',
                                     border: '1px solid var(--border-glass)'
                                 }}
