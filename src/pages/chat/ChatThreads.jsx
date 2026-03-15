@@ -17,6 +17,13 @@ export const ChatThreads = ({ isSplitView = false }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [isSearchingLoading, setIsSearchingLoading] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     // Filtered threads for the main list
     const filteredThreads = useMemo(() => {
@@ -64,14 +71,27 @@ export const ChatThreads = ({ isSplitView = false }) => {
     };
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', background: 'var(--bg-base)', width: '100%' }}>
+        <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            background: 'var(--bg-base)', 
+            width: '100%',
+            flex: 1,
+            height: isMobile ? 'auto' : '100%',
+            overflowY: isMobile ? 'visible' : 'auto'
+        }}>
             <header style={{
                 padding: 'var(--feed-item-padding)',
                 borderBottom: '1px solid var(--border-glass)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                background: 'var(--bg-base)',
                 position: 'sticky',
                 top: 'var(--sticky-offset, 0px)',
-                background: 'var(--bg-base)',
-                zIndex: 100
+                zIndex: 100,
+                width: '100%',
+                boxSizing: 'border-box'
             }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                     <h2 className="h2" style={{ fontSize: '1.5rem', margin: 0 }}>Chat</h2>
@@ -133,7 +153,7 @@ export const ChatThreads = ({ isSplitView = false }) => {
                 )}
             </header>
 
-            <div style={{ flex: 1 }}>
+            <div style={{ flex: 1, paddingBottom: 'calc(var(--mobile-nav-height) + 2rem)' }}>
                 {isSearching ? (
                     <div style={{ padding: '1rem' }}>
                         {isSearchingLoading ? (

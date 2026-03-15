@@ -1071,6 +1071,17 @@ textarea::placeholder {
   .social-layout-grid.is-chat-route {
     grid-template-columns: 1fr;
   }
+
+  .social-main-wrapper.is-chat-route:not(.is-chat-detail),
+  .social-main-content.is-chat-route:not(.is-chat-detail) {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .social-main-content.is-chat-route {
+    padding-bottom: 0 !important;
+  }
 }
 
 /* Global Sticky Header Utility */
