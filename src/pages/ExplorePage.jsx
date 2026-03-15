@@ -17,17 +17,17 @@ import { HomeComposer } from '../components/HomeComposer';
 import { EditNeedModal } from '../components/EditNeedModal';
 
 // Icons
-import { 
+import {
     Loader, Users, LayoutGrid, ChevronRight, ChevronDown,
-    Code, Laptop, Music, Palette, Trophy, Home, Car, ShoppingBag, 
-    Settings, Briefcase, Shirt, PawPrint, Heart, Plane, MoreHorizontal, 
-    Globe, Terminal, Smartphone, HelpCircle, Layout, Shield, BarChart, 
-    Cloud, Mouse, Wifi, Guitar, Gamepad2, Tv, Monitor, Mic2, GlassWater, Tent, 
-    Calendar, Scissors, Camera, PenTool, Sparkles, Dribbble, Activity, 
-    Building, Palmtree, Building2, Mountain, Bike, Truck, Bus, Ship, Wrench, 
-    Key, Armchair, Lamp, Utensils, Bed, Flower2, Hammer, Wind, BookOpen, 
-    UtensilsCrossed, Scale, HeartPulse, Lock, Clock, UserCheck, GraduationCap, 
-    Footprints, Watch, Cat, Bone, Search, HeartHandshake, Book, Smile, 
+    Code, Laptop, Music, Palette, Trophy, Home, Car, ShoppingBag,
+    Settings, Briefcase, Shirt, PawPrint, Heart, Plane, MoreHorizontal,
+    Globe, Terminal, Smartphone, HelpCircle, Layout, Shield, BarChart,
+    Cloud, Mouse, Wifi, Guitar, Gamepad2, Tv, Monitor, Mic2, GlassWater, Tent,
+    Calendar, Scissors, Camera, PenTool, Sparkles, Dribbble, Activity,
+    Building, Palmtree, Building2, Mountain, Bike, Truck, Bus, Ship, Wrench,
+    Key, Armchair, Lamp, Utensils, Bed, Flower2, Hammer, Wind, BookOpen,
+    UtensilsCrossed, Scale, HeartPulse, Lock, Clock, UserCheck, GraduationCap,
+    Footprints, Watch, Cat, Bone, Search, HeartHandshake, Book, Smile,
     UserPlus, LifeBuoy, Compass, Package, Repeat, Gift
 } from 'lucide-react';
 
@@ -223,7 +223,7 @@ export const ExplorePage = () => {
             const fullData = await getNeedById(needId);
             const shaped = { ...shapeNeed(fullData), type: 'need' };
 
-            setItems(prev => prev.map(item => 
+            setItems(prev => prev.map(item =>
                 (item.id === needId && item.type === 'need') ? shaped : item
             ));
         } catch (err) {
@@ -267,7 +267,7 @@ export const ExplorePage = () => {
                             key={tab}
                             onClick={() => setFeedTab(tab)}
                             style={{
-                                flex: 1, padding: '1rem', fontWeight: 600, fontSize: '0.95rem',
+                                flex: 1, padding: '1.5rem .9rem', fontWeight: 600, fontSize: '0.95rem',
                                 color: feedTab === tab ? 'var(--text-primary)' : 'var(--text-primary)',
                                 position: 'relative', background: 'transparent', border: 'none', cursor: 'pointer',
                                 transition: 'all 0.2s',
