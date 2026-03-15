@@ -316,7 +316,15 @@ export const NeedDetailPage = () => {
         }
     };
 
-    const isMediaLayout = !isMobile && !!need.imageUrl;
+    if (loading) {
+        return (
+            <div style={{ padding: '4rem', display: 'flex', justifyContent: 'center', color: 'var(--primary)' }}>
+                <Loader size={32} className="animate-spin" />
+            </div>
+        );
+    }
+
+    if (!need) return null;
 
     // The right-panel content (shared between layouts)
     const rightPanelContent = (
@@ -535,61 +543,7 @@ export const NeedDetailPage = () => {
         </>
     );
 
-    // Twitter-style media layout (desktop + has image)
-    if (isMediaLayout) {
-        return (
-            <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: 'var(--bg-base)' }}>
-                <Helmet>
-                    <title>{need.title} | Ineedam</title>
-                    <meta property="og:title" content={`${need.title} | Ineedam`} />
-                    <meta property="og:description" content={need.description} />
-                    {need.imageUrl && <meta property="og:image" content={need.imageUrl} />}
-                </Helmet>
-
-                {/* Left: Image Panel */}
-                <div style={{
-                    flex: '0 0 55%', background: '#000',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    position: 'relative', overflow: 'hidden'
-                }}>
-                    <button
-                        onClick={() => navigate(-1)}
-                        style={{
-                            position: 'absolute', top: '1rem', left: '1rem', zIndex: 10,
-                            padding: '0.5rem', borderRadius: '50%',
-                            background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.15)',
-                            color: 'white', cursor: 'pointer'
-                        }}
-                        className="nav-link-hover"
-                    >
-                        <ArrowLeft size={20} />
-                    </button>
-                    <ImageLightbox src={need.imageUrl} isOpen={false} onClose={() => {}} />
-                    <img
-                        src={need.imageUrl}
-                        alt={need.title}
-                        style={{
-                            maxWidth: '100%', maxHeight: '100%',
-                            objectFit: 'contain',
-                            cursor: 'zoom-in'
-                        }}
-                        onClick={() => {/* lightbox via PreviewableImage in NeedCard handles this */}}
-                    />
-                </div>
-
-                {/* Right: Thread Panel */}
-                <div style={{
-                    flex: 1, overflowY: 'auto',
-                    borderLeft: '1px solid var(--border-glass)',
-                    display: 'flex', flexDirection: 'column'
-                }}>
-                    {rightPanelContent}
-                </div>
-            </div>
-        );
-    }
-
-    // Standard stacked layout (mobile or no image)
+    // Standard stacked layout
     return (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
             <Helmet>

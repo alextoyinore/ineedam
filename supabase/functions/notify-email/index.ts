@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { SmtpClient } from "https://deno.land/x/smtp@v0.7.0/mod.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.21.0";
@@ -26,6 +27,12 @@ serve(async (req: Request) => {
         const referenceId = payloadData.reference_id || payloadData.referenceId;
 
         if (!userId) throw new Error("userId is required");
+
+        // 0. Explicitly skip "like" notifications (keep them in-app only)
+        if (type === "like") {
+            console.log(`Skipping email notification for type: like`);
+            return new Response(JSON.stringify({ success: true, message: "Skipped like notification" }), { status: 200 });
+        }
 
         // Initialise Supabase with service role to access emails
         const supabase = createClient(
