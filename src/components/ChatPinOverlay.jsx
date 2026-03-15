@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Unlock, ShieldAlert, KeyRound, Loader } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Lock, Unlock, ShieldAlert, KeyRound, Loader, X } from 'lucide-react';
 import { useChatSecurity } from '../context/ChatSecurityContext';
 
 export const ChatPinOverlay = ({ children }) => {
@@ -10,6 +11,14 @@ export const ChatPinOverlay = ({ children }) => {
     const [step, setStep] = useState(hasPinSetup ? 'verify' : 'setup-initial');
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 435);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 435);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     // Sync step if hasPinSetup changes loaded from context
     useEffect(() => {
@@ -145,23 +154,69 @@ export const ChatPinOverlay = ({ children }) => {
                 </div>
             </div>
 
-            <div style={{
-                position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
-                zIndex: 50, background: 'var(--bg-base)', backdropFilter: 'blur(12px)',
-                overflow: 'hidden'
-            }}>
+            <div 
+                className={isMobile ? "bottom-sheet-overlay" : ""}
+                style={{
+                    position: isMobile ? 'fixed' : 'absolute', 
+                    inset: 0, 
+                    display: 'flex', 
+                    flexDirection: 'column',
+                    justifyContent: isMobile ? 'flex-end' : 'center',
+                    alignItems: 'center',
+                    zIndex: 1100, 
+                    background: isMobile ? 'rgba(0,0,0,0.5)' : 'var(--bg-base)', 
+                    backdropFilter: 'blur(12px)',
+                    padding: isMobile ? 0 : '1.5rem',
+                    overflow: 'hidden'
+                }}
+            >
                 <div style={{
-                    flex: 1, display: 'flex', flexDirection: 'column',
-                    alignItems: 'center', justifyContent: 'center', padding: '1.5rem'
+                    flex: isMobile ? 'none' : 1, 
+                    display: 'flex', 
+                    flexDirection: 'column',
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    padding: isMobile ? 0 : '1.5rem',
+                    width: '100%'
                 }}>
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                        initial={isMobile ? { y: '100%', opacity: 0 } : { opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
+                        className={isMobile ? "bottom-sheet-content" : ""}
                         style={{
-                            width: '100%', maxWidth: '380px',
-                            display: 'flex', flexDirection: 'column', alignItems: 'center'
+                            width: '100%', maxWidth: isMobile ? 'none' : '380px',
+                            display: 'flex', flexDirection: 'column', alignItems: 'center',
+                            background: 'var(--bg-surface)',
+                            borderRadius: isMobile ? '24px 24px 0 0' : '16px',
+                            padding: isMobile ? '1.5rem 1.5rem 3rem 1.5rem' : '1.5rem',
+                            border: isMobile ? 'none' : '1px solid var(--border-glass)',
+                            boxShadow: isMobile ? '0 -10px 25px -5px rgba(0,0,0,0.3)' : 'none',
+                            position: 'relative'
                         }}
                     >
+                        {isMobile && (
+                            <button
+                                onClick={() => navigate(-1)}
+                                style={{
+                                    position: 'absolute',
+                                    top: '1.25rem',
+                                    right: '1.25rem',
+                                    padding: '0.4rem',
+                                    borderRadius: '50%',
+                                    color: 'var(--text-muted)',
+                                    background: 'transparent',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                    zIndex: 10
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
+                                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+                            >
+                                <X size={20} />
+                            </button>
+                        )}
+
                         <div style={{
 
                             width: '64px', height: '64px', borderRadius: '50%',

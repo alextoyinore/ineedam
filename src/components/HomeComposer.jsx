@@ -1,16 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-    Send, MapPin, Clock, X, Archive, Image, Loader, Paperclip, 
-    FileText, Search, Code, Laptop, Music, Palette, Trophy, Home, 
-    Car, ShoppingBag, Settings, Briefcase, Shirt, PawPrint, 
-    Heart, Plane, MoreHorizontal, Globe, Terminal, Smartphone, HelpCircle, 
+import {
+    Send, MapPin, Clock, X, Archive, Image, Loader, Paperclip,
+    FileText, Search, Code, Laptop, Music, Palette, Trophy, Home,
+    Car, ShoppingBag, Settings, Briefcase, Shirt, PawPrint,
+    Heart, Plane, MoreHorizontal, Globe, Terminal, Smartphone, HelpCircle,
     Layout, Shield, BarChart, Cloud, Mouse, Wifi, Guitar, Gamepad2, Tv, Monitor,
-    Mic2, GlassWater, Tent, Calendar, Scissors, Camera, PenTool, Sparkles, 
-    Dribbble, Activity, Building, Palmtree, Building2, Mountain, Bike, 
-    Truck, Bus, Ship, Wrench, Key, Armchair, Lamp, Utensils, Bed, Flower2, 
-    Hammer, Wind, BookOpen, UtensilsCrossed, Scale, HeartPulse, Lock, 
-    UserCheck, GraduationCap, Footprints, Watch, Cat, Bone, HeartHandshake, 
+    Mic2, GlassWater, Tent, Calendar, Scissors, Camera, PenTool, Sparkles,
+    Dribbble, Activity, Building, Palmtree, Building2, Mountain, Bike,
+    Truck, Bus, Ship, Wrench, Key, Armchair, Lamp, Utensils, Bed, Flower2,
+    Hammer, Wind, BookOpen, UtensilsCrossed, Scale, HeartPulse, Lock,
+    UserCheck, GraduationCap, Footprints, Watch, Cat, Bone, HeartHandshake,
     Book, Smile, UserPlus, Users, Compass, Package, Repeat, Gift, Trash2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -53,6 +53,13 @@ export const HomeComposer = () => {
     const attachmentInputRef = useRef(null);
     const composerRef = useRef(null);
     const categoryRef = useRef(null);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 435);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 435);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const [formData, setFormData] = useState({
         title: '',
@@ -151,10 +158,10 @@ export const HomeComposer = () => {
         if (!formData.title && !formData.description) return;
         saveDraft(formData);
         alert('Draft saved successfully!');
-        setFormData({ 
-            title: '', category: 'General Product', description: '', currency: '$', 
-            budgetMode: 'fixed', budgetMin: '', budgetMax: '', location: '', 
-            flexibility: 'Flexible start', imageUrl: '' 
+        setFormData({
+            title: '', category: 'General Product', description: '', currency: '$',
+            budgetMode: 'fixed', budgetMin: '', budgetMax: '', location: '',
+            flexibility: 'Flexible start', imageUrl: ''
         });
         setImageFile(null);
         setImagePreview('');
@@ -179,8 +186,8 @@ export const HomeComposer = () => {
             ref={composerRef}
             className="glass-panel"
             style={{
-                margin: '0',
-                padding: '1rem',
+                margin: isMobile ? '0' : '0 .5rem',
+                padding: isMobile ? '1rem var(--feed-item-padding)' : '1rem',
                 borderTop: 'none',
                 borderLeft: 'none',
                 borderRight: 'none',
@@ -189,7 +196,7 @@ export const HomeComposer = () => {
             }}
         >
             <div style={{ display: 'flex', gap: '1rem' }}>
-                <div 
+                <div
                     className="avatar-md"
                     style={{
                         borderRadius: '50%', flexShrink: 0,
@@ -244,8 +251,8 @@ export const HomeComposer = () => {
                                     initial={{ height: 0, opacity: 0 }}
                                     animate={{ height: 'auto', opacity: 1 }}
                                     exit={{ height: 0, opacity: 0 }}
-                                    style={{ 
-                                        overflow: 'hidden', 
+                                    style={{
+                                        overflow: 'hidden',
                                         borderBottom: drafts.length > 0 ? '1px solid var(--border-glass)' : 'none',
                                         background: 'rgba(255, 255, 255, 0.02)',
                                         borderRadius: '8px',
@@ -259,29 +266,29 @@ export const HomeComposer = () => {
                                     ) : (
                                         <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
                                             {drafts.map(draft => (
-                                                <div 
-                                                    key={draft.id} 
-                                                    onClick={() => loadDraft(draft)} 
-                                                    style={{ 
-                                                        display: 'flex', 
-                                                        justifyContent: 'space-between', 
-                                                        alignItems: 'center', 
-                                                        padding: '0.75rem 1rem', 
-                                                        borderBottom: '1px solid var(--border-glass)', 
-                                                        cursor: 'pointer' 
-                                                    }} 
+                                                <div
+                                                    key={draft.id}
+                                                    onClick={() => loadDraft(draft)}
+                                                    style={{
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between',
+                                                        alignItems: 'center',
+                                                        padding: '0.75rem 1rem',
+                                                        borderBottom: '1px solid var(--border-glass)',
+                                                        cursor: 'pointer'
+                                                    }}
                                                     className="nav-link-hover"
                                                 >
                                                     <div style={{ flex: 1 }}>
                                                         <div style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-primary)' }}>{draft.title || '(Untitled Draft)'}</div>
                                                         <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{new Date(draft.savedAt).toLocaleDateString()}</div>
                                                     </div>
-                                                    <button 
-                                                        onClick={(e) => { e.stopPropagation(); deleteDraft(draft.id); }} 
-                                                        style={{ 
-                                                            color: 'var(--text-muted)', 
-                                                            background: 'none', 
-                                                            border: 'none', 
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); deleteDraft(draft.id); }}
+                                                        style={{
+                                                            color: 'var(--text-muted)',
+                                                            background: 'none',
+                                                            border: 'none',
                                                             cursor: 'pointer',
                                                             padding: '4px',
                                                             borderRadius: '4px'
@@ -351,24 +358,24 @@ export const HomeComposer = () => {
                                                             style={searchInputStyles}
                                                         />
                                                     </div>
-                                                     <div style={{ maxHeight: '250px', overflowY: 'auto' }}>
+                                                    <div style={{ maxHeight: '250px', overflowY: 'auto' }}>
                                                         {categorySearch ? (
                                                             // Flat list for search
                                                             CATEGORIES.filter(cat => cat.toLowerCase().includes(categorySearch.toLowerCase())).map(cat => (
-                                                                    <div
-                                                                        key={cat}
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            setFormData(prev => ({ ...prev, category: cat }));
-                                                                            setShowCategoryDropdown(false);
-                                                                            setCategorySearch('');
-                                                                        }}
-                                                                        style={{ padding: '0.6rem 1rem', cursor: 'pointer', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}
-                                                                        className="nav-link-hover"
-                                                                    >
-                                                                        <CategoryIcon iconName={getCategoryIcon(cat)} size={14} color="var(--text-muted)" />
-                                                                        {cat}
-                                                                    </div>
+                                                                <div
+                                                                    key={cat}
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        setFormData(prev => ({ ...prev, category: cat }));
+                                                                        setShowCategoryDropdown(false);
+                                                                        setCategorySearch('');
+                                                                    }}
+                                                                    style={{ padding: '0.6rem 1rem', cursor: 'pointer', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}
+                                                                    className="nav-link-hover"
+                                                                >
+                                                                    <CategoryIcon iconName={getCategoryIcon(cat)} size={14} color="var(--text-muted)" />
+                                                                    {cat}
+                                                                </div>
                                                             ))
                                                         ) : (
                                                             // Hierarchical list for default view
@@ -519,15 +526,15 @@ export const HomeComposer = () => {
 
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                             {isExpanded && (
-                                <button 
-                                    type="button" 
-                                    onClick={handleSaveDraft} 
-                                    disabled={!formData.title && !formData.description} 
-                                    style={{ 
-                                        padding: '0.5rem 1rem', 
+                                <button
+                                    type="button"
+                                    onClick={handleSaveDraft}
+                                    disabled={!formData.title && !formData.description}
+                                    style={{
+                                        padding: '0.5rem 1rem',
                                         borderRadius: '9999px',
-                                        fontSize: '0.85rem', 
-                                        fontWeight: 600, 
+                                        fontSize: '0.85rem',
+                                        fontWeight: 600,
                                         cursor: 'pointer',
                                         background: 'rgba(255, 255, 255, 0.05)',
                                         border: '1px solid var(--border-glass)',
@@ -543,7 +550,7 @@ export const HomeComposer = () => {
                                     <span>Draft</span>
                                 </button>
                             )}
-                            
+
                             <button
                                 type="submit"
                                 disabled={submitting || !formData.title || !formData.description}
