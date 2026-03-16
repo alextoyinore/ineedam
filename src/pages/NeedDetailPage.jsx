@@ -67,7 +67,7 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachmen
                             authorBio: reply.profiles?.bio,
                             authorLastSeenAt: reply.profiles?.last_seen_at
                         }}>
-                                <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', cursor: 'pointer' }}>{formatDisplayName(authorName, isMobile)}</span>
+                            <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', cursor: 'pointer' }}>{formatDisplayName(authorName, isMobile)}</span>
                         </ProfileHoverCard>
                         {authorUsername && <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>@{formatUsername(authorUsername, isMobile)}</span>}
                         <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>• {formatTimeAgo(reply.created_at)}</span>
@@ -365,7 +365,7 @@ export const NeedDetailPage = () => {
                 isOpen={isEndorseModalOpen}
                 onClose={() => setIsEndorseModalOpen(false)}
                 need={needToEndorse}
-                onSuccess={async () => {}}
+                onSuccess={async () => { }}
             />
 
             {/* Sticky Header */}
@@ -387,7 +387,7 @@ export const NeedDetailPage = () => {
             </header>
 
             {/* Post Card */}
-            <div style={{ marginLeft: isMobile ? '-0.5rem' : 0, borderBottom: '1px solid var(--border-glass)' }}>
+            <div style={{ marginLeft: isMobile ? '' : 0, borderBottom: '1px solid var(--border-glass)' }}>
                 <NeedCard
                     need={need}
                     isFullDetail={true}
@@ -480,7 +480,7 @@ export const NeedDetailPage = () => {
 
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             <input type="file" ref={fileInputRef} onChange={(e) => { setReplyFile(e.target.files?.[0]); setReplyImage(null); setImagePreview(''); }} style={{ display: 'none' }} />
-                            <input type="file" ref={imageInputRef} accept="image/*" onChange={(e) => { 
+                            <input type="file" ref={imageInputRef} accept="image/*" onChange={(e) => {
                                 const file = e.target.files?.[0];
                                 if (file) {
                                     setReplyImage(file);

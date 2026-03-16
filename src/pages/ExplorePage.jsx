@@ -269,7 +269,7 @@ export const ExplorePage = () => {
                             key={tab}
                             onClick={() => setFeedTab(tab)}
                             style={{
-                                flex: 1, padding: '1.5rem .9rem', fontWeight: 600, fontSize: '0.95rem',
+                                flex: 1, padding: '1.1rem .9rem', fontWeight: 600, fontSize: '0.95rem',
                                 color: feedTab === tab ? 'var(--text-primary)' : 'var(--text-primary)',
                                 position: 'relative', background: 'transparent', border: 'none', cursor: 'pointer',
                                 transition: 'all 0.2s',
@@ -322,57 +322,57 @@ export const ExplorePage = () => {
                         ) : visibleCommunityUsers.length > 0 ? (
                             visibleCommunityUsers.map(profile => (
                                 <React.Fragment key={profile.id}>
-                                <div
-                                    key={profile.id}
-                                    onClick={() => navigate(`/${profile.username}`)}
-                                    style={{
-                                        padding: '1.25rem 1rem', borderBottom: '1px solid var(--border-glass)',
-                                        display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer'
-                                    }}
-                                    className="nav-link-hover"
-                                >
-                                    <div style={{
-                                        width: '48px', height: '48px', borderRadius: '50%', flexShrink: 0,
-                                        background: profile.avatar_url ? `url(${profile.avatar_url}) center/cover` : 'var(--primary)',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'white'
-                                    }}>
-                                        {!profile.avatar_url && profile.display_name?.charAt(0).toUpperCase()}
-                                    </div>
-                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
-                                                <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{profile.display_name}</div>
-                                                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>@{profile.username}</div>
-                                            </div>
-                                        </div>
-                                        {profile.bio && <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.9rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{profile.bio}</p>}
-                                    </div>
-                                    <button
-                                        onClick={async (e) => {
-                                            e.stopPropagation();
-                                            const wasFollowing = isFollowing(profile.id);
-                                            await toggleFollow(profile.id);
-                                            if (!wasFollowing) {
-                                                setFollowedUserId(profile.id);
-                                            } else {
-                                                if (followedUserId === profile.id) setFollowedUserId(null);
-                                            }
+                                    <div
+                                        key={profile.id}
+                                        onClick={() => navigate(`/${profile.username}`)}
+                                        style={{
+                                            padding: '1.25rem 1rem', borderBottom: '1px solid var(--border-glass)',
+                                            display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer'
                                         }}
-                                        className={isFollowing(profile.id) ? "btn btn-secondary" : "btn btn-primary"}
-                                        style={{ padding: '0.5rem 1rem', borderRadius: '9999px', fontSize: '0.85rem', fontWeight: 600, flexShrink: 0 }}
+                                        className="nav-link-hover"
                                     >
-                                        {isFollowing(profile.id) ? 'Following' : 'Follow'}
-                                    </button>
-                                </div>
-                                <AnimatePresence>
-                                    {followedUserId === profile.id && isFollowing(profile.id) && (
-                                        <SuggestedFollows
-                                            onDismiss={() => setFollowedUserId(null)}
-                                            seedUserId={profile.id}
-                                        />
-                                    )}
-                                </AnimatePresence>
-                            </React.Fragment>
+                                        <div style={{
+                                            width: '48px', height: '48px', borderRadius: '50%', flexShrink: 0,
+                                            background: profile.avatar_url ? `url(${profile.avatar_url}) center/cover` : 'var(--primary)',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'white'
+                                        }}>
+                                            {!profile.avatar_url && profile.display_name?.charAt(0).toUpperCase()}
+                                        </div>
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                                                    <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{profile.display_name}</div>
+                                                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>@{profile.username}</div>
+                                                </div>
+                                            </div>
+                                            {profile.bio && <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.9rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{profile.bio}</p>}
+                                        </div>
+                                        <button
+                                            onClick={async (e) => {
+                                                e.stopPropagation();
+                                                const wasFollowing = isFollowing(profile.id);
+                                                await toggleFollow(profile.id);
+                                                if (!wasFollowing) {
+                                                    setFollowedUserId(profile.id);
+                                                } else {
+                                                    if (followedUserId === profile.id) setFollowedUserId(null);
+                                                }
+                                            }}
+                                            className={isFollowing(profile.id) ? "btn btn-secondary" : "btn btn-primary"}
+                                            style={{ padding: '0.5rem 1rem', borderRadius: '9999px', fontSize: '0.85rem', fontWeight: 600, flexShrink: 0 }}
+                                        >
+                                            {isFollowing(profile.id) ? 'Following' : 'Follow'}
+                                        </button>
+                                    </div>
+                                    <AnimatePresence>
+                                        {followedUserId === profile.id && isFollowing(profile.id) && (
+                                            <SuggestedFollows
+                                                onDismiss={() => setFollowedUserId(null)}
+                                                seedUserId={profile.id}
+                                            />
+                                        )}
+                                    </AnimatePresence>
+                                </React.Fragment>
                             ))
                         ) : (
                             <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
