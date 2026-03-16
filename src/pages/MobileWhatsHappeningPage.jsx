@@ -31,7 +31,7 @@ export const MobileWhatsHappeningPage = () => {
                 padding: '0.75rem var(--feed-item-padding)', display: 'flex', alignItems: 'center', gap: '1rem',
                 borderBottom: '1px solid var(--border-glass)'
             }}>
-                <button onClick={() => navigate(-1)} style={{ padding: '0.5rem', borderRadius: '50%', background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }}>
+                <button onClick={() => navigate(-1)} style={{ padding: '0.5rem', borderRadius: '50%', color: 'var(--text-primary)', marginLeft: '-0.5rem' }} className="glass-panel-hover">
                     <ArrowLeft size={24} />
                 </button>
                 <h2 className="h2" style={{ margin: 0, fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

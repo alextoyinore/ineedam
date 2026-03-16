@@ -411,9 +411,10 @@ export const ChatDetail = () => {
                 position: 'sticky',
                 top: 'var(--sticky-offset, 0px)',
                 width: '100%',
-                boxSizing: 'border-box'
+                boxSizing: 'border-box',
+                gap: '1rem'
             }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <button
                         onClick={() => navigate('/chat')}
                         style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '0.5rem', marginLeft: '-0.5rem', borderRadius: '50%' }}

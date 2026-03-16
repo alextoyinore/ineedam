@@ -55,12 +55,14 @@ export const BlockedAccountsPage = () => {
         <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
             {/* Header */}
             <header className="sticky-header" style={{
-                padding: '1rem var(--feed-item-padding)', display: 'flex', alignItems: 'center', gap: '1.5rem',
+                padding: '0 var(--feed-item-padding)',
+                height: 'var(--mobile-header-height)',
+                display: 'flex', alignItems: 'center', gap: '0.5rem',
                 borderBottom: '1px solid var(--border-glass)'
             }}>
                 <button
                     onClick={() => navigate(-1)}
-                    style={{ padding: '0.5rem', borderRadius: '50%', color: 'var(--text-primary)' }}
+                    style={{ padding: '0.5rem', borderRadius: '50%', color: 'var(--text-primary)', marginLeft: '-0.5rem' }}
                     className="glass-panel-hover"
                 >
                     <ArrowLeft size={20} />

@@ -93,7 +93,7 @@ export const ChatThreads = ({ isSplitView = false }) => {
                 width: '100%',
                 boxSizing: 'border-box'
             }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '1rem' }}>
                     <h2 className="h2" style={{ fontSize: '1.5rem', margin: 0 }}>Chat</h2>
                     <button
                         onClick={() => setIsSearching(true)}

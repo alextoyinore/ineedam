@@ -28,17 +28,10 @@ export const PremiumPage = () => {
         <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: 'var(--bg-base)' }}>
             {/* Header */}
             <header className="sticky-header" style={{
-                padding: '0.75rem 1.5rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '1.5rem',
-                borderBottom: '1px solid var(--border-glass)'
+                padding: '0 var(--feed-item-padding)', height: 'var(--mobile-header-height)',
+                display: 'flex', alignItems: 'center', gap: '0.5rem'
             }}>
-                <button
-                    onClick={() => navigate(-1)}
-                    style={{ padding: '0.5rem', borderRadius: '50%', color: 'var(--text-primary)' }}
-                    className="glass-panel-hover"
-                >
+                <button onClick={() => navigate(-1)} style={{ padding: '0.5rem', borderRadius: '50%', color: 'var(--text-primary)', marginLeft: '-0.5rem' }} className="glass-panel-hover">
                     <ArrowLeft size={20} />
                 </button>
                 <h2 className="h2" style={{ fontSize: '1.25rem', margin: 0 }}>iNeedAm Premium</h2>

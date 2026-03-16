@@ -16,6 +16,7 @@ import { EndorsementFeedCard } from '../components/EndorsementFeedCard';
 import { ReportModal } from '../components/ReportModal';
 import { MentionText } from '../components/MentionText';
 import { OnlineBadge } from '../components/OnlineBadge';
+import { SuggestedFollows } from '../components/SuggestedFollows';
 import { Helmet } from 'react-helmet-async';
 
 import { useSocial } from '../context/SocialContext';
@@ -76,6 +77,7 @@ export const UserProfilePage = () => {
     const [activeTab, setActiveTab] = useState('needs');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [blockStatus, setBlockStatus] = useState({ hasBlocked: false, isBlockedBy: false });
+    const [showSuggestions, setShowSuggestions] = useState(false);
 
     // Data State
     const [userNeeds, setUserNeeds] = useState([]);
@@ -432,9 +434,9 @@ export const UserProfilePage = () => {
                 height: 'var(--profile-header-height)',
                 top: 'var(--sticky-offset, 0px)',
                 zIndex: 1000,
-                padding: '0 var(--feed-item-padding)', display: 'flex', alignItems: 'center', gap: '1.5rem'
+                padding: '0 var(--feed-item-padding)', display: 'flex', alignItems: 'center', gap: '0.5rem'
             }}>
-                <button onClick={() => navigate(-1)} style={{ padding: '0.5rem', borderRadius: '50%', color: 'var(--text-primary)' }} className="glass-panel-hover">
+                <button onClick={() => navigate(-1)} style={{ padding: '0.5rem', borderRadius: '50%', color: 'var(--text-primary)', marginLeft: '-0.5rem' }} className="glass-panel-hover">
                     <ArrowLeft size={20} />
                 </button>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
@@ -561,7 +563,15 @@ export const UserProfilePage = () => {
                                     <Mail size={20} />
                                 </button>
                                 <button
-                                    onClick={() => toggleFollow(profile.id)}
+                                    onClick={async () => {
+                                        const wasFollowing = isFollowing;
+                                        await toggleFollow(profile.id);
+                                        if (!wasFollowing) {
+                                            setShowSuggestions(true);
+                                        } else {
+                                            setShowSuggestions(false);
+                                        }
+                                    }}
                                     className={isFollowing ? "btn btn-secondary" : "btn btn-primary"}
                                     style={{ padding: '0.5rem 1.5rem', borderRadius: '9999px', fontWeight: 600, minWidth: '100px' }}
                                 >
@@ -708,6 +718,14 @@ export const UserProfilePage = () => {
                     </div>
                 </div>
             </div>
+            <AnimatePresence>
+                {showSuggestions && !isOwnProfile && isFollowing && (
+                    <SuggestedFollows
+                        onDismiss={() => setShowSuggestions(false)}
+                        seedUserId={profile.id}
+                    />
+                )}
+            </AnimatePresence>
 
             {/* Block Overlays */}
             {

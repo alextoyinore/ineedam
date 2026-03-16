@@ -33,6 +33,7 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachmen
                     padding: '1rem var(--feed-item-padding)',
                     borderBottom: '1px solid var(--border-glass)',
                     display: 'flex', gap: '1rem', alignItems: 'flex-start',
+                    marginLeft: isMobile ? '-0.5rem' : 0
                 }}
             >
                 <ProfileHoverCard userData={{
@@ -66,7 +67,7 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachmen
                             authorBio: reply.profiles?.bio,
                             authorLastSeenAt: reply.profiles?.last_seen_at
                         }}>
-                            <span style={{ fontWeight: 700, color: 'var(--text-primary)', cursor: 'pointer' }}>{formatDisplayName(authorName, isMobile)}</span>
+                                <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', cursor: 'pointer' }}>{formatDisplayName(authorName, isMobile)}</span>
                         </ProfileHoverCard>
                         {authorUsername && <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>@{formatUsername(authorUsername, isMobile)}</span>}
                         <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>• {formatTimeAgo(reply.created_at)}</span>
@@ -370,14 +371,14 @@ export const NeedDetailPage = () => {
             {/* Sticky Header */}
             <header style={{
                 position: 'sticky', top: 0, zIndex: 40,
-                padding: '0.75rem var(--feed-item-padding)', display: 'flex', alignItems: 'center', gap: '1.5rem',
+                padding: '0.75rem var(--feed-item-padding)', display: 'flex', alignItems: 'center', gap: '0.5rem',
                 background: 'var(--bg-surface-glass)', backdropFilter: 'blur(16px)',
                 borderBottom: '1px solid var(--border-glass)'
             }}>
                 <button
                     type="button"
                     onClick={() => navigate(-1)}
-                    style={{ padding: '0.5rem', borderRadius: '50%', color: 'var(--text-primary)', touchAction: 'manipulation', cursor: 'pointer' }}
+                    style={{ padding: '0.5rem', borderRadius: '50%', color: 'var(--text-primary)', touchAction: 'manipulation', cursor: 'pointer', marginLeft: '-0.5rem' }}
                     className="nav-link-hover"
                 >
                     <ArrowLeft size={20} />
@@ -386,7 +387,7 @@ export const NeedDetailPage = () => {
             </header>
 
             {/* Post Card */}
-            <div style={{ padding: '', borderBottom: '1px solid var(--border-glass)' }}>
+            <div style={{ marginLeft: isMobile ? '-0.5rem' : 0, borderBottom: '1px solid var(--border-glass)' }}>
                 <NeedCard
                     need={need}
                     isFullDetail={true}
@@ -460,7 +461,7 @@ export const NeedDetailPage = () => {
                         </div>
                     )}
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-glass)', paddingTop: '0.75rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-glass)', paddingTop: '0.75rem', gap: '1rem' }}>
                         <button
                             type="button"
                             onClick={() => setIsPrivateReply(!isPrivateReply)}

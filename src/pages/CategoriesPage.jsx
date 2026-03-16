@@ -61,11 +61,13 @@ export const CategoriesPage = () => {
 
             {/* Header */}
             <header className="sticky-header" style={{
-                padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '1.25rem'
+                padding: '0 var(--feed-item-padding)',
+                height: 'var(--mobile-header-height)',
+                display: 'flex', alignItems: 'center', gap: '0.5rem'
             }}>
                 <button
                     onClick={() => navigate(-1)}
-                    style={{ padding: '0.5rem', borderRadius: '50%', background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }}
+                    style={{ padding: '0.5rem', borderRadius: '50%', color: 'var(--text-primary)', marginLeft: '-0.5rem' }}
                     className="glass-panel-hover"
                 >
                     <ArrowLeft size={20} />

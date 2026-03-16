@@ -204,14 +204,14 @@ export const SettingsPage = () => {
             />
             {/* Sticky Header — matches UserProfilePage & NeedDetailPage */}
             <header className="sticky-header" style={{
-                padding: '0.75rem 1.5rem',
+                padding: '0.75rem var(--feed-item-padding)',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '1.5rem'
+                gap: '0.5rem'
             }}>
                 <button
                     onClick={() => navigate(-1)}
-                    style={{ padding: '0.5rem', borderRadius: '50%', color: 'var(--text-primary)' }}
+                    style={{ padding: '0.5rem', borderRadius: '50%', color: 'var(--text-primary)', marginLeft: '-0.5rem' }}
                     className="glass-panel-hover"
                 >
                     <ArrowLeft size={20} />
