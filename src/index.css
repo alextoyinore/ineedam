@@ -689,6 +689,25 @@ textarea::placeholder {
   border: 1px solid var(--border-glass);
 }
 
+.modal-content-social.is-compact {
+  max-width: 380px !important;
+  height: auto !important;
+  max-height: 90vh !important;
+  border-radius: 16px !important;
+  margin: auto !important;
+}
+
+@media (max-width: 435px) {
+  .modal-content-social.is-compact {
+    max-width: 100% !important;
+    border-radius: 24px 24px 0 0 !important;
+    margin: 0 !important;
+    height: auto !important;
+    max-height: 85dvh !important;
+    padding-top: 0.5rem !important;
+  }
+}
+
 @media (max-width: 1280px) {
   .modal-overlay-social {
     left: var(--sidebar-width);

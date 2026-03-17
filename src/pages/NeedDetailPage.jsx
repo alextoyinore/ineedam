@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Send, Loader, Lock, Globe, MessageSquare, Archive, Paperclip, FileText, Download, X, Image } from 'lucide-react';
@@ -38,7 +38,7 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachmen
                     padding: '1rem var(--feed-item-padding)',
                     borderBottom: '1px solid var(--border-glass)',
                     display: 'flex', gap: '1rem', alignItems: 'flex-start',
-                    marginLeft: isMobile ? '-0.5rem' : 0
+                    marginLeft: isMobile ? '' : 0
                 }}
             >
                 <ProfileHoverCard userData={{
@@ -163,8 +163,10 @@ export const NeedDetailPage = () => {
     const [replyImage, setReplyImage] = useState(null);
     const [imagePreview, setImagePreview] = useState('');
     const [uploadingFile, setUploadingFile] = useState(false);
-    const fileInputRef = React.useRef(null);
-    const imageInputRef = React.useRef(null);
+    const fileInputRef = useRef(null);
+    const imageInputRef = useRef(null);
+    const replyComposerRef = useRef(null);
+    const [isReplyExpanded, setIsReplyExpanded] = useState(false);
 
     const [need, setNeed] = useState(null);
     const [replies, setReplies] = useState([]);
@@ -191,6 +193,19 @@ export const NeedDetailPage = () => {
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (replyComposerRef.current && !replyComposerRef.current.contains(e.target)) {
+                // Only collapse if the form is empty
+                if (!replyText.trim() && !imagePreview && !replyFile) {
+                    setIsReplyExpanded(false);
+                }
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [replyText, imagePreview, replyFile]);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -413,169 +428,230 @@ export const NeedDetailPage = () => {
             </div>
 
             {/* Main Reply Box */}
-            <div style={{ display: 'flex', gap: '1rem', padding: 'var(--feed-item-padding)', borderBottom: '1px solid var(--border-glass)', background: 'var(--bg-base)' }}>
-                <div style={{ flexShrink: 0 }}>
-                    <div className="avatar-md" style={{
-                        borderRadius: '50%',
-                        background: profile?.avatar_url ? `url(${profile.avatar_url}) center/cover` : 'linear-gradient(135deg, var(--primary), var(--secondary))',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontWeight: 'bold', color: 'white', overflow: 'hidden'
-                    }}>
-                        {!profile?.avatar_url && (profile?.display_name?.charAt(0) || user?.email?.charAt(0).toUpperCase() || 'A')}
-                    </div>
-                </div>
-                <form style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.75rem', minWidth: 0 }} onSubmit={handleSubmitReply}>
-                    <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                        Replying to <span style={{ color: 'var(--primary)', fontWeight: 600 }}>@{formatUsername(need.authorUsername || 'author', isMobile)}</span>
+            <div
+                ref={replyComposerRef}
+                style={{
+                    padding: 'var(--feed-item-padding)',
+                    borderBottom: '1px solid var(--border-glass)',
+                    background: 'var(--bg-base)',
+                    transition: 'all 0.3s ease'
+                }}
+            >
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <div style={{ flexShrink: 0 }}>
+                        <ProfileHoverCard userData={{
+                            id: user?.id,
+                            author: profile?.display_name,
+                            authorUsername: profile?.username,
+                            authorAvatar: profile?.avatar_url,
+                            authorBio: profile?.bio,
+                            authorLastSeenAt: new Date().toISOString(),
+                            kycStatus: profile?.kyc_status
+                        }}>
+                            <div className="avatar-md" style={{
+                                borderRadius: '50%',
+                                background: profile?.avatar_url ? `url(${profile.avatar_url}) center/cover` : 'linear-gradient(135deg, var(--primary), var(--secondary))',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                fontWeight: 'bold', color: 'white', overflow: 'hidden',
+                                flexShrink: 0,
+                                position: 'relative'
+                            }}>
+                                {!profile?.avatar_url && (profile?.display_name?.charAt(0) || user?.email?.charAt(0).toUpperCase() || 'A')}
+                                <div style={{ position: 'absolute', bottom: '0', right: '0' }}>
+                                    <OnlineBadge lastSeenAt={new Date().toISOString()} size="12px" />
+                                </div>
+                            </div>
+                        </ProfileHoverCard>
                     </div>
 
-                    {/* Quick Responses */}
-                    <div style={{ 
-                        display: 'flex', 
-                        gap: '0.5rem', 
-                        overflowX: 'auto', 
-                        paddingBottom: '0.25rem',
-                        marginTop: '0.25rem',
-                        maxWidth: '100%',
-                        flexShrink: 0
-                    }} className="no-scrollbar">
-                        {[
-                            { label: "I can help", text: "I can help with this!" },
-                            { label: "More details", text: "Could you provide more details?" },
-                            { label: "Interested", text: "Interested, tell me more." },
-                            { label: "Referral", text: "I know someone who can help!" }
-                        ].map((resp, i) => (
-                            <button
-                                key={i}
-                                type="button"
-                                onClick={() => setReplyText(prev => prev ? prev + ' ' + resp.text : resp.text)}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                        {!isReplyExpanded ? (
+                            <div
+                                onClick={() => setIsReplyExpanded(true)}
                                 style={{
-                                    padding: '0.4rem 0.8rem',
-                                    borderRadius: '9999px',
-                                    fontSize: '0.8rem',
+                                    padding: '0.75rem 1.25rem',
                                     background: 'var(--bg-surface)',
                                     border: '1px solid var(--border-glass)',
-                                    color: 'var(--text-secondary)',
-                                    whiteSpace: 'nowrap',
+                                    borderRadius: '24px',
+                                    color: 'var(--text-muted)',
                                     cursor: 'pointer',
-                                    fontWeight: 600,
-                                    transition: 'all 0.2s'
+                                    fontSize: '0.95rem',
+                                    display: 'flex',
+                                    alignItems: 'center'
                                 }}
                                 className="glass-panel-hover"
                             >
-                                {resp.label}
-                            </button>
-                        ))}
-                    </div>
-
-                    <textarea
-                        disabled={!user || submittingReply}
-                        value={replyText}
-                        onChange={(e) => setReplyText(e.target.value)}
-                        placeholder="Post your reply or proposal..."
-                        className="need-description"
-                        style={{
-                            width: '100%',
-                            background: 'transparent',
-                            border: 'none',
-                            color: 'var(--text-primary)',
-                            outline: 'none',
-                            resize: 'vertical',
-                            minHeight: '80px',
-                            fontFamily: 'var(--font-family)',
-                            fontSize: '1rem',
-                            lineHeight: 1.5
-                        }}
-                    />
-
-                    {/* Media Previews */}
-                    {(imagePreview || replyFile) && (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                            {imagePreview && (
-                                <div style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-glass)' }}>
-                                    <img src={imagePreview} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                    <button type="button" onClick={() => { setReplyImage(null); setImagePreview(''); }} style={{ position: 'absolute', top: '2px', right: '2px', background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%', color: 'white', padding: '2px' }}><X size={12} /></button>
+                                Post your reply or proposal...
+                            </div>
+                        ) : (
+                            <motion.form
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', minWidth: 0 }}
+                                onSubmit={handleSubmitReply}
+                            >
+                                <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', display: 'flex', justifyContent: 'space-between' }}>
+                                    <span>Replying to <span style={{ color: 'var(--primary)', fontWeight: 600 }}>@{formatUsername(need.authorUsername || 'author', isMobile)}</span></span>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsReplyExpanded(false)}
+                                        style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+                                    >
+                                        <X size={16} />
+                                    </button>
                                 </div>
-                            )}
-                            {replyFile && (
+
+                                {/* Quick Responses */}
                                 <div style={{
-                                    display: 'flex', alignItems: 'center', gap: '0.75rem',
-                                    padding: '0.5rem 0.75rem', background: 'var(--bg-base)',
-                                    border: '1px solid var(--border-glass)', borderRadius: '10px'
-                                }}>
-                                    <FileText size={16} color="var(--primary)" />
-                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                        <div style={{ fontSize: '0.85rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{replyFile.name}</div>
-                                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{(replyFile.size / 1024 / 1024).toFixed(2)} MB</div>
-                                    </div>
-                                    <button type="button" onClick={() => setReplyFile(null)} style={{
-                                        background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer'
-                                    }}><X size={14} /></button>
+                                    display: 'flex',
+                                    gap: '0.5rem',
+                                    overflowX: 'auto',
+                                    paddingBottom: '0.25rem',
+                                    marginTop: '0.25rem',
+                                    maxWidth: '100%',
+                                    flexShrink: 0
+                                }} className="no-scrollbar">
+                                    {[
+                                        { label: "I can help", text: "I can help with this!" },
+                                        { label: "More details", text: "Could you provide more details?" },
+                                        { label: "Interested", text: "Interested, tell me more." },
+                                        { label: "Referral", text: "I know someone who can help!" }
+                                    ].map((resp, i) => (
+                                        <button
+                                            key={i}
+                                            type="button"
+                                            onClick={() => setReplyText(prev => prev ? prev + ' ' + resp.text : resp.text)}
+                                            style={{
+                                                padding: '0.4rem 0.8rem',
+                                                borderRadius: '9999px',
+                                                fontSize: '0.8rem',
+                                                background: 'var(--bg-surface)',
+                                                border: '1px solid var(--border-glass)',
+                                                color: 'var(--text-secondary)',
+                                                whiteSpace: 'nowrap',
+                                                cursor: 'pointer',
+                                                fontWeight: 600,
+                                                transition: 'all 0.2s'
+                                            }}
+                                            className="glass-panel-hover"
+                                        >
+                                            {resp.label}
+                                        </button>
+                                    ))}
                                 </div>
-                            )}
-                        </div>
-                    )}
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-glass)', paddingTop: '0.75rem', gap: '1rem' }}>
-                        <button
-                            type="button"
-                            onClick={() => setIsPrivateReply(!isPrivateReply)}
-                            className="btn btn-secondary"
-                            style={{
-                                padding: '0.4rem 0.8rem', borderRadius: '9999px', fontSize: '0.85rem',
-                                color: isPrivateReply ? 'var(--primary)' : 'var(--text-muted)',
-                                border: isPrivateReply ? '1px solid var(--primary)' : '1px solid var(--border-glass)',
-                                background: isPrivateReply ? 'rgba(16, 185, 129, 0.1)' : 'transparent',
-                                fontWeight: 600,
-                                transition: 'all 0.2s'
-                            }}
-                        >
-                            {isPrivateReply ? 'Private' : 'Public'}
-                        </button>
+                                <textarea
+                                    autoFocus
+                                    disabled={!user || submittingReply}
+                                    value={replyText}
+                                    onChange={(e) => setReplyText(e.target.value)}
+                                    placeholder="Post your reply or proposal..."
+                                    className="need-description"
+                                    style={{
+                                        width: '100%',
+                                        background: 'transparent',
+                                        border: 'none',
+                                        color: 'var(--text-primary)',
+                                        outline: 'none',
+                                        resize: 'vertical',
+                                        minHeight: '80px',
+                                        fontFamily: 'var(--font-family)',
+                                        fontSize: '1rem',
+                                        lineHeight: 1.5
+                                    }}
+                                />
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <input type="file" ref={fileInputRef} onChange={(e) => { setReplyFile(e.target.files?.[0]); setReplyImage(null); setImagePreview(''); }} style={{ display: 'none' }} />
-                            <input type="file" ref={imageInputRef} accept="image/*" onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                    setReplyImage(file);
-                                    setImagePreview(URL.createObjectURL(file));
-                                    setReplyFile(null);
-                                }
-                            }} style={{ display: 'none' }} />
+                                {/* Media Previews */}
+                                {(imagePreview || replyFile) && (
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                                        {imagePreview && (
+                                            <div style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-glass)' }}>
+                                                <img src={imagePreview} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                <button type="button" onClick={() => { setReplyImage(null); setImagePreview(''); }} style={{ position: 'absolute', top: '2px', right: '2px', background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%', color: 'white', padding: '2px' }}><X size={12} /></button>
+                                            </div>
+                                        )}
+                                        {replyFile && (
+                                            <div style={{
+                                                display: 'flex', alignItems: 'center', gap: '0.75rem',
+                                                padding: '0.5rem 0.75rem', background: 'var(--bg-base)',
+                                                border: '1px solid var(--border-glass)', borderRadius: '10px'
+                                            }}>
+                                                <FileText size={16} color="var(--primary)" />
+                                                <div style={{ flex: 1, minWidth: 0 }}>
+                                                    <div style={{ fontSize: '0.85rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{replyFile.name}</div>
+                                                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{(replyFile.size / 1024 / 1024).toFixed(2)} MB</div>
+                                                </div>
+                                                <button type="button" onClick={() => setReplyFile(null)} style={{
+                                                    background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer'
+                                                }}><X size={14} /></button>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
 
-                            <button
-                                type="button"
-                                onClick={() => imageInputRef.current?.click()}
-                                style={{
-                                    padding: '0.5rem', borderRadius: '50%', color: 'var(--text-muted)',
-                                    background: 'transparent', border: 'none', cursor: 'pointer'
-                                }}
-                                className="nav-link-hover"
-                                title="Attach an image"
-                            >
-                                <Image size={18} />
-                            </button>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-glass)', paddingTop: '0.75rem', gap: '1rem' }}>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsPrivateReply(!isPrivateReply)}
+                                        className="btn btn-secondary"
+                                        style={{
+                                            padding: '0.4rem 0.8rem', borderRadius: '9999px', fontSize: '0.85rem',
+                                            color: isPrivateReply ? 'var(--primary)' : 'var(--text-muted)',
+                                            border: isPrivateReply ? '1px solid var(--primary)' : '1px solid var(--border-glass)',
+                                            background: isPrivateReply ? 'rgba(16, 185, 129, 0.1)' : 'transparent',
+                                            fontWeight: 600,
+                                            transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        {isPrivateReply ? 'Private' : 'Public'}
+                                    </button>
 
-                            <button
-                                type="button"
-                                onClick={() => fileInputRef.current?.click()}
-                                style={{
-                                    padding: '0.5rem', borderRadius: '50%', color: 'var(--text-muted)',
-                                    background: 'transparent', border: 'none', cursor: 'pointer'
-                                }}
-                                className="nav-link-hover"
-                                title="Attach a file"
-                            >
-                                <Paperclip size={18} />
-                            </button>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <input type="file" ref={fileInputRef} onChange={(e) => { setReplyFile(e.target.files?.[0]); setReplyImage(null); setImagePreview(''); }} style={{ display: 'none' }} />
+                                        <input type="file" ref={imageInputRef} accept="image/*" onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file) {
+                                                setReplyImage(file);
+                                                setImagePreview(URL.createObjectURL(file));
+                                                setReplyFile(null);
+                                            }
+                                        }} style={{ display: 'none' }} />
 
-                            <button type="submit" disabled={!replyText.trim() || submittingReply || !user} className="btn btn-primary" style={{ padding: '0.5rem 1.5rem', borderRadius: '9999px', minWidth: '100px' }}>
-                                {submittingReply ? <Loader size={18} className="animate-spin" /> : (uploadingFile ? 'Uploading...' : 'Reply')}
-                            </button>
-                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => imageInputRef.current?.click()}
+                                            style={{
+                                                padding: '0.5rem', borderRadius: '50%', color: 'var(--text-muted)',
+                                                background: 'transparent', border: 'none', cursor: 'pointer'
+                                            }}
+                                            className="nav-link-hover"
+                                            title="Attach an image"
+                                        >
+                                            <Image size={18} />
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            style={{
+                                                padding: '0.5rem', borderRadius: '50%', color: 'var(--text-muted)',
+                                                background: 'transparent', border: 'none', cursor: 'pointer'
+                                            }}
+                                            className="nav-link-hover"
+                                            title="Attach a file"
+                                        >
+                                            <Paperclip size={18} />
+                                        </button>
+
+                                        <button type="submit" disabled={!replyText.trim() || submittingReply || !user} className="btn btn-primary" style={{ padding: '0.5rem 1.5rem', borderRadius: '9999px', minWidth: '100px' }}>
+                                            {submittingReply ? <Loader size={18} className="animate-spin" /> : (uploadingFile ? 'Uploading...' : 'Reply')}
+                                        </button>
+                                    </div>
+                                </div>
+                            </motion.form>
+                        )}
                     </div>
-                </form>
+                </div>
             </div>
 
             {/* Reply Thread */}

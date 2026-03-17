@@ -10,6 +10,13 @@ export const ChatPinSetupModal = ({ isOpen, onClose }) => {
     const [step, setStep] = useState('initial'); // 'initial' or 'confirm'
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 435);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 435);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         if (isOpen) {
@@ -103,24 +110,31 @@ export const ChatPinSetupModal = ({ isOpen, onClose }) => {
     return (
         <AnimatePresence>
             <motion.div
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                style={{
-                    position: 'fixed', inset: 0, zIndex: 1100,
-                    background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem'
-                }}
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }} 
+                exit={{ opacity: 0 }}
+                className="modal-overlay-social"
                 onClick={onClose}
+                style={{ zIndex: 2000 }}
             >
                 <motion.div
-                    initial={{ scale: 0.95, opacity: 0, y: 20 }}
-                    animate={{ scale: 1, opacity: 1, y: 0 }}
-                    exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: isMobile ? 100 : 20, scale: isMobile ? 1 : 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: isMobile ? 100 : 20, scale: isMobile ? 1 : 0.95 }}
+                    transition={{ type: 'spring', damping: 25, stiffness: 300 }}
                     onClick={e => e.stopPropagation()}
+                    className="modal-content-social is-compact"
                     style={{
-                        width: '100%', maxWidth: '380px',
-                        display: 'flex', flexDirection: 'column', alignItems: 'center'
+                        padding: isMobile ? '1.5rem 1.5rem 3rem' : '2.5rem 2rem',
+                        alignItems: 'center'
                     }}
                 >
+                    {isMobile && (
+                        <div style={{
+                            width: '40px', height: '4px', background: 'var(--border-glass)',
+                            borderRadius: '2px', margin: '-0.5rem auto 1.5rem auto', flexShrink: 0
+                        }} />
+                    )}
                     <button
                         onClick={onClose}
                         style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', padding: '0.25rem', borderRadius: '50%', color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer' }}
