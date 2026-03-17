@@ -116,8 +116,8 @@
 }
 
 .reaction-badge.is-mine {
-    background: rgba(16, 185, 129, 0.12);
-    border-color: var(--primary);
+    background: rgba(16, 185, 129, 0.08); /* Keep a subtle tint for background */
+    border-color: var(--border-glass);
 }
 
 .reaction-badge:hover {
