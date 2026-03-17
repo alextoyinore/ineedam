@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, Bookmark, Check, Edit2, Trash2, ArrowLeft, Phone, Video, MoreVertical, Paperclip, Mic, Send, Reply, Smile, PhoneOff, X, FileText } from 'lucide-react';
 import { useChat } from '../../context/ChatContext';
 import { OnlineBadge } from '../../components/OnlineBadge';
+import { NeedReferenceBubble } from '../../components/messages/NeedReferenceBubble';
 
 const TypingBubble = () => (
     <div style={{
@@ -243,6 +244,17 @@ export const ChatDetail = () => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
     const [viewingFile, setViewingFile] = useState(null);
+    const textareaRef = useRef(null);
+
+    // Auto-expand textarea height
+    useEffect(() => {
+        if (textareaRef.current) {
+            textareaRef.current.style.height = '40px';
+            const scHeight = textareaRef.current.scrollHeight;
+            // 40 is base, 120 is max for ~3 lines
+            textareaRef.current.style.height = `${Math.min(Math.max(40, scHeight), 120)}px`;
+        }
+    }, [messageText]);
     const [isRecording, setIsRecording] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const [currentlyPlayingId, setCurrentlyPlayingId] = useState(null);
@@ -685,6 +697,9 @@ export const ChatDetail = () => {
                                             </div>
                                         ) : (
                                             <>
+                                                {msg.referencedNeedId && (
+                                                    <NeedReferenceBubble needId={msg.referencedNeedId} isMe={isMe} />
+                                                )}
                                                 {msg.fileUrl && (
                                                     isAudio ? (
                                                         <AudioBubble
@@ -812,6 +827,7 @@ export const ChatDetail = () => {
 
                         <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center' }}>
                             <textarea
+                                ref={textareaRef}
                                 value={messageText}
                                 onChange={(e) => {
                                     setMessageText(e.target.value);
@@ -830,9 +846,10 @@ export const ChatDetail = () => {
                                 placeholder="Chat..."
                                 style={{
                                     width: '100%',
+                                    height: '40px',
                                     minHeight: '40px',
                                     maxHeight: '120px',
-                                    padding: '0.6rem 1rem',
+                                    padding: '0.55rem 1rem',
                                     paddingRight: '3rem',
                                     borderRadius: '20px',
                                     background: 'var(--bg-base)',
@@ -841,7 +858,9 @@ export const ChatDetail = () => {
                                     fontSize: '0.95rem',
                                     resize: 'none',
                                     lineHeight: '1.4',
-                                    outline: 'none'
+                                    outline: 'none',
+                                    overflowY: messageText.split('\n').length > 4 || (textareaRef.current?.scrollHeight > 120) ? 'auto' : 'hidden',
+                                    boxSizing: 'border-box'
                                 }}
                             />
                         </div>

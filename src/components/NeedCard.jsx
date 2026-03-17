@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Tag, MapPin, Banknote, Clock, MessageSquare, Bookmark, Heart, MessageCircle, Repeat2, Award, Trash2, MoreVertical, Archive, Flag, UserPlus, UserMinus, VolumeX, Share2, FileText, Download, Edit3, CheckCircle, Hand } from 'lucide-react';
+import { Tag, MapPin, Banknote, Clock, MessageSquare, Bookmark, Heart, MessageCircle, Repeat2, Award, Trash2, MoreVertical, Archive, Flag, UserPlus, UserMinus, VolumeX, Share2, FileText, Download, Edit3, CheckCircle, Hand, Send } from 'lucide-react';
 import { PreviewableImage } from './ImageLightbox';
 import { ReplyModal } from './ReplyModal';
 import { supabase } from '../lib/supabase';
@@ -20,6 +20,9 @@ import { OnlineBadge } from './OnlineBadge';
 import { useInterest } from '../context/InterestContext';
 import { getInterestCount } from '../lib/interestService';
 import { formatDisplayName, formatUsername } from '../lib/profileService';
+import { SendNeedToChat } from './SendNeedToChat';
+import { useLinkPreview } from '../hooks/useLinkPreview';
+import { LinkPreviewCard } from './LinkPreviewCard';
 
 export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onEdit = null, onMarkMet = null }) => {
     const { user } = useAuth();
@@ -42,7 +45,10 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
     const [firstResponseTime, setFirstResponseTime] = useState(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [shareCopied, setShareCopied] = useState(false);
+    const [isSendToChatOpen, setIsSendToChatOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 435);
+
+    const { preview, loading: loadingPreview } = useLinkPreview(need.description);
 
     const isBroadcast = broadcastedBy || need.type === 'broadcast';
     const targetId = isBroadcast ? (need.broadcast_id || need.id) : need.id;
@@ -407,9 +413,26 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                                         </button>
                                     )}
 
-                                    {/* Share Action */}
-                                    <button
-                                        onClick={handleShare}
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setIsMenuOpen(false);
+                                                setIsSendToChatOpen(true);
+                                            }}
+                                            style={{
+                                                width: '100%', textAlign: 'left', padding: '0.7rem',
+                                                borderRadius: '8px', display: 'flex', alignItems: 'center',
+                                                gap: '0.75rem', color: 'var(--text-primary)',
+                                                fontSize: '0.9rem', fontWeight: 500
+                                            }}
+                                            className="nav-link-hover"
+                                        >
+                                            <Send size={18} />
+                                            Send to Chat
+                                        </button>
+
+                                        <button
+                                            onClick={handleShare}
                                         style={{
                                             width: '100%', textAlign: 'left', padding: '0.7rem',
                                             borderRadius: '8px', display: 'flex', alignItems: 'center',
@@ -689,6 +712,13 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                 onClose={() => setIsReplyOpen(false)}
                 need={need}
                 onReply={() => setReplyCount(prev => prev + 1)}
+            />
+            {/* Send to Chat Modal */}
+            <SendNeedToChat
+                isOpen={isSendToChatOpen}
+                onClose={() => setIsSendToChatOpen(false)}
+                needId={need.id}
+                needTitle={need.title}
             />
         </div>
     );

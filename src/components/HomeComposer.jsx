@@ -186,7 +186,7 @@ export const HomeComposer = () => {
             ref={composerRef}
             className="glass-panel"
             style={{
-                margin: isMobile ? '0' : '0 .5rem',
+                margin: '0',
                 padding: isMobile ? '1rem var(--feed-item-padding)' : '1rem',
                 borderTop: 'none',
                 borderLeft: 'none',

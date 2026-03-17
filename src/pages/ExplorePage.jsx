@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
@@ -63,6 +63,7 @@ export const ExplorePage = () => {
     const PAGE_SIZE = 10;
     const { profile, user } = useAuth();
     const { following, toggleFollow, isFollowing } = useSocial();
+    const nextPageRef = useRef(0);
     const [suggestedUsers, setSuggestedUsers] = useState([]);
     const [loadingSuggestions, setLoadingSuggestions] = useState(false);
     const [visibleCommunityCount, setVisibleCommunityCount] = useState(10);
@@ -80,14 +81,24 @@ export const ExplorePage = () => {
     const loadItems = useCallback(async (isInitial = false) => {
         if (isInitial) {
             setLoading(true);
-            setPage(0);
         } else {
             setLoadingMore(true);
         }
 
         try {
-            const currentPage = isInitial ? 0 : page;
-            const from = currentPage * PAGE_SIZE;
+            // Use local variable for page during this fetch
+            let pageToFetch;
+            if (isInitial) {
+                pageToFetch = 0;
+                setPage(0);
+            } else {
+                // Use a functional state update to read the current page safely
+                // But for the fetch, we need the value now. 
+                // We'll use a Ref to track the 'next page' to fetch to avoid the dependency loop.
+                pageToFetch = nextPageRef.current;
+            }
+
+            const from = pageToFetch * PAGE_SIZE;
             const to = from + PAGE_SIZE - 1;
 
             let mixedItems;
@@ -103,7 +114,6 @@ export const ExplorePage = () => {
                 setItems(newItems);
             } else {
                 setItems(prev => {
-                    // Deduplicate by ID
                     const existingIds = new Set(prev.map(i => i.broadcast_id || i.id));
                     const uniqueNewItems = newItems.filter(i => !existingIds.has(i.broadcast_id || i.id));
                     return [...prev, ...uniqueNewItems];
@@ -114,7 +124,9 @@ export const ExplorePage = () => {
                 setHasMore(false);
             } else {
                 setHasMore(true);
-                setPage(currentPage + 1);
+                const nextPage = pageToFetch + 1;
+                setPage(nextPage);
+                nextPageRef.current = nextPage;
             }
         } catch (err) {
             console.error("Error fetching mixed feed:", err);
@@ -122,7 +134,7 @@ export const ExplorePage = () => {
             setLoading(false);
             setLoadingMore(false);
         }
-    }, [page]);
+    }, [feedTab, user?.id]); // Removed page from dependencies
 
     useEffect(() => {
         loadItems(true);

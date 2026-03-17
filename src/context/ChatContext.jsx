@@ -100,6 +100,7 @@ export const ChatProvider = ({ children }) => {
                                     fileType: payload.new.file_type,
                                     timestamp: payload.new.created_at,
                                     replyTo: payload.new.reply_to,
+                                    referencedNeedId: payload.new.referenced_need_id || null,
                                     reactions: [],
                                     isBookmarked: false
                                 };
@@ -578,7 +579,7 @@ export const ChatProvider = ({ children }) => {
             throw err;
         }
     };
-    const sendMessage = async (otherUserId, text, file = null) => {
+    const sendMessage = async (otherUserId, text, file = null, referencedNeedId = null) => {
         if (!user) return;
 
         let fileUrl = null;
@@ -605,7 +606,8 @@ export const ChatProvider = ({ children }) => {
             fileUrl,
             fileType,
             timestamp: new Date().toISOString(),
-            replyTo: replyingTo?.id
+            replyTo: replyingTo?.id,
+            referencedNeedId: referencedNeedId || null
         };
 
         // 2. Update state immediately
@@ -625,7 +627,7 @@ export const ChatProvider = ({ children }) => {
             const threadId = await startChat(otherUserId);
             soundService.playChatSent(); // Play sound immediately for responsiveness
 
-            const newMessageData = await createMessage(threadId, user.id, text, fileUrl, fileType, replyingTo?.id);
+            const newMessageData = await createMessage(threadId, user.id, text, fileUrl, fileType, replyingTo?.id, referencedNeedId);
 
             // Reconcile optimistic message with the real message from DB
             setThreads(prev => prev.map(t => {

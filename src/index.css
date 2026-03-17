@@ -3,12 +3,11 @@
 :root,
 [data-theme='light'] {
   /* Color Palette - Vibrant Light Mode */
-  --bg-base: #f8fafc;
-  /* Was #ffffff, making it off-white for glass visibility */
-  --bg-base-rgb: 248, 250, 252;
+  --bg-base: #ffffff;
+  --bg-base-rgb: 255, 255, 255;
   --bg-surface: #ffffff;
-  --bg-surface-glass: rgba(255, 255, 255, 0.7);
-  --bg-surface-glass-hover: rgba(255, 255, 255, 0.9);
+  --bg-surface-glass: rgba(255, 255, 255, 0.85); /* Slightly more opaque */
+  --bg-surface-glass-hover: rgba(255, 255, 255, 0.95);
 
   --primary: #16A34A;
   --primary-hover: #15803D;
@@ -296,11 +295,7 @@ textarea::placeholder {
 /* Glassmorphism Utilities */
 .glass-panel {
   background: var(--bg-surface);
-  /* var(--bg-surface-glass) */
-  /* backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px); */
   border: 1px solid var(--border-glass);
-  /* border-radius: 16px; */
 }
 
 .glass-panel-hover {
@@ -989,6 +984,7 @@ textarea::placeholder {
   }
 
   .social-main-content {
+    background: var(--bg-surface);
     border-left: 1px solid var(--border-glass);
     border-right: 1px solid var(--border-glass);
     padding-top: 0;

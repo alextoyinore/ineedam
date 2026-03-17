@@ -17,6 +17,9 @@ import { MarkMetModal } from '../components/MarkMetModal';
 import { EndorseModal } from '../components/EndorseModal';
 import { Helmet } from 'react-helmet-async';
 import { formatDisplayName, formatUsername } from '../lib/profileService';
+import { useLinkPreview } from '../hooks/useLinkPreview';
+import { LinkPreviewCard } from '../components/LinkPreviewCard';
+import { SendNeedToChat } from '../components/SendNeedToChat';
 
 const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachment, isMobile }) => {
     const { user } = useAuth();
@@ -24,6 +27,8 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachmen
     const authorName = reply.profiles?.display_name || 'Anonymous';
     const authorUsername = reply.profiles?.username;
     const authorAvatar = reply.profiles?.avatar_url;
+
+    const { preview } = useLinkPreview(reply.content);
 
     return (
         <div style={{ marginLeft: depth > 0 ? '1.5rem' : 0, borderLeft: depth > 0 ? '2px solid var(--border-glass)' : 'none' }}>
@@ -84,6 +89,8 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachmen
                         )}
                     </div>
                     <MentionText text={reply.content} style={{ color: 'var(--text-primary)', lineHeight: 1.5, margin: 0 }} />
+
+                    {preview && <LinkPreviewCard preview={preview} compact={true} />}
 
                     {reply.file_url && (
                         <div style={{ marginTop: '0.75rem' }}>

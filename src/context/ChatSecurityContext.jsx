@@ -17,14 +17,23 @@ export const ChatSecurityProvider = ({ children }) => {
     const [hasPin, setHasPin] = useState(false);
     const [loading, setLoading] = useState(true);
 
-    // Initial load: check if the user has a PIN setup
+    // Initial load: check if the user has a PIN setup and session unlock status
     useEffect(() => {
         const checkPinStatus = async () => {
             if (user) {
                 setLoading(true);
                 const setup = await hasPinSetup(user.id);
                 setHasPin(setup);
-                setIsLocked(setup); // Only lock if PIN is setup
+                
+                // Check session storage for existing unlock
+                const sessionUnlocked = sessionStorage.getItem(`chat_unlocked_${user.id}`) === 'true';
+                
+                if (setup && !sessionUnlocked) {
+                    setIsLocked(true);
+                } else {
+                    setIsLocked(false);
+                }
+                
                 setLoading(false);
             } else {
                 setHasPin(false);
@@ -50,6 +59,7 @@ export const ChatSecurityProvider = ({ children }) => {
         const isValid = await verifyMessagePin(user.id, pin);
         if (isValid) {
             setIsLocked(false);
+            sessionStorage.setItem(`chat_unlocked_${user.id}`, 'true');
             return true;
         }
         return false;
@@ -79,6 +89,9 @@ export const ChatSecurityProvider = ({ children }) => {
 
     const lock = () => {
         setIsLocked(true);
+        if (user) {
+            sessionStorage.removeItem(`chat_unlocked_${user.id}`);
+        }
     };
 
     const value = {

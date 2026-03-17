@@ -25,7 +25,7 @@ export const fetchUserThreads = async (userId) => {
             updated_at,
             thread_participants(user_id, last_read_at, profiles!inner(display_name, avatar_url, username, last_seen_at)),
             messages(
-                id, text, file_url, file_type, created_at, sender_id, reply_to,
+                id, text, file_url, file_type, created_at, sender_id, reply_to, referenced_need_id,
                 message_reactions(id, emoji, user_id),
                 message_bookmarks(user_id)
             )
@@ -76,6 +76,7 @@ export const fetchUserThreads = async (userId) => {
                 fileType: m.file_type || null,
                 timestamp: m.created_at,
                 replyTo: m.reply_to,
+                referencedNeedId: m.referenced_need_id || null,
                 reactions: m.message_reactions || [],
                 isBookmarked: m.message_bookmarks?.some(b => b.user_id === userId) || false
             }))
@@ -122,11 +123,12 @@ export const getOrCreateThread = async (userId1, userId2) => {
 /**
  * Insert a message into a thread, with an optional file attachment and reply context.
  */
-export const createMessage = async (threadId, senderId, text, fileUrl = null, fileType = null, replyTo = null) => {
+export const createMessage = async (threadId, senderId, text, fileUrl = null, fileType = null, replyTo = null, referencedNeedId = null) => {
     const payload = { thread_id: threadId, sender_id: senderId, text: text || '' };
     if (fileUrl) payload.file_url = fileUrl;
     if (fileType) payload.file_type = fileType;
     if (replyTo) payload.reply_to = replyTo;
+    if (referencedNeedId) payload.referenced_need_id = referencedNeedId;
 
     const { data, error } = await supabase
         .from('messages')
