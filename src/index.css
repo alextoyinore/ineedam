@@ -7,7 +7,7 @@
   /* Was #f8fafc, making it white for the performance test */
   --bg-base-rgb: 255, 255, 255;
   --bg-surface: #ffffff;
-  --bg-surface-glass: rgba(255, 255, 255, 0.7);
+  --bg-surface-glass: rgba(255, 255, 255, 0.72);
   --bg-surface-glass-hover: rgba(255, 255, 255, 0.9);
 
   --primary: #16A34A;
@@ -555,17 +555,7 @@ textarea::placeholder {
   background-clip: text;
 }
 
-.sticky-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: var(--bg-surface);
-  /* var(--bg-surface-glass) */
-  /* backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px); */
-  border-bottom: 1px solid var(--border-glass);
-  width: 100%;
-}
+/* Sticky Header Utility merged below */
 
 @media (max-width: 768px) {
   .sticky-header {
@@ -1089,11 +1079,14 @@ textarea::placeholder {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: var(--bg-base);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: var(--bg-surface-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border-glass);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 [data-theme='dark'] .sticky-header {
-  background: rgba(15, 17, 21, 0.8);
+  background: var(--bg-surface-glass);
 }
