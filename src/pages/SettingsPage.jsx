@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import {
     Volume2, VolumeX, Bell, Shield, Moon, Sun, Monitor,
-    ArrowLeft, Trash2, LogOut, Star, UserX, Mail, Newspaper
+    ArrowLeft, Trash2, LogOut, Star, UserX, Mail, Newspaper, UserCheck
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useChatSecurity } from '../context/ChatSecurityContext';
@@ -177,6 +177,20 @@ export const SettingsPage = () => {
                     type: 'link',
                     path: '/settings/archived',
                     icon: <Trash2 size={20} />
+                },
+                {
+                    id: 'kycVerification',
+                    label: 'Identity Verification (KYC)',
+                    description: profile?.kyc_status === 'verified' 
+                        ? 'Your identity is verified. Verified users get a trust badge.' 
+                        : (profile?.kyc_status === 'pending' 
+                            ? 'Verification is pending. We will notify you once approved.' 
+                            : (localStorage.getItem(`kyc_draft_${profile?.id}`) 
+                                ? 'Verification in progress — click to continue.' 
+                                : 'Verify your identity to post in restricted categories.')),
+                    type: 'link',
+                    path: '/settings/kyc',
+                    icon: <UserCheck size={20} />
                 },
                 {
                     id: 'messagePinLock',

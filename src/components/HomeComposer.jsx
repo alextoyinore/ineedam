@@ -16,7 +16,8 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useDrafts } from '../context/DraftsContext';
 import { createNeed, uploadImageToCloudinary, uploadFileToCloudinary } from '../lib/needsService';
-import { CATEGORIES, CATEGORY_GROUPS, getCategoryGroup, getCategoryIcon } from '../data/categories';
+import { CATEGORIES, CATEGORY_GROUPS, getCategoryGroup, getCategoryIcon, isKYCRequired } from '../data/categories';
+import { ShieldAlert } from 'lucide-react';
 
 const CategoryIcon = ({ iconName, ...props }) => {
     const icons = {
@@ -117,6 +118,13 @@ export const HomeComposer = () => {
         if (!formData.title || !formData.description) return;
 
         setSubmitError('');
+        
+        // KYC Check
+        if (isKYCRequired(formData.category) && profile?.kyc_status !== 'verified') {
+            setSubmitError(`VERIFICATION REQUIRED: posting in "${formData.category}" requires identity verification for community safety.`);
+            return;
+        }
+
         setSubmitting(true);
 
         try {
@@ -571,9 +579,45 @@ export const HomeComposer = () => {
                         </div>
                     </div>
 
-                    {submitError && (
-                        <div style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '0.5rem' }}>
-                            {submitError}
+                    {(submitError || (isKYCRequired(formData.category) && profile?.kyc_status !== 'verified')) && (
+                        <div style={{ 
+                            color: '#ef4444', 
+                            fontSize: '0.85rem', 
+                            marginTop: '0.75rem',
+                            display: 'flex',
+                            alignItems: 'baseline',
+                            gap: '0.5rem',
+                            padding: '0.75rem',
+                            background: 'rgba(239, 68, 68, 0.08)',
+                            borderRadius: '8px',
+                            border: '1px solid rgba(239, 68, 68, 0.2)'
+                        }}>
+                            <ShieldAlert size={14} style={{ flexShrink: 0, transform: 'translateY(2px)' }} />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                                <span>{submitError || 'Verification required to post in this category.'}</span>
+                                {profile?.kyc_status !== 'verified' && isKYCRequired(formData.category) && (
+                                    <button 
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            navigate('/settings');
+                                        }}
+                                        style={{ 
+                                            background: 'none', 
+                                            border: 'none', 
+                                            color: '#ef4444', 
+                                            textDecoration: 'underline', 
+                                            padding: 0, 
+                                            fontSize: '0.8rem', 
+                                            fontWeight: 600,
+                                            cursor: 'pointer',
+                                            width: 'fit-content'
+                                        }}
+                                    >
+                                        Verify your identity to post here
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     )}
                 </form>

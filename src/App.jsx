@@ -38,6 +38,7 @@ const EndorsementDetailPage = lazy(() => import('./pages/EndorsementDetailPage')
 const HelpPage = lazy(() => import('./pages/HelpPage').then(module => ({ default: module.HelpPage })));
 const SupportPage = lazy(() => import('./pages/SupportPage').then(module => ({ default: module.SupportPage })));
 const VideoIntroPage = lazy(() => import('./pages/VideoIntroPage').then(module => ({ default: module.VideoIntroPage })));
+const KYCVerificationPage = lazy(() => import('./pages/KYCVerificationPage').then(module => ({ default: module.KYCVerificationPage })));
 
 // Full-screen spinner while the session is being determined or pages are loading
 const AuthLoader = () => (
@@ -97,6 +98,7 @@ function App() {
                   <Route path="/premium" element={<PremiumPage />} />
                   <Route path="/blocked-accounts" element={<BlockedAccountsPage />} />
                   <Route path="/settings/archived" element={<ArchivedContentPage />} />
+                  <Route path="/settings/kyc" element={<KYCVerificationPage />} />
                   <Route path="/need/:id" element={<NeedDetailPage />} />
                   <Route path="/endorsement/:id" element={<EndorsementDetailPage />} />
                   <Route path="/help" element={<HelpPage />} />

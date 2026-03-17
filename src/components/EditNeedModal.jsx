@@ -10,10 +10,12 @@ import {
     Key, Armchair, Lamp, Utensils, Bed, Flower2, Hammer, Wind, BookOpen, 
     UtensilsCrossed, Scale, HeartPulse, Lock, Clock as ClockIcon, 
     UserCheck, GraduationCap, Footprints, Watch, Cat, Bone, HeartHandshake, 
-    Book, Smile, UserPlus, Users, Compass, Package, Repeat, Gift
+    Book, Smile, UserPlus, Users, Compass, Package, Repeat, Gift, ShieldAlert
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CATEGORIES, CATEGORY_GROUPS, getCategoryGroup, getCategoryIcon } from '../data/categories';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { CATEGORIES, CATEGORY_GROUPS, getCategoryGroup, getCategoryIcon, isKYCRequired } from '../data/categories';
 import { uploadImageToCloudinary } from '../lib/needsService';
 
 const CategoryIcon = ({ iconName, ...props }) => {
@@ -34,6 +36,8 @@ const CategoryIcon = ({ iconName, ...props }) => {
 };
 
 export const EditNeedModal = ({ isOpen, onClose, need, onUpdate }) => {
+    const navigate = useNavigate();
+    const { profile } = useAuth();
     const [formData, setFormData] = useState({
         title: '',
         category: 'Products',
@@ -52,6 +56,7 @@ export const EditNeedModal = ({ isOpen, onClose, need, onUpdate }) => {
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState('');
     const [uploadingImage, setUploadingImage] = useState(false);
+    const [submitError, setSubmitError] = useState('');
 
     const categoryRef = useRef(null);
     const fileInputRef = useRef(null);
@@ -108,6 +113,14 @@ export const EditNeedModal = ({ isOpen, onClose, need, onUpdate }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setSubmitError('');
+
+        // KYC Guard
+        if (isKYCRequired(formData.category) && profile?.kyc_status !== 'verified') {
+            setSubmitError('Verification required to post in this category.');
+            return;
+        }
+
         setLoading(true);
         try {
             let imageUrl = need.imageUrl || '';
@@ -431,20 +444,61 @@ export const EditNeedModal = ({ isOpen, onClose, need, onUpdate }) => {
                                 padding: '0.75rem 1.5rem',
                                 borderTop: '1px solid var(--border-glass)',
                                 background: 'var(--bg-surface)',
-                                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                display: 'flex', flexDirection: 'column', gap: '0.75rem',
                                 flexShrink: 0
                             }}>
-                                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                    <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} />
-                                    <button type="button" onClick={() => fileInputRef.current?.click()} style={{ color: 'var(--primary)', background: 'transparent', border: 'none', cursor: 'pointer', padding: '0.5rem' }} className="btn-icon" title="Change Image">
-                                        <UploadCloud size={20} />
+                                {(submitError || (isKYCRequired(formData.category) && profile?.kyc_status !== 'verified')) && (
+                                    <div style={{ 
+                                        color: '#ef4444', 
+                                        fontSize: '0.85rem', 
+                                        display: 'flex',
+                                        alignItems: 'baseline',
+                                        gap: '0.5rem',
+                                        padding: '0.75rem',
+                                        background: 'rgba(239, 68, 68, 0.08)',
+                                        borderRadius: '8px',
+                                        border: '1px solid rgba(239, 68, 68, 0.2)'
+                                    }}>
+                                        <ShieldAlert size={14} style={{ flexShrink: 0, transform: 'translateY(2px)' }} />
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                                            <span>{submitError || 'Verification required to post in this category.'}</span>
+                                            <button 
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onClose();
+                                                    navigate('/settings');
+                                                }}
+                                                style={{ 
+                                                    background: 'none', 
+                                                    border: 'none', 
+                                                    color: '#ef4444', 
+                                                    textDecoration: 'underline', 
+                                                    padding: 0, 
+                                                    fontSize: '0.8rem', 
+                                                    fontWeight: 600,
+                                                    cursor: 'pointer',
+                                                    width: 'fit-content'
+                                                }}
+                                            >
+                                                Verify your identity to post here
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                        <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} />
+                                        <button type="button" onClick={() => fileInputRef.current?.click()} style={{ color: 'var(--primary)', background: 'transparent', border: 'none', cursor: 'pointer', padding: '0.5rem' }} className="btn-icon" title="Change Image">
+                                            <UploadCloud size={20} />
+                                        </button>
+                                    </div>
+
+                                    <button type="submit" disabled={loading || (isKYCRequired(formData.category) && profile?.kyc_status !== 'verified')} className="btn-primary" style={{ padding: '0.6rem 2rem', borderRadius: '9999px', fontWeight: 600, fontSize: '0.9rem', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: (loading || (isKYCRequired(formData.category) && profile?.kyc_status !== 'verified')) ? 0.6 : 1 }}>
+                                        {loading ? <Loader size={16} className="animate-spin" /> : <Send size={16} />}
+                                        <span>{loading ? 'Updating...' : 'Save Changes'}</span>
                                     </button>
                                 </div>
-
-                                <button type="submit" disabled={loading} className="btn-primary" style={{ padding: '0.6rem 2rem', borderRadius: '9999px', fontWeight: 600, fontSize: '0.9rem', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: loading ? 0.6 : 1 }}>
-                                    {loading ? <Loader size={16} className="animate-spin" /> : <Send size={16} />}
-                                    <span>{loading ? 'Updating...' : 'Save Changes'}</span>
-                                </button>
                             </div>
                         </form>
                     </motion.div>

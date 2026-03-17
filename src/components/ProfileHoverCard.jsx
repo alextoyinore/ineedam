@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Calendar, Users, Award, Clock } from 'lucide-react';
+import { MapPin, Calendar, Users, Award, Clock, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useSocial } from '../context/SocialContext';
@@ -122,9 +122,14 @@ export const ProfileHoverCard = ({ userData, children }) => {
                             </div>
 
                             <div style={{ marginBottom: '0.75rem' }}>
-                                <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                                    {userData.author}
-                                </h4>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                    <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                                        {userData.author}
+                                    </h4>
+                                    {userData.kycStatus === 'verified' && (
+                                        <ShieldCheck size={16} color="var(--primary)" fill="var(--primary)" fillOpacity={0.1} title="Identity Verified" />
+                                    )}
+                                </div>
                                 <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>
                                     @{userData.authorUsername || 'user'}
                                 </p>

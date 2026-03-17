@@ -232,23 +232,23 @@ export const CATEGORY_METADATA = {
     "Carpool & Ride-share": { icon: "Car" },
     
     // Real Estate
-    "Apartments for Rent": { icon: "Building" },
-    "Houses for Rent": { icon: "Home" },
-    "Short Let / Vacation": { icon: "Palmtree" },
-    "Commercial Property": { icon: "Building2" },
-    "Land for Sale": { icon: "Mountain" },
-    "Houses for Sale": { icon: "Home" },
-    "Apartments for Sale": { icon: "Building" },
-    "Office Space" : { icon: "Briefcase" },
+    "Apartments for Rent": { icon: "Building", requiresKYC: true },
+    "Houses for Rent": { icon: "Home", requiresKYC: true },
+    "Short Let / Vacation": { icon: "Palmtree", requiresKYC: true },
+    "Commercial Property": { icon: "Building2", requiresKYC: true },
+    "Land for Sale": { icon: "Mountain", requiresKYC: true },
+    "Houses for Sale": { icon: "Home", requiresKYC: true },
+    "Apartments for Sale": { icon: "Building", requiresKYC: true },
+    "Office Space" : { icon: "Briefcase", requiresKYC: true },
     
     // Vehicles
-    "Cars": { icon: "Car" },
-    "Motorcycles": { icon: "Bike" },
-    "Trucks": { icon: "Truck" },
-    "Buses": { icon: "Bus" },
-    "Boats": { icon: "Ship" },
+    "Cars": { icon: "Car", requiresKYC: true },
+    "Motorcycles": { icon: "Bike", requiresKYC: true },
+    "Trucks": { icon: "Truck", requiresKYC: true },
+    "Buses": { icon: "Bus", requiresKYC: true },
+    "Boats": { icon: "Ship", requiresKYC: true },
     "Auto Parts & Accessories": { icon: "Wrench" },
-    "Vehicle Hire / Rental" : { icon: "Key" },
+    "Vehicle Hire / Rental" : { icon: "Key", requiresKYC: true },
     
     // Home & Appliances
     "Furniture": { icon: "Armchair" },
@@ -263,16 +263,16 @@ export const CATEGORY_METADATA = {
     "Tutors & Training": { icon: "BookOpen" },
     "Mechanics & Repair": { icon: "Wrench" },
     "Catering & Events": { icon: "UtensilsCrossed" },
-    "Legal & Finance": { icon: "Scale" },
+    "Legal & Finance": { icon: "Scale", requiresKYC: true },
     "Beauty & Wellness": { icon: "HeartPulse" },
     "Security": { icon: "Lock" },
     "Logistics & Transport": { icon: "Truck" },
     
     // Jobs
-    "Full-time Jobs": { icon: "Briefcase" },
-    "Part-time Jobs": { icon: "Clock" },
-    "Freelance / Gigs": { icon: "UserCheck" },
-    "Internships": { icon: "GraduationCap" },
+    "Full-time Jobs": { icon: "Briefcase", requiresKYC: true },
+    "Part-time Jobs": { icon: "Clock", requiresKYC: true },
+    "Freelance / Gigs": { icon: "UserCheck", requiresKYC: true },
+    "Internships": { icon: "GraduationCap", requiresKYC: true },
     
     // Fashion
     "Clothing": { icon: "Shirt" },
@@ -295,15 +295,15 @@ export const CATEGORY_METADATA = {
     
     // Relationships
     "Friendship": { icon: "Smile" },
-    "Dating": { icon: "Heart" },
+    "Dating": { icon: "Heart", requiresKYC: true },
     "Networking": { icon: "Users" },
     "Mentorship": { icon: "UserPlus" },
     "Collaboration": { icon: "Users" },
-    "Support": { icon: "LifeBuoy" },
+    "Support": { icon: "LifeBuoy", requiresKYC: true },
     
     // Travel
     "Travel": { icon: "Plane" },
-    "Accommodation": { icon: "Bed" },
+    "Accommodation": { icon: "Bed", requiresKYC: true },
     "Transportation": { icon: "Bus" },
     "Activities": { icon: "Compass" },
     
@@ -323,4 +323,8 @@ export const getCategoryGroup = (categoryName) => {
 
 export const getCategoryIcon = (categoryName) => {
     return CATEGORY_METADATA[categoryName]?.icon || getCategoryGroup(categoryName).icon || "Globe";
+};
+
+export const isKYCRequired = (categoryName) => {
+    return !!CATEGORY_METADATA[categoryName]?.requiresKYC;
 };

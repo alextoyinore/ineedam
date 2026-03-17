@@ -47,7 +47,8 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachmen
                     authorUsername: authorUsername,
                     authorAvatar: authorAvatar,
                     authorBio: reply.profiles?.bio,
-                    authorLastSeenAt: reply.profiles?.last_seen_at
+                    authorLastSeenAt: reply.profiles?.last_seen_at,
+                    kycStatus: reply.profiles?.kyc_status
                 }}>
                     <div className="avatar-md" style={{
                         borderRadius: '50%', flexShrink: 0,
@@ -70,9 +71,17 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachmen
                             authorUsername: authorUsername,
                             authorAvatar: authorAvatar,
                             authorBio: reply.profiles?.bio,
-                            authorLastSeenAt: reply.profiles?.last_seen_at
+                            authorLastSeenAt: reply.profiles?.last_seen_at,
+                            kycStatus: reply.profiles?.kyc_status
                         }}>
-                            <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', cursor: 'pointer' }}>{formatDisplayName(authorName, isMobile)}</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', cursor: 'pointer' }}>
+                                    {formatDisplayName(authorName, isMobile)}
+                                </span>
+                                {reply.profiles?.kyc_status === 'verified' && (
+                                    <ShieldCheck size={14} color="var(--primary)" fill="var(--primary)" fillOpacity={0.1} title="Identity Verified" />
+                                )}
+                            </div>
                         </ProfileHoverCard>
                         {authorUsername && <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>@{formatUsername(authorUsername, isMobile)}</span>}
                         <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>• {formatTimeAgo(reply.created_at)}</span>

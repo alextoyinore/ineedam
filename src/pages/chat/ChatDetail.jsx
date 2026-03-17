@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, Bookmark, Check, Edit2, Trash2, ArrowLeft, Phone, Video, MoreVertical, Paperclip, Mic, Send, Reply, Smile, PhoneOff, X, FileText } from 'lucide-react';
+import { MessageSquare, Bookmark, Check, Edit2, Trash2, ArrowLeft, Phone, Video, MoreVertical, Paperclip, Mic, Send, Reply, Smile, PhoneOff, X, FileText, ShieldCheck } from 'lucide-react';
 import { useChat } from '../../context/ChatContext';
 import { OnlineBadge } from '../../components/OnlineBadge';
 import { NeedReferenceBubble } from '../../components/messages/NeedReferenceBubble';
@@ -461,6 +461,9 @@ export const ChatDetail = () => {
                                         })()
                                     ) : activeThread.withUser}
                                 </h3>
+                                {activeThread.withUserKycStatus === 'verified' && (
+                                    <ShieldCheck size={16} color="var(--primary)" fill="var(--primary)" fillOpacity={0.1} title="Identity Verified" />
+                                )}
                                 {activeThread.withUserLastSeenAt && (
                                     <span style={{ fontSize: '0.7rem', color: new Date(activeThread.withUserLastSeenAt) > new Date(Date.now() - 5 * 60 * 1000) ? '#22c55e' : 'var(--text-muted)', fontWeight: 500 }}>
                                         {new Date(activeThread.withUserLastSeenAt) > new Date(Date.now() - 5 * 60 * 1000) ? '● Online' : '● Away'}

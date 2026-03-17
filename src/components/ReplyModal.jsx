@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, X, Loader, Paperclip, FileText, Image } from 'lucide-react';
+import { Send, X, Loader, Paperclip, FileText, Image, ShieldAlert } from 'lucide-react';
 import { useChat } from '../context/ChatContext';
 import { useAuth } from '../context/AuthContext';
+import { isKYCRequired } from '../data/categories';
 import { createReply } from '../lib/replyService';
 import { uploadFileToCloudinary, uploadImageToCloudinary } from '../lib/needsService';
 import { formatDisplayName, formatUsername } from '../lib/profileService';
@@ -10,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 
 export const ReplyModal = ({ isOpen, onClose, need, parentId = null, replyingTo = null, onReply, endorsementId = null }) => {
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user, profile } = useAuth();
     const [replyText, setReplyText] = useState('');
     const [visibility, setVisibility] = useState('private');
     const [submitting, setSubmitting] = useState(false);
@@ -51,6 +52,11 @@ export const ReplyModal = ({ isOpen, onClose, need, parentId = null, replyingTo 
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!replyText.trim() || !user) return;
+
+        // KYC Guard
+        if (isKYCRequired(need.category) && profile?.kyc_status !== 'verified') {
+            return;
+        }
 
         setSubmitting(true);
         try {
@@ -301,12 +307,54 @@ export const ReplyModal = ({ isOpen, onClose, need, parentId = null, replyingTo 
                                         <Paperclip size={18} />
                                     </button>
 
-                                    <button type="submit" disabled={!replyText.trim() || submitting || !user} className="btn-primary" style={{ padding: '0.5rem 1.5rem', borderRadius: '9999px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <button type="submit" disabled={!replyText.trim() || submitting || !user || (isKYCRequired(need.category) && profile?.kyc_status !== 'verified')} className="btn-primary" style={{ padding: '0.5rem 1.5rem', borderRadius: '9999px', display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: (isKYCRequired(need.category) && profile?.kyc_status !== 'verified') ? 0.5 : 1 }}>
                                         {submitting ? <Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> : null}
                                         {uploadingFile ? 'Uploading...' : 'Reply'}
                                     </button>
                                 </div>
                             </div>
+
+                            {/* KYC Warning */}
+                            {isKYCRequired(need.category) && profile?.kyc_status !== 'verified' && (
+                                <div style={{ 
+                                    color: '#ef4444', 
+                                    fontSize: '0.85rem', 
+                                    marginTop: '0.75rem',
+                                    display: 'flex',
+                                    alignItems: 'baseline',
+                                    gap: '0.5rem',
+                                    padding: '0.75rem',
+                                    background: 'rgba(239, 68, 68, 0.08)',
+                                    borderRadius: '8px',
+                                    border: '1px solid rgba(239, 68, 68, 0.2)'
+                                }}>
+                                    <ShieldAlert size={14} style={{ flexShrink: 0, transform: 'translateY(2px)' }} />
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                                        <span>Verification required to respond in high-risk categories.</span>
+                                        <button 
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onClose();
+                                                navigate('/settings');
+                                            }}
+                                            style={{ 
+                                                background: 'none', 
+                                                border: 'none', 
+                                                color: '#ef4444', 
+                                                textDecoration: 'underline', 
+                                                padding: 0, 
+                                                fontSize: '0.8rem', 
+                                                fontWeight: 600,
+                                                cursor: 'pointer',
+                                                width: 'fit-content'
+                                            }}
+                                        >
+                                            Verify your identity to respond
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </form>
 

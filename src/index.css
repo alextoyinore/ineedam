@@ -6,7 +6,8 @@
   --bg-base: #ffffff;
   --bg-base-rgb: 255, 255, 255;
   --bg-surface: #ffffff;
-  --bg-surface-glass: rgba(255, 255, 255, 0.85); /* Slightly more opaque */
+  --bg-surface-glass: rgba(255, 255, 255, 0.85);
+  /* Slightly more opaque */
   --bg-surface-glass-hover: rgba(255, 255, 255, 0.95);
 
   --primary: #16A34A;
@@ -34,7 +35,8 @@
   --mobile-nav-height: 4.5rem;
   --profile-header-height: 48px;
   --sidebar-width: 250px;
-  --bubble-me-bg: #15803D; /* Deep Green */
+  --bubble-me-bg: #15803D;
+  /* Deep Green */
   --bubble-me-text: #ffffff;
   --feed-item-padding: 1.5rem;
 
@@ -82,12 +84,14 @@ html {
   --btn-primary-text: #000000;
   --btn-disabled-bg: #1e293b;
   --btn-disabled-text: #94a3b8;
-  --bubble-me-bg: #14532D; /* Very Deep Green */
+  --bubble-me-bg: #14532D;
+  /* Very Deep Green */
   --bubble-me-text: #ffffff;
   --feed-item-padding: 1.5rem;
 
   /* Auth & Landing Specifics - AMOLED Friendly */
-  --auth-input-bg: rgba(255, 255, 255, 0.08); /* Slightly lighter than pure black */
+  --auth-input-bg: rgba(255, 255, 255, 0.08);
+  /* Slightly lighter than pure black */
   --landing-grid-color: rgba(255, 255, 255, 0.08);
 }
 
@@ -209,18 +213,33 @@ textarea::placeholder {
 
 /* Animations */
 @keyframes slideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .animate-spin {
@@ -228,7 +247,7 @@ textarea::placeholder {
 }
 
 .landing-grid-pattern {
-  background-image: 
+  background-image:
     linear-gradient(var(--landing-grid-color) 1px, transparent 1px),
     linear-gradient(90deg, var(--landing-grid-color) 1px, transparent 1px);
   background-size: 40px 40px;
@@ -358,7 +377,8 @@ textarea::placeholder {
   color: var(--btn-disabled-text);
   border-color: var(--btn-disabled-bg);
   cursor: not-allowed;
-  opacity: 1; /* Override any inline opacity if present */
+  opacity: 1;
+  /* Override any inline opacity if present */
 }
 
 .btn-secondary {
@@ -811,7 +831,7 @@ textarea::placeholder {
   align-items: center;
   justify-content: center;
   box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4), 0 4px 6px -2px rgba(16, 185, 129, 0.1);
-  z-index: 150;
+  z-index: 1000;
   border: none;
   cursor: pointer;
   transition: transform 0.2s, background 0.2s;

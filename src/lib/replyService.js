@@ -9,7 +9,7 @@ import { timeAgo } from './needsService';
 export const fetchRepliesForNeed = async (needId, endorsementId = null) => {
     let query = supabase
         .from('replies')
-        .select('*, profiles(display_name, avatar_url, username, last_seen_at)')
+        .select('*, profiles(display_name, avatar_url, username, last_seen_at, kyc_status)')
         .order('created_at', { ascending: true });
 
     if (endorsementId) {
@@ -30,7 +30,7 @@ export const fetchRepliesForNeed = async (needId, endorsementId = null) => {
 export const fetchRepliesByUser = async (userId) => {
     const { data, error } = await supabase
         .from('replies')
-        .select('*, needs(title), profiles(display_name, avatar_url, username, last_seen_at)')
+        .select('*, needs(title), profiles(display_name, avatar_url, username, last_seen_at, kyc_status)')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
@@ -54,7 +54,7 @@ export const createReply = async (needId, userId, content, isPrivate = false, pa
             file_url: fileUrl,
             file_type: fileType
         }])
-        .select('*, profiles(display_name, avatar_url, username, last_seen_at)')
+        .select('*, profiles(display_name, avatar_url, username, last_seen_at, kyc_status)')
         .single();
 
     if (error) throw error;

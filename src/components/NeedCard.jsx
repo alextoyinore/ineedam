@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Tag, MapPin, Banknote, Clock, MessageSquare, Bookmark, Heart, MessageCircle, Repeat2, Award, Trash2, MoreVertical, Archive, Flag, UserPlus, UserMinus, VolumeX, Share2, FileText, Download, Edit3, CheckCircle, Hand, Send } from 'lucide-react';
+import { Tag, MapPin, Banknote, Clock, MessageSquare, Bookmark, Heart, MessageCircle, Repeat2, Award, Trash2, MoreVertical, Archive, Flag, UserPlus, UserMinus, VolumeX, Share2, FileText, Download, Edit3, CheckCircle, Hand, Send, ShieldCheck } from 'lucide-react';
 import { PreviewableImage } from './ImageLightbox';
 import { ReplyModal } from './ReplyModal';
 import { supabase } from '../lib/supabase';
@@ -259,6 +259,7 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                         authorAvatar: need.authorAvatar,
                         authorBio: need.authorBio,
                         authorLastSeenAt: need.authorLastSeenAt,
+                        kycStatus: need.authorKycStatus,
                         firstResponseTime: firstResponseTime
                     }}>
                         <div
@@ -289,13 +290,17 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                                 authorUsername: need.authorUsername,
                                 authorAvatar: need.authorAvatar,
                                 authorBio: need.authorBio,
+                                kycStatus: need.authorKycStatus,
                                 firstResponseTime: firstResponseTime
                             }}>
-                                <span
-                                    onClick={(e) => { e.stopPropagation(); navigate(`/${need.authorUsername}`); }}
-                                    style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', cursor: 'pointer' }}>
-                                    {formatDisplayName(need.author, isMobile)}
-                                </span>
+                                    <span
+                                        onClick={(e) => { e.stopPropagation(); navigate(`/${need.authorUsername}`); }}
+                                        style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                        {formatDisplayName(need.author, isMobile)}
+                                        {need.authorKycStatus === 'verified' && (
+                                            <ShieldCheck size={14} color="var(--primary)" fill="var(--primary)" fillOpacity={0.1} />
+                                        )}
+                                    </span>
                             </ProfileHoverCard>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)', fontSize: '0.9rem', flexWrap: 'wrap' }}>
                                 {need.authorUsername && (

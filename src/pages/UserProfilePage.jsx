@@ -4,7 +4,7 @@ import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import {
     ArrowLeft, Calendar, MapPin, Users, Mail, UserPlus, UserMinus,
     ShieldCheck, Edit3, CheckCircle, Trash2, Archive, Settings, Repeat2, Loader,
-    MoreVertical, Flag, Ban, MessageSquare, Share2, Clock
+    MoreVertical, Flag, Ban, MessageSquare, Share2, Clock, Shield
 } from 'lucide-react';
 
 import { NeedCard } from '../components/NeedCard';
@@ -665,6 +665,11 @@ export const UserProfilePage = () => {
                 <div style={{ marginTop: '0.5rem', minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', minWidth: 0 }}>
                         <h1 className="h1" style={{ fontSize: '1.5rem', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{profile.display_name}</h1>
+                        {profile.kyc_status === 'verified' && (
+                            <div title="Identity Verified" style={{ display: 'flex', alignItems: 'center', color: 'var(--primary)', flexShrink: 0 }}>
+                                <ShieldCheck size={20} fill="currentColor" fillOpacity={0.15} />
+                            </div>
+                        )}
                         {profile.id === '31080433-1e29-4eee-9b6f-673b1e159802' && <ShieldCheck size={18} color="var(--primary)" style={{ flexShrink: 0 }} />}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', margin: '0 0 .25rem 0' }}>
@@ -691,6 +696,19 @@ export const UserProfilePage = () => {
                             <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                 <Calendar size={16} /> Joined {new Date(profile.created_at).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
                             </span>
+                            {isOwnProfile && profile.kyc_status && (
+                                <span style={{ 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    gap: '0.4rem',
+                                    color: profile.kyc_status === 'verified' ? 'var(--primary)' : 
+                                           profile.kyc_status === 'pending' ? '#f59e0b' : 'var(--text-muted)',
+                                    fontWeight: 600
+                                }}>
+                                    <Shield size={16} /> 
+                                    KYC: {profile.kyc_status.charAt(0).toUpperCase() + profile.kyc_status.slice(1)}
+                                </span>
+                            )}
                         </div>
 
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', fontSize: '0.95rem' }}>
