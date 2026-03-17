@@ -7,6 +7,7 @@ import { X, Settings, HelpCircle, FileText, Shield, Users, TrendingUp, Award, Se
 import { fetchMetCounts } from '../lib/needsService';
 import { getFollowStats } from '../lib/socialService';
 import { fetchEndorsementsForUser } from '../lib/endorsementService';
+import { ProfileCompletionList } from './ProfileCompletionList';
 
 export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false, onInviteClick }) => {
     const { profile, signOut, updateProfile } = useAuth();
@@ -168,6 +169,13 @@ export const MobileDrawer = ({ isOpen, onClose, autoFocusSearch = false, onInvit
                                             </div>
                                         </div>
                                     </div>
+                                </div>
+                            )}
+
+                            {/* Profile Completion Checklist */}
+                            {profile && (
+                                <div style={{ padding: '0 1rem', marginBottom: '1rem' }}>
+                                    <ProfileCompletionList />
                                 </div>
                             )}
 

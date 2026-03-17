@@ -1,7 +1,8 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search as SearchIcon, ArrowLeft, SlidersHorizontal, Loader } from 'lucide-react';
+import { Search as SearchIcon, ArrowLeft, SlidersHorizontal, Loader, Check } from 'lucide-react';
+import { CATEGORIES } from '../data/categories';
 import { NeedCard } from '../components/NeedCard';
 import { searchMixedFeed } from '../lib/feedService';
 import { EndorsementFeedCard } from '../components/EndorsementFeedCard';
@@ -14,7 +15,7 @@ export const SearchPage = () => {
     const { user } = useAuth();
     const [searchParams] = useSearchParams();
     const query = searchParams.get('q') || '';
-    const category = searchParams.get('cat') || '';
+    const initialCategory = searchParams.get('cat') || '';
     const trending = searchParams.get('trend') || '';
 
     const [results, setResults] = useState([]);
@@ -22,9 +23,18 @@ export const SearchPage = () => {
     const [selectedNeed, setSelectedNeed] = useState(null);
     const [loading, setLoading] = useState(true);
     const [showFilters, setShowFilters] = useState(false);
+    
+    const [categoryFilter, setCategoryFilter] = useState(initialCategory || 'All');
     const [minBudget, setMinBudget] = useState('');
     const [maxBudget, setMaxBudget] = useState('');
     const [timeframe, setTimeframe] = useState('all'); // all, today, week, month
+
+    const [status, setStatus] = useState('all');
+    const [sortBy, setSortBy] = useState('newest');
+    const [locationFilter, setLocationFilter] = useState('');
+    const [flexibilityFilter, setFlexibilityFilter] = useState('all');
+    const [budgetModeFilter, setBudgetModeFilter] = useState('all');
+    const [selectedTypes, setSelectedTypes] = useState(['need', 'endorsement', 'broadcast']);
 
     const [page, setPage] = useState(0);
     const [hasMore, setHasMore] = useState(true);
@@ -46,9 +56,16 @@ export const SearchPage = () => {
 
             const data = await searchMixedFeed({
                 query: query || trending,
-                category,
+                category: categoryFilter,
                 minBudget,
-                maxBudget
+                maxBudget,
+                status,
+                sortBy,
+                timeframe,
+                location: locationFilter,
+                flexibility: flexibilityFilter,
+                budgetMode: budgetModeFilter,
+                types: selectedTypes
             }, from, to);
 
             if (isInitial) {
@@ -70,17 +87,17 @@ export const SearchPage = () => {
             setLoading(false);
             setLoadingMore(false);
         }
-    }, [query, trending, category, minBudget, maxBudget, page]);
+    }, [query, trending, categoryFilter, minBudget, maxBudget, status, sortBy, timeframe, locationFilter, flexibilityFilter, budgetModeFilter, selectedTypes, page]);
 
     useEffect(() => {
-        if (query || category || trending || minBudget || maxBudget) {
+        if (query || categoryFilter !== 'All' || trending || minBudget || maxBudget || status !== 'all' || timeframe !== 'all' || locationFilter || flexibilityFilter !== 'all' || budgetModeFilter !== 'all' || selectedTypes.length !== 3) {
             performSearch(true);
         } else {
             setResults([]);
             setLoading(false);
             setHasMore(false);
         }
-    }, [query, category, trending, minBudget, maxBudget]);
+    }, [query, categoryFilter, trending, minBudget, maxBudget, status, sortBy, timeframe, locationFilter, flexibilityFilter, budgetModeFilter, selectedTypes]);
 
     const lastElementRef = useInfiniteScroll(performSearch, hasMore, loading || loadingMore);
 
@@ -100,14 +117,22 @@ export const SearchPage = () => {
     };
 
     const viewTitle = useMemo(() => {
-        if (category) return 'Category';
+        if (categoryFilter && categoryFilter !== 'All') return 'Category';
         if (trending) return 'Trending';
         return 'Search';
-    }, [category, trending]);
+    }, [categoryFilter, trending]);
 
     const viewSub = useMemo(() => {
-        return category || trending || query;
-    }, [category, trending, query]);
+        return (categoryFilter !== 'All' ? categoryFilter : '') || trending || query;
+    }, [categoryFilter, trending, query]);
+
+    const toggleType = (type) => {
+        setSelectedTypes(prev => 
+            prev.includes(type) 
+                ? prev.filter(t => t !== type)
+                : [...prev, type]
+        );
+    };
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -147,39 +172,135 @@ export const SearchPage = () => {
                         exit={{ height: 0, opacity: 0 }}
                         style={{ overflow: 'hidden', borderBottom: '1px solid var(--border-glass)', background: 'var(--bg-surface)' }}
                     >
-                        <div style={{ padding: '1.5rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
-                            <div>
-                                <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Budget Range ($)</label>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <div style={{ padding: '1rem var(--feed-item-padding)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            {/* Type Selector Chips */}
+                            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                {['need', 'endorsement', 'broadcast'].map(t => (
+                                    <button
+                                        key={t}
+                                        onClick={() => toggleType(t)}
+                                        style={{
+                                            padding: '0.3rem 0.8rem', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 600,
+                                            background: selectedTypes.includes(t) ? 'var(--primary)' : 'var(--bg-base)',
+                                            color: selectedTypes.includes(t) ? 'white' : 'var(--text-muted)',
+                                            border: '1px solid var(--border-glass)',
+                                            textTransform: 'capitalize', cursor: 'pointer', transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        {t}s
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem' }}>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>Category</label>
+                                    <select
+                                        value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}
+                                        style={{ width: '100%', padding: '0.4rem 0.6rem', borderRadius: '8px', background: 'var(--bg-base)', border: '1px solid var(--border-glass)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
+                                    >
+                                        <option value="All">All Categories</option>
+                                        {CATEGORIES.map(cat => (
+                                            <option key={cat} value={cat}>{cat}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>Budget ($)</label>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                        <input
+                                            type="number" placeholder="Min" value={minBudget} onChange={(e) => setMinBudget(e.target.value)}
+                                            style={{ width: '100%', padding: '0.4rem 0.6rem', borderRadius: '8px', background: 'var(--bg-base)', border: '1px solid var(--border-glass)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
+                                        />
+                                        <input
+                                            type="number" placeholder="Max" value={maxBudget} onChange={(e) => setMaxBudget(e.target.value)}
+                                            style={{ width: '100%', padding: '0.4rem 0.6rem', borderRadius: '8px', background: 'var(--bg-base)', border: '1px solid var(--border-glass)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>Timeframe</label>
+                                    <select
+                                        value={timeframe} onChange={(e) => setTimeframe(e.target.value)}
+                                        style={{ width: '100%', padding: '0.4rem 0.6rem', borderRadius: '8px', background: 'var(--bg-base)', border: '1px solid var(--border-glass)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
+                                    >
+                                        <option value="all">Any time</option>
+                                        <option value="today">Past 24h</option>
+                                        <option value="week">Past week</option>
+                                        <option value="month">Past month</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>Status</label>
+                                    <select
+                                        value={status} onChange={(e) => setStatus(e.target.value)}
+                                        style={{ width: '100%', padding: '0.4rem 0.6rem', borderRadius: '8px', background: 'var(--bg-base)', border: '1px solid var(--border-glass)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
+                                    >
+                                        <option value="all">All Status</option>
+                                        <option value="open">Open Only</option>
+                                        <option value="met">Met Only</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>Flexibility</label>
+                                    <select
+                                        value={flexibilityFilter} onChange={(e) => setFlexibilityFilter(e.target.value)}
+                                        style={{ width: '100%', padding: '0.4rem 0.6rem', borderRadius: '8px', background: 'var(--bg-base)', border: '1px solid var(--border-glass)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
+                                    >
+                                        <option value="all">Any flexibility</option>
+                                        <option value="flexible">Flexible</option>
+                                        <option value="fixed">Fixed</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>Budget Mode</label>
+                                    <select
+                                        value={budgetModeFilter} onChange={(e) => setBudgetModeFilter(e.target.value)}
+                                        style={{ width: '100%', padding: '0.4rem 0.6rem', borderRadius: '8px', background: 'var(--bg-base)', border: '1px solid var(--border-glass)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
+                                    >
+                                        <option value="all">Any Mode</option>
+                                        <option value="fixed">Fixed</option>
+                                        <option value="range">Range</option>
+                                        <option value="hourly">Hourly</option>
+                                        <option value="trade">Trade</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>Location</label>
                                     <input
-                                        type="number" placeholder="Min" value={minBudget} onChange={(e) => setMinBudget(e.target.value)}
-                                        style={{ width: '100%', padding: '0.4rem 0.75rem', borderRadius: '8px', background: 'var(--bg-base)', border: '1px solid var(--border-glass)', color: 'var(--text-primary)' }}
-                                    />
-                                    <span>-</span>
-                                    <input
-                                        type="number" placeholder="Max" value={maxBudget} onChange={(e) => setMaxBudget(e.target.value)}
-                                        style={{ width: '100%', padding: '0.4rem 0.75rem', borderRadius: '8px', background: 'var(--bg-base)', border: '1px solid var(--border-glass)', color: 'var(--text-primary)' }}
+                                        type="text" placeholder="Remote, Lagos..." value={locationFilter} onChange={(e) => setLocationFilter(e.target.value)}
+                                        style={{ width: '100%', padding: '0.4rem 0.6rem', borderRadius: '8px', background: 'var(--bg-base)', border: '1px solid var(--border-glass)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
                                     />
                                 </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>Sort By</label>
+                                    <select
+                                        value={sortBy} onChange={(e) => setSortBy(e.target.value)}
+                                        style={{ width: '100%', padding: '0.4rem 0.6rem', borderRadius: '8px', background: 'var(--bg-base)', border: '1px solid var(--border-glass)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
+                                    >
+                                        <option value="newest">Newest First</option>
+                                        <option value="budget_high">Highest Budget</option>
+                                        <option value="budget_low">Lowest Budget</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div>
-                                <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Timeframe</label>
-                                <select
-                                    value={timeframe} onChange={(e) => setTimeframe(e.target.value)}
-                                    style={{ width: '100%', padding: '0.45rem 0.75rem', borderRadius: '8px', background: 'var(--bg-base)', border: '1px solid var(--border-glass)', color: 'var(--text-primary)' }}
-                                >
-                                    <option value="all">Any time</option>
-                                    <option value="today">Past 24 hours</option>
-                                    <option value="week">Past week</option>
-                                    <option value="month">Past month</option>
-                                </select>
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                                 <button
-                                    onClick={() => { setMinBudget(''); setMaxBudget(''); setTimeframe('all'); }}
-                                    style={{ fontSize: '0.85rem', color: 'var(--primary)', background: 'transparent', border: 'none', cursor: 'pointer', paddingBottom: '0.5rem' }}
+                                    onClick={() => { 
+                                        setCategoryFilter('All');
+                                        setMinBudget(''); 
+                                        setMaxBudget(''); 
+                                        setTimeframe('all'); 
+                                        setStatus('all');
+                                        setSortBy('newest');
+                                        setLocationFilter('');
+                                        setFlexibilityFilter('all');
+                                        setBudgetModeFilter('all');
+                                        setSelectedTypes(['need', 'endorsement', 'broadcast']);
+                                    }}
+                                    style={{ fontSize: '0.75rem', color: 'var(--primary)', background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 600 }}
                                 >
-                                    Reset Filters
+                                    Reset all
                                 </button>
                             </div>
                         </div>

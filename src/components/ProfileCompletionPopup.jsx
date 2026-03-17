@@ -6,6 +6,13 @@ import { useAuth } from '../context/AuthContext';
 
 export const ProfileCompletionPopup = ({ isOpen, onClose }) => {
     const { profile, fetchProfile } = useAuth();
+    const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 768);
+
+    React.useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     if (!isOpen || !profile) return null;
 
@@ -18,24 +25,36 @@ export const ProfileCompletionPopup = ({ isOpen, onClose }) => {
                 style={{
                     position: 'fixed', inset: 0, zIndex: 3000,
                     background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem'
+                    display: 'flex', alignItems: isMobile ? 'flex-end' : 'center', 
+                    justifyContent: 'center', padding: isMobile ? 0 : '1rem'
                 }}
             >
                 <motion.div
-                    initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                    animate={{ scale: 1, opacity: 1, y: 0 }}
-                    exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                    initial={isMobile ? { y: '100%' } : { scale: 0.9, opacity: 0, y: 20 }}
+                    animate={isMobile ? { y: 0 } : { scale: 1, opacity: 1, y: 0 }}
+                    exit={isMobile ? { y: '100%' } : { scale: 0.9, opacity: 0, y: 20 }}
+                    transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                     style={{
                         background: 'var(--bg-base)', border: '1px solid var(--border-glass)',
-                        borderRadius: '28px', width: '100%', maxWidth: '440px',
-                        padding: '2.5rem', position: 'relative', textAlign: 'center',
-                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+                        borderRadius: isMobile ? '28px 28px 0 0' : '28px', 
+                        width: '100%', maxWidth: isMobile ? 'none' : '440px',
+                        padding: isMobile ? '2rem 1.5rem 3rem' : '2.5rem', 
+                        position: 'relative', textAlign: 'center',
+                        boxShadow: '0 -10px 25px rgba(0, 0, 0, 0.2)'
                     }}
                 >
+                    {/* Handle for bottom sheet on mobile */}
+                    {isMobile && (
+                        <div style={{
+                            width: '40px', height: '4px', background: 'var(--border-glass)',
+                            borderRadius: '2px', margin: '-1rem auto 1.5rem', opacity: 0.5
+                        }} />
+                    )}
+
                     <button
                         onClick={onClose}
                         style={{
-                            position: 'absolute', top: '1.25rem', right: '1.25rem',
+                            position: 'absolute', top: isMobile ? '1rem' : '1.25rem', right: isMobile ? '1rem' : '1.25rem',
                             padding: '0.5rem', borderRadius: '50%', color: 'var(--text-muted)',
                             background: 'var(--bg-surface)', border: 'none', cursor: 'pointer'
                         }}
@@ -44,25 +63,22 @@ export const ProfileCompletionPopup = ({ isOpen, onClose }) => {
                     </button>
 
                     <div style={{
-                        width: '80px', height: '80px', borderRadius: '24px',
+                        width: isMobile ? '64px' : '80px', height: isMobile ? '64px' : '80px', borderRadius: '20px',
                         background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         margin: '0 auto 1.5rem', color: 'white'
                     }}>
-                        <Trophy size={40} />
+                        <Trophy size={isMobile ? 32 : 40} />
                     </div>
 
-                    <h2 className="h2" style={{ marginBottom: '1rem', fontSize: '1.75rem' }}>Make it Official!</h2>
-                    <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: 1.6 }}>
+                    <h2 className="h2" style={{ marginBottom: '1rem', fontSize: isMobile ? '1.5rem' : '1.75rem' }}>Make it Official!</h2>
+                    <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: 1.6, fontSize: isMobile ? '0.95rem' : '1rem' }}>
                         Complete your profile to build trust, gain more followers, and stand out in the community. It only takes a minute!
                     </p>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                         <button
                             onClick={() => {
-                                // We'll trigger the EditProfileModal by closing this one and returning true or similar
-                                // But for simplicity, we can just open EditProfileModal right here if we wrap it.
-                                // Actually, let's keep it simple: the parent will switch to EditProfileModal.
                                 onClose(true); 
                             }}
                             className="btn btn-primary"

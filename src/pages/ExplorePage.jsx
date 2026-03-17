@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useSocial } from '../context/SocialContext';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
-import { fetchMixedFeed } from '../lib/feedService';
+import { fetchMixedFeed, fetchPersonalizedFeed } from '../lib/feedService';
 import { getNeedById, updateNeed, shapeNeed, getCategoryPreviews } from '../lib/needsService';
 import { getSuggestedProfiles } from '../lib/profileService';
 import { CATEGORY_GROUPS, getCategoryIcon } from '../data/categories';
@@ -90,7 +90,13 @@ export const ExplorePage = () => {
             const from = currentPage * PAGE_SIZE;
             const to = from + PAGE_SIZE - 1;
 
-            const mixedItems = await fetchMixedFeed(from, to);
+            let mixedItems;
+            if (feedTab === 'foryou' && user) {
+                mixedItems = await fetchPersonalizedFeed(user.id, from, to);
+            } else {
+                mixedItems = await fetchMixedFeed(from, to);
+            }
+            
             const newItems = mixedItems || [];
 
             if (isInitial) {
@@ -120,7 +126,7 @@ export const ExplorePage = () => {
 
     useEffect(() => {
         loadItems(true);
-    }, []);
+    }, [feedTab, user?.id, loadItems]);
 
     useEffect(() => {
         const loadSuggestions = async () => {

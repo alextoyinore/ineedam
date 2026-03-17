@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 
-const POPUP_INTERVAL = 12 * 60 * 60 * 1000; // 12 hours
+const POPUP_INTERVAL = 3 * 60 * 60 * 1000; // 3 hours
 const LAST_PROMPT_KEY = 'last_profile_completion_prompt';
 
 export const useProfileCompletion = () => {
