@@ -3,11 +3,11 @@
 :root,
 [data-theme='light'] {
   /* Color Palette - Vibrant Light Mode */
-  --bg-base: #ffffff;
-  /* Was #f8fafc, making it white for the performance test */
-  --bg-base-rgb: 255, 255, 255;
+  --bg-base: #f8fafc;
+  /* Was #ffffff, making it off-white for glass visibility */
+  --bg-base-rgb: 248, 250, 252;
   --bg-surface: #ffffff;
-  --bg-surface-glass: rgba(255, 255, 255, 0.72);
+  --bg-surface-glass: rgba(255, 255, 255, 0.7);
   --bg-surface-glass-hover: rgba(255, 255, 255, 0.9);
 
   --primary: #16A34A;
@@ -839,10 +839,9 @@ textarea::placeholder {
   left: 0;
   right: 0;
   height: 4.5rem;
-  background: var(--bg-surface);
-  /* var(--bg-surface-glass) */
-  /* backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px); */
+  background: var(--bg-surface-glass);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
   border-top: 1px solid var(--border-glass);
   display: flex;
   justify-content: space-between;
@@ -1080,8 +1079,8 @@ textarea::placeholder {
   top: 0;
   z-index: 100;
   background: var(--bg-surface-glass);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
   border-bottom: 1px solid var(--border-glass);
   width: 100%;
   box-sizing: border-box;

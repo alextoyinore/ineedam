@@ -92,7 +92,7 @@ export const MobileTopHeader = () => {
                                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
                                 style={{
                                     position: 'absolute', top: '120%', right: 0,
-                                    background: 'var(--bg-surface-glass)', backdropFilter: 'blur(16px)',
+                                    background: 'var(--bg-surface-glass)', backdropFilter: 'blur(16px) saturate(180%)',
                                     border: '1px solid var(--border-glass)', borderRadius: '12px',
                                     padding: '0.5rem', width: '160px', zIndex: 1200,
                                     boxShadow: 'none'

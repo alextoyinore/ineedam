@@ -100,7 +100,7 @@ export const UserProfilePage = () => {
     const { scrollY } = useScroll();
     // Animate tabs background relative to typical scroll position for profile details
     const tabsBackground = useTransform(scrollY, [200, 300], ['rgba(var(--bg-base-rgb), 0)', 'var(--bg-surface-glass)']);
-    const tabsBackdrop = useTransform(scrollY, [200, 300], ['blur(0px)', 'blur(16px)']);
+    const tabsBackdrop = useTransform(scrollY, [200, 300], ['blur(0px) saturate(100%)', 'blur(16px) saturate(180%)']);
     const tabsBorder = useTransform(scrollY, [200, 300], ['rgba(0,0,0,0)', 'var(--border-glass)']);
 
     // Pagination for Needs

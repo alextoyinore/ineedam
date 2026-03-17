@@ -140,7 +140,6 @@ export const NeedDetailPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { user, profile } = useAuth();
-
     const [replyText, setReplyText] = useState('');
     const [isPrivateReply, setIsPrivateReply] = useState(false);
     const [submittingReply, setSubmittingReply] = useState(false);
@@ -372,7 +371,7 @@ export const NeedDetailPage = () => {
             <header style={{
                 position: 'sticky', top: 0, zIndex: 40,
                 padding: '0.6rem var(--feed-item-padding)', display: 'flex', alignItems: 'center', gap: '0.5rem',
-                background: 'var(--bg-surface-glass)', backdropFilter: 'blur(16px)',
+                background: 'var(--bg-surface-glass)', backdropFilter: 'blur(16px) saturate(180%)',
                 borderBottom: '1px solid var(--border-glass)'
             }}>
                 <button

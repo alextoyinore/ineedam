@@ -310,7 +310,7 @@ export const EndorsementDetailPage = () => {
             <header style={{
                 position: 'sticky', top: 0, zIndex: 40,
                 padding: '0.75rem var(--feed-item-padding)', display: 'flex', alignItems: 'center', gap: '1.5rem',
-                background: 'var(--bg-surface-glass)', backdropFilter: 'blur(16px)',
+                background: 'var(--bg-surface-glass)', backdropFilter: 'blur(16px) saturate(180%)',
                 borderBottom: '1px solid var(--border-glass)'
             }}>
                 <button
