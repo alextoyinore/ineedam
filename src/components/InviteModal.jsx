@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Share2, Mail, Smartphone, Copy, Check } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 // Inline SVG social icons
 const WhatsAppIcon = (props) => (
@@ -34,9 +35,21 @@ const LinkedInIcon = (props) => (
 );
 
 export const InviteModal = ({ isOpen, onClose }) => {
+    const { profile } = useAuth();
     const [copied, setCopied] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 435);
     const appUrl = window.location.origin;
-    const inviteMessage = `Hey! Check out Ineedam - it's a great place to post what you need and find people who can help. Join me here: ${appUrl}`;
+
+    React.useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 435);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    // Use username as referral code if available
+    const referralCode = profile?.username || '';
+    const inviteLink = referralCode ? `${appUrl}?ref=${referralCode}` : appUrl;
+    const inviteMessage = `Hey! Check out Ineedam - it's a great place to post what you need and find people who can help. Join me here: ${inviteLink}`;
 
     const handleCopy = () => {
         navigator.clipboard.writeText(inviteMessage);
@@ -80,7 +93,7 @@ export const InviteModal = ({ isOpen, onClose }) => {
             name: 'Telegram',
             Icon: TelegramIcon,
             color: '#0088cc',
-            action: () => window.open(`https://t.me/share/url?url=${encodeURIComponent(appUrl)}&text=${encodeURIComponent(inviteMessage)}`, '_blank')
+            action: () => window.open(`https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent(inviteMessage)}`, '_blank')
         },
         {
             name: 'X (Twitter)',
@@ -92,18 +105,19 @@ export const InviteModal = ({ isOpen, onClose }) => {
             name: 'Facebook',
             Icon: FacebookIcon,
             color: '#1877F2',
-            action: () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(appUrl)}&quote=${encodeURIComponent(inviteMessage)}`, '_blank')
+            action: () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(inviteLink)}&quote=${encodeURIComponent(inviteMessage)}`, '_blank')
         },
         {
             name: 'LinkedIn',
             Icon: LinkedInIcon,
             color: '#0A66C2',
-            action: () => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(appUrl)}`, '_blank')
+            action: () => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(inviteLink)}`, '_blank')
         },
         {
             name: 'Email',
             Icon: Mail,
-            color: 'var(--primary)',
+            color: '#15803D',
+            bgColor: 'rgba(34, 197, 94, 0.15)', // Soft green background
             action: () => window.location.href = `mailto:?subject=${encodeURIComponent('Join me on Ineedam')}&body=${encodeURIComponent(inviteMessage)}`
         },
         {
@@ -116,113 +130,122 @@ export const InviteModal = ({ isOpen, onClose }) => {
 
     const canNativeShare = typeof navigator !== 'undefined' && !!navigator.share;
 
-    if (!isOpen) return null;
-
     return (
         <AnimatePresence>
-            <div style={{
-                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                padding: '1rem', background: 'rgba(0, 0, 0, 0.5)', backdropFilter: 'blur(4px)'
-            }} onClick={onClose}>
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                    onClick={e => e.stopPropagation()}
-                    style={{
-                        width: '100%', maxWidth: '440px', background: 'var(--bg-surface)',
-                        borderRadius: '24px', border: '1px solid var(--border-glass)',
-                        boxShadow: '0 20px 40px rgba(0,0,0,0.2)', overflow: 'hidden'
-                    }}
-                >
-                    {/* Header */}
-                    <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border-glass)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <Share2 size={24} color="var(--primary)" />
-                            Invite Friends
-                        </h2>
-                        <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.5rem', borderRadius: '50%' }} className="nav-link-hover">
-                            <X size={20} />
-                        </button>
-                    </div>
-
-                    {/* Content */}
-                    <div style={{ padding: '1.5rem' }}>
-                        <p style={{ margin: '0 0 1.25rem 0', color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.5 }}>
-                            Share Ineedam with your friends and help grow our community.
-                        </p>
-
-                        {/* Native share button (mobile/supported browsers) */}
-                        {canNativeShare && (
-                            <button
-                                onClick={handleNativeShare}
-                                style={{
-                                    width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    gap: '0.6rem', padding: '0.75rem', borderRadius: '12px', marginBottom: '1.25rem',
-                                    background: 'var(--primary)', color: 'white', border: 'none',
-                                    fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', transition: 'opacity 0.2s'
-                                }}
-                                className="nav-link-hover"
-                            >
-                                <Share2 size={18} />
-                                Share via…
-                            </button>
+            {isOpen && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    zIndex: 2000, display: 'flex', alignItems: isMobile ? 'flex-end' : 'center', justifyContent: 'center',
+                    padding: isMobile ? '0' : '1rem', background: 'rgba(0, 0, 0, 0.5)', backdropFilter: 'blur(8px)'
+                }} onClick={onClose}>
+                    <motion.div
+                        initial={{ opacity: 0, y: isMobile ? '100%' : 20, scale: isMobile ? 1 : 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: isMobile ? '100%' : 20, scale: isMobile ? 1 : 0.95 }}
+                        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                        onClick={e => e.stopPropagation()}
+                        style={{
+                            width: '100%', maxWidth: isMobile ? '100%' : '440px', background: 'var(--bg-surface)',
+                            borderRadius: isMobile ? '24px 24px 0 0' : '24px', 
+                            border: isMobile ? 'none' : '1px solid var(--border-glass)',
+                            borderTop: isMobile ? '1px solid var(--border-glass)' : undefined,
+                            boxShadow: '0 20px 40px rgba(0,0,0,0.2)', overflow: 'hidden',
+                            paddingBottom: isMobile ? 'env(safe-area-inset-bottom, 1.5rem)' : '0'
+                        }}
+                    >
+                        {/* Drag indicator for mobile bottom sheet */}
+                        {isMobile && (
+                            <div style={{ width: '40px', height: '4px', background: 'var(--border-glass)', borderRadius: '2px', margin: '0.75rem auto 0', opacity: 0.5 }} />
                         )}
 
-                        {/* Social grid */}
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem', marginBottom: '1.25rem' }}>
-                            {shareOptions.map(option => (
+                        {/* Header */}
+                        <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border-glass)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <Share2 size={24} color="var(--primary)" />
+                                Invite Friends
+                            </h2>
+                            <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.5rem', borderRadius: '50%' }} className="nav-link-hover">
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div style={{ padding: '1.5rem' }}>
+                            <p style={{ margin: '0 0 1.25rem 0', color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.5 }}>
+                                Share Ineedam with your friends and help grow our community.
+                            </p>
+
+                            {/* Native share button (mobile/supported browsers) */}
+                            {canNativeShare && (
                                 <button
-                                    key={option.name}
-                                    onClick={option.action}
-                                    title={option.name}
+                                    onClick={handleNativeShare}
                                     style={{
-                                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem',
-                                        padding: '0.85rem 0.5rem', borderRadius: '14px', background: 'var(--bg-base)',
-                                        border: '1px solid var(--border-glass)', transition: 'all 0.2s', cursor: 'pointer'
+                                        width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        gap: '0.6rem', padding: '0.75rem', borderRadius: '12px', marginBottom: '1.25rem',
+                                        background: 'var(--primary)', color: 'white', border: 'none',
+                                        fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', transition: 'opacity 0.2s'
                                     }}
                                     className="nav-link-hover"
                                 >
-                                    <div style={{
-                                        width: '38px', height: '38px', borderRadius: '10px',
-                                        background: `${option.color === 'var(--primary)' ? 'rgba(99,102,241,0.12)' : option.color + '18'}`,
-                                        display: 'flex', alignItems: 'center',
-                                        justifyContent: 'center', color: option.color, flexShrink: 0
-                                    }}>
-                                        <option.Icon width={20} height={20} />
-                                    </div>
-                                    <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.2 }}>{option.name}</span>
+                                    <Share2 size={18} />
+                                    Share via…
                                 </button>
-                            ))}
-                        </div>
+                            )}
 
-                        {/* Copy Link Section */}
-                        <div style={{
-                            background: 'var(--bg-base)', border: '1px solid var(--border-glass)',
-                            borderRadius: '12px', padding: '0.5rem 0.5rem 0.5rem 1rem',
-                            display: 'flex', alignItems: 'center', gap: '0.75rem'
-                        }}>
-                            <span style={{ flex: 1, fontSize: '0.85rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                {appUrl}
-                            </span>
-                            <button
-                                onClick={handleCopy}
-                                style={{
-                                    display: 'flex', alignItems: 'center', gap: '0.5rem',
-                                    padding: '0.5rem 1rem', borderRadius: '8px',
-                                    background: copied ? '#22c55e' : 'var(--primary)',
-                                    color: 'white', border: 'none', cursor: 'pointer',
-                                    fontSize: '0.85rem', fontWeight: 600, transition: 'all 0.2s', flexShrink: 0
-                                }}
-                            >
-                                {copied ? <Check size={16} /> : <Copy size={16} />}
-                                {copied ? 'Copied!' : 'Copy'}
-                            </button>
+                            {/* Social grid */}
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                                {shareOptions.map(option => (
+                                    <button
+                                        key={option.name}
+                                        onClick={option.action}
+                                        title={option.name}
+                                        style={{
+                                            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem',
+                                            padding: '0.85rem 0', background: 'none', border: 'none', 
+                                            transition: 'transform 0.2s', cursor: 'pointer'
+                                        }}
+                                        className="scale-hover"
+                                    >
+                                        <div style={{
+                                            width: '44px', height: '44px', borderRadius: '50%',
+                                            background: option.bgColor || 'transparent',
+                                            display: 'flex', alignItems: 'center',
+                                            justifyContent: 'center', color: option.color, flexShrink: 0
+                                        }}>
+                                            <option.Icon width={24} height={24} />
+                                        </div>
+                                        <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.2 }}>{option.name}</span>
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Copy Link Section */}
+                            <div style={{
+                                background: 'var(--bg-base)', border: '1px solid var(--border-glass)',
+                                borderRadius: '12px', padding: '0.5rem 0.5rem 0.5rem 1rem',
+                                display: 'flex', alignItems: 'center', gap: '0.75rem'
+                            }}>
+                                <span style={{ flex: 1, fontSize: '0.85rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    {inviteLink}
+                                </span>
+                                <button
+                                    onClick={handleCopy}
+                                    style={{
+                                        display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                        padding: '0.5rem 1rem', borderRadius: '8px',
+                                        background: copied ? '#22c55e' : 'var(--primary)',
+                                        color: 'white', border: 'none', cursor: 'pointer',
+                                        fontSize: '0.85rem', fontWeight: 600, transition: 'all 0.2s', flexShrink: 0
+                                    }}
+                                >
+                                    {copied ? <Check size={16} /> : <Copy size={16} />}
+                                    {copied ? 'Copied!' : 'Copy'}
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                </motion.div>
-            </div>
+                    </motion.div>
+                </div>
+            )}
         </AnimatePresence>
     );
 };

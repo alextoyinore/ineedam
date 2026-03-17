@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, CheckCircle, Search, Loader } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getProfileByUsername } from '../lib/profileService';
+import { createNeedStory } from '../lib/storyService';
 
 export const MarkMetModal = ({ isOpen, onClose, need, onConfirm }) => {
     const [username, setUsername] = useState('');
@@ -49,6 +50,7 @@ export const MarkMetModal = ({ isOpen, onClose, need, onConfirm }) => {
             }
 
             await onConfirm(need.id, helperProfile);
+            await createNeedStory(need.id, helperProfile);
             setSuccess(true);
             setTimeout(() => {
                 setSuccess(false);
@@ -68,9 +70,9 @@ export const MarkMetModal = ({ isOpen, onClose, need, onConfirm }) => {
         padding: '0.8rem 1rem',
         background: 'var(--bg-base)',
         border: '1px solid var(--border-glass)',
-        borderRadius: '8px',
+        borderRadius: '12px',
         color: 'var(--text-primary)',
-        fontSize: '0.95rem',
+        fontSize: '1rem',
         outline: 'none',
         transition: 'border-color 0.2s',
     };
@@ -85,19 +87,26 @@ export const MarkMetModal = ({ isOpen, onClose, need, onConfirm }) => {
                 }} onClick={onClose}>
                     <motion.div
                         onClick={(e) => e.stopPropagation()}
-                        initial={{ opacity: 0, scale: isMobile ? 1 : 0.95, y: isMobile ? 100 : 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: isMobile ? 1 : 0.95, y: isMobile ? 100 : 20 }}
+                        initial={{ opacity: 0, y: isMobile ? '100%' : 20, scale: isMobile ? 1 : 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: isMobile ? '100%' : 20, scale: isMobile ? 1 : 0.95 }}
+                        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                         style={{
-                            background: 'var(--bg-surface)', border: '1px solid var(--border-glass)',
-                            borderRadius: isMobile ? '20px 20px 0 0' : '20px', 
-                            width: '100%', maxWidth: '400px',
+                            background: 'var(--bg-surface)', 
+                            border: isMobile ? 'none' : '1px solid var(--border-glass)',
+                            borderTop: isMobile ? '1px solid var(--border-glass)' : undefined,
+                            borderRadius: isMobile ? '24px 24px 0 0' : '24px', 
+                            width: '100%', maxWidth: isMobile ? '100%' : '420px',
                             position: 'relative', overflow: 'hidden',
-                            boxShadow: 'none',
-                            height: isMobile ? 'auto' : 'auto',
-                            maxHeight: isMobile ? '60dvh' : '90dvh'
+                            boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
+                            paddingBottom: isMobile ? 'env(safe-area-inset-bottom, 1.5rem)' : '0'
                         }}
                     >
+                        {/* Drag indicator for mobile bottom sheet */}
+                        {isMobile && (
+                            <div style={{ width: '40px', height: '4px', background: 'var(--border-glass)', borderRadius: '2px', margin: '0.75rem auto 0', opacity: 0.5 }} />
+                        )}
+
                         {success ? (
                             <div style={{ padding: '3rem 2rem', textAlign: 'center' }}>
                                 <motion.div
@@ -107,47 +116,71 @@ export const MarkMetModal = ({ isOpen, onClose, need, onConfirm }) => {
                                 >
                                     <CheckCircle size={64} />
                                 </motion.div>
-                                <h3 className="h3" style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Success!</h3>
+                                <h3 className="h3" style={{ fontSize: '1.5rem', marginBottom: '0.5rem', fontWeight: 800 }}>Success!</h3>
                                 <p style={{ color: 'var(--text-muted)' }}>Need marked as met. Helper tagged!</p>
                             </div>
                         ) : (
                             <>
-                                <header style={{ padding: '1.5rem 1.5rem 0 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <h2 className="h2" style={{ margin: 0, fontSize: '1.25rem' }}>Mark as Met</h2>
-                                    <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                                <header style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: isMobile ? 'none' : '1px solid var(--border-glass)' }}>
+                                    <div>
+                                        <h2 className="h2" style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800 }}>Mark as Met</h2>
+                                        <p style={{ margin: '0.25rem 0 0 0', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Acknowledge who helped you</p>
+                                    </div>
+                                    <button onClick={onClose} style={{ background: 'var(--bg-base)', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.5rem', borderRadius: '50%' }}>
                                         <X size={20} />
                                     </button>
                                 </header>
 
                                 <form onSubmit={handleSubmit} style={{ padding: '1.5rem' }}>
-                                    <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem', lineHeight: 1.4 }}>
-                                        Who helped you with this? Tag them to boost their "Fulfilled Requests" count.
+                                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginBottom: '1.5rem', lineHeight: 1.5 }}>
+                                        Who helped you with this? Tag them to boost their "Fulfilled Requests" count and generate a success story.
                                     </p>
 
-                                    <div style={{ marginBottom: '1.5rem' }}>
-                                        <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Helper Username</label>
+                                    <div style={{ marginBottom: '2rem' }}>
+                                        <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.75rem' }}>Helper Username</label>
                                         <div style={{ position: 'relative' }}>
-                                            <Search size={16} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                                            <Search size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', opacity: 0.6 }} />
                                             <input
                                                 autoFocus
                                                 required
                                                 placeholder="e.g. johndoe"
                                                 value={username}
                                                 onChange={(e) => setUsername(e.target.value)}
-                                                style={{ ...inputStyles, paddingLeft: '2.75rem' }}
+                                                style={{ ...inputStyles, paddingLeft: '3rem' }}
                                             />
                                         </div>
-                                        {error && <p style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '0.5rem', margin: '0.5rem 0 0 0' }}>{error}</p>}
+                                        <AnimatePresence>
+                                            {error && (
+                                                <motion.p 
+                                                    initial={{ opacity: 0, height: 0 }}
+                                                    animate={{ opacity: 1, height: 'auto' }}
+                                                    style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.75rem', fontWeight: 500 }}
+                                                >
+                                                    {error}
+                                                </motion.p>
+                                            )}
+                                        </AnimatePresence>
                                     </div>
 
                                     <button
                                         type="submit"
                                         disabled={loading || !username.trim()}
                                         className="btn-primary"
-                                        style={{ width: '100%', padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                                        style={{ 
+                                            width: '100%', 
+                                            padding: '1.1rem', 
+                                            display: 'flex', 
+                                            alignItems: 'center', 
+                                            justifyContent: 'center', 
+                                            gap: '0.75rem',
+                                            fontSize: '1rem',
+                                            fontWeight: 700,
+                                            borderRadius: '14px',
+                                            boxShadow: '0 10px 20px -5px var(--primary-shadow)'
+                                        }}
                                     >
-                                        {loading ? <Loader size={18} className="animate-spin" /> : <CheckCircle size={18} />}
-                                        Confirm
+                                        {loading ? <Loader size={20} className="animate-spin" /> : <CheckCircle size={20} />}
+                                        Mark as Resolved
                                     </button>
                                 </form>
                             </>

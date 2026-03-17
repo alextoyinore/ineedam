@@ -26,9 +26,12 @@ export const AuthForm = ({ onAuthSuccess, initialTab = 'signin', variant = 'inli
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
         setError('');
         setSuccessMsg('');
+        
+        // Check for referral code in URL
+        const params = new URLSearchParams(window.location.search);
+        const referredBy = params.get('ref');
         
         // Strict email validation
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -52,7 +55,7 @@ export const AuthForm = ({ onAuthSuccess, initialTab = 'signin', variant = 'inli
                 navigate('/');
             }
         } else {
-            const { data, error } = await signUp(email, password);
+            const { data, error } = await signUp(email, password, {}, referredBy);
             setLoading(false);
             if (error) {
                 setError(error.message);

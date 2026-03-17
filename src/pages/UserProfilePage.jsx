@@ -32,6 +32,7 @@ import { fetchRepliesByUser, formatTimeAgo, updateReplyStatus } from '../lib/rep
 import { getOrCreateThread } from '../lib/chatService';
 import { fetchBroadcastedNeeds } from '../lib/broadcastService';
 import { fetchEndorsementsForUser } from '../lib/endorsementService';
+import { fetchNeedStories } from '../lib/storyService';
 import { BlockedAccountsPage } from './BlockedAccountsPage';
 import { checkBlockStatus, blockUser, unblockUser } from '../lib/moderationService';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
@@ -91,8 +92,11 @@ export const UserProfilePage = () => {
         needsMet: 0,
         fulfilledRequests: 0,
         followersCount: 0,
-        followingCount: 0
+        followingCount: 0,
+        referralPoints: 0,
+        earnedEndorsements: 0
     });
+    const [userStories, setUserStories] = useState([]);
     const [responseRate, setResponseRate] = useState(null);
     const [shareCopied, setShareCopied] = useState(false);
     const [lightboxSrc, setLightboxSrc] = useState(null);
@@ -144,7 +148,8 @@ export const UserProfilePage = () => {
                     fetchEndorsementsForUser(profileData.id),
                     getFollowers(profileData.id),
                     getFollowing(profileData.id),
-                    fetchResponseRate(profileData.id)
+                    fetchResponseRate(profileData.id),
+                    fetchNeedStories(profileData.id)
                 ]);
 
                 const needsData = results[0].status === 'fulfilled' ? results[0].value : [];
@@ -156,6 +161,7 @@ export const UserProfilePage = () => {
                 const followersData = results[6].status === 'fulfilled' ? results[6].value : [];
                 const followingData = results[7].status === 'fulfilled' ? results[7].value : [];
                 const responseRateData = results[8].status === 'fulfilled' ? results[8].value : null;
+                const storiesData = results[9].status === 'fulfilled' ? results[9].value : { data: [] };
 
                 const shapedNeeds = (needsData || [])
                     .map(n => ({ ...shapeNeed(n), status: n.status }))
@@ -185,9 +191,15 @@ export const UserProfilePage = () => {
                 setUserReplies(shapedReplies);
                 setUserBroadcasts(shapedBroadcasts); // Keep for the specific tab if still needed
                 setUserEndorsements(shapedEndorsements);
+                setUserStories(storiesData.data || []);
                 setFollowersList(followersData || []);
                 setFollowingList(followingData || []);
-                setStats({ ...metStats, ...followStats });
+                setStats({ 
+                    ...metStats, 
+                    ...followStats, 
+                    referralPoints: profileData.referral_points || 0,
+                    earnedEndorsements: profileData.earned_endorsements || 0
+                });
                 setResponseRate(responseRateData);
 
                 if (currentUser && currentUser.id !== profileData.id) {
@@ -686,6 +698,9 @@ export const UserProfilePage = () => {
                             <span style={{ color: 'var(--text-muted)' }}><strong style={{ color: 'var(--text-primary)' }}>{stats.followersCount}</strong> Followers</span>
                             <span style={{ color: 'var(--text-muted)' }}><strong style={{ color: 'var(--text-primary)' }}>{stats.needsMet}</strong> Given</span>
                             <span style={{ color: 'var(--text-muted)' }}><strong style={{ color: 'var(--text-primary)' }}>{stats.fulfilledRequests}</strong> Received</span>
+                            <span style={{ color: 'var(--text-muted)' }} title="5 referrals = 1 endorsement">
+                                <strong style={{ color: 'var(--text-primary)' }}>{stats.referralPoints}</strong> Referral Points
+                            </span>
                         </div>
 
                         {/* Responsiveness Metrics */}
@@ -760,21 +775,32 @@ export const UserProfilePage = () => {
                                 zIndex: 900
                             }}
                         >
-                            {['needs', 'broadcasts', 'endorsements', 'replies', 'following', 'followers'].map(tab => (
+                            {['needs', 'stories', 'endorsements', 'replies', 'following', 'followers', ...(isOwnProfile ? ['broadcasts'] : [])].map(tab => (
                                 <button
                                     key={tab}
                                     onClick={() => setActiveTab(tab)}
                                     style={{
-                                        flex: 1, padding: '1rem', fontWeight: 600, fontSize: '0.9rem',
+                                        padding: '1rem', fontWeight: 600, fontSize: '0.9rem',
                                         color: activeTab === tab ? 'var(--text-primary)' : 'var(--text-muted)',
-                                        position: 'relative', transition: 'background-color 0.2s',
-                                        textTransform: 'capitalize', whiteSpace: 'nowrap'
+                                        position: 'relative', transition: 'color 0.2s',
+                                        textTransform: 'capitalize', whiteSpace: 'nowrap',
+                                        background: 'transparent', border: 'none', cursor: 'pointer',
+                                        display: 'flex', alignItems: 'center', gap: '0.4rem'
                                     }}
                                     className="nav-link-hover"
                                 >
                                     {tab === 'needs' ? 'Posts' : tab}
+                                    {tab === 'stories' && userStories.length > 0 && (
+                                        <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>{userStories.length}</span>
+                                    )}
+                                    {tab === 'endorsements' && userEndorsements.length > 0 && (
+                                        <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>{userEndorsements.length}</span>
+                                    )}
                                     {activeTab === tab && (
-                                        <div style={{ position: 'absolute', bottom: 0, left: '15%', right: '15%', height: '4px', background: 'var(--primary)', borderRadius: '4px 4px 0 0' }} />
+                                        <motion.div 
+                                            layoutId="activeTab"
+                                            style={{ position: 'absolute', bottom: 0, left: '0', right: '0', height: '3px', background: 'var(--primary)', borderRadius: '3px 3px 0 0' }} 
+                                        />
                                     )}
                                 </button>
                             ))}
@@ -862,6 +888,49 @@ export const UserProfilePage = () => {
                                                 <Loader size={24} className="animate-spin" />
                                             </div>
                                         )}
+                                    </div>
+                                )
+                            )}
+
+                            {activeTab === 'stories' && (
+                                loadingData ? (
+                                    <div style={{ padding: '3rem', display: 'flex', justifyContent: 'center', color: 'var(--primary)' }}><Loader size={24} className="animate-spin" /></div>
+                                ) : userStories.length === 0 ? (
+                                    <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>No stories yet.</div>
+                                ) : (
+                                    <div style={{ padding: '1rem 0' }}>
+                                        {userStories.map((story, idx) => (
+                                            <motion.div
+                                                key={story.id}
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: idx * 0.1 }}
+                                                className="glass-card"
+                                                style={{ margin: '0 var(--feed-item-padding) 1rem var(--feed-item-padding)', padding: '1.25rem' }}
+                                            >
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                        <img src={story.poster.avatar_url} style={{ width: 32, height: 32, borderRadius: '50%', border: '2px solid var(--bg-surface)' }} />
+                                                        <img src={story.helper.avatar_url} style={{ width: 32, height: 32, borderRadius: '50%', border: '2px solid var(--bg-surface)', marginLeft: -12 }} />
+                                                    </div>
+                                                    <div>
+                                                        <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600 }}>Solved Need Story</h4>
+                                                        <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>{formatTimeAgo(story.fulfilled_at)}</p>
+                                                    </div>
+                                                </div>
+                                                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--primary)' }}>
+                                                    {story.title}
+                                                </h3>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.9rem' }}>
+                                                    <span><strong>Poster:</strong> {story.poster.display_name}</span>
+                                                    <span><strong>Helper:</strong> {story.helper.display_name}</span>
+                                                    <span><strong>Responders:</strong> {story.responder_count} members</span>
+                                                    <div style={{ marginTop: '0.5rem', padding: '0.75rem', background: 'rgba(21, 128, 61, 0.1)', borderRadius: '8px', borderLeft: '4px solid #15803D' }}>
+                                                        <strong>Outcome:</strong> {story.outcome}
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        ))}
                                     </div>
                                 )
                             )}

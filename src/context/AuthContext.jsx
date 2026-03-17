@@ -167,7 +167,7 @@ export const AuthProvider = ({ children }) => {
         }
     }, [user, profile]);
 
-    const signUp = async (email, password, metaData) => {
+    const signUp = async (email, password, metaData, referredBy) => {
         const { data, error } = await supabase.auth.signUp({
             email,
             password,
@@ -175,6 +175,19 @@ export const AuthProvider = ({ children }) => {
                 data: metaData
             }
         });
+
+        // If signup was successful and we have a referrer, increment their points
+        if (!error && referredBy && data?.user) {
+            try {
+                const { error: rpcError } = await supabase.rpc('increment_referral_points', { 
+                    referrer_username: referredBy 
+                });
+                if (rpcError) console.error('[Referral] Error incrementing points:', rpcError);
+                else console.log('[Referral] Points incremented for:', referredBy);
+            } catch (err) {
+                console.error('[Referral] RPC Exception:', err);
+            }
+        }
         return { data, error };
     };
 
