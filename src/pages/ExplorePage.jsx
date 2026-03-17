@@ -107,7 +107,7 @@ export const ExplorePage = () => {
             } else {
                 mixedItems = await fetchMixedFeed(from, to);
             }
-            
+
             const newItems = mixedItems || [];
 
             if (isInitial) {
@@ -301,7 +301,7 @@ export const ExplorePage = () => {
                                     layoutId="activeTab"
                                     style={{
                                         position: 'absolute', bottom: 0, left: '15%', right: '15%',
-                                        height: '4px', background: 'var(--primary)', borderRadius: '4px 4px 0 0'
+                                        height: '1px', background: 'var(--primary)', borderRadius: '1px 1px 0 0'
                                     }}
                                 />
                             )}
