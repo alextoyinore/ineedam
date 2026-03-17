@@ -11,7 +11,7 @@ import { CATEGORY_METADATA } from '../data/categories';
 import { uploadImageToCloudinary } from '../lib/needsService';
 
 export const KYCVerificationPage = () => {
-    const { profile, refreshProfile } = useAuth();
+    const { profile, fetchProfile } = useAuth();
     const navigate = useNavigate();
     const [step, setStep] = useState(1);
     const [submitting, setSubmitting] = useState(false);
@@ -162,7 +162,7 @@ export const KYCVerificationPage = () => {
             localStorage.removeItem(`kyc_draft_${profile.id}`);
             localStorage.removeItem(`kyc_step_${profile.id}`);
             
-            await refreshProfile();
+            await fetchProfile(profile.id);
         } catch (err) {
             console.error('KYC Submission error:', err);
             setError('Failed to submit verification request. Please try again.');
@@ -197,7 +197,7 @@ export const KYCVerificationPage = () => {
             localStorage.removeItem(`kyc_draft_${profile.id}`);
             localStorage.removeItem(`kyc_step_${profile.id}`);
 
-            await refreshProfile();
+            await fetchProfile(profile.id);
             setStep(1);
         } catch (err) {
             console.error("Error restarting verification:", err);
