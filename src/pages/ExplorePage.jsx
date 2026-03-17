@@ -526,13 +526,6 @@ export const ExplorePage = () => {
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     transition={{ duration: 0.2 }}
-                                    onClick={() => {
-                                        if (item.type === 'need' || item.type === 'broadcast') {
-                                            navigate(`/need/${item.id}`);
-                                        } else if ((item.type === 'endorsement' || item.type === 'broadcast_endorsement') && (item.needs?.id || item.need_id)) {
-                                            navigate(`/need/${item.needs?.id || item.need_id}`);
-                                        }
-                                    }}
                                 >
                                     {renderItem(item)}
                                 </motion.div>
