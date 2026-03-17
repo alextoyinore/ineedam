@@ -71,10 +71,10 @@ export const ChatThreads = ({ isSplitView = false }) => {
     };
 
     return (
-        <div style={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            background: 'var(--bg-base)', 
+        <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            background: 'var(--bg-base)',
             width: '100%',
             flex: 1,
             height: isMobile ? 'auto' : '100%',
@@ -93,7 +93,7 @@ export const ChatThreads = ({ isSplitView = false }) => {
                 width: '100%',
                 boxSizing: 'border-box'
             }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '1rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '', gap: '1rem' }}>
                     <h2 className="h2" style={{ fontSize: '1.5rem', margin: 0 }}>Chat</h2>
                     <button
                         onClick={() => setIsSearching(true)}
@@ -232,7 +232,7 @@ export const ChatThreads = ({ isSplitView = false }) => {
                                         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                                         fontWeight: thread.unread ? 600 : 400
                                     }}>
-                                        {thread.lastChat?.replace(/\[CALL_(SUCCESS|MISSED|REJECTED|CANCELLED)\]/, '')}
+                                        {thread.lastChat?.replace(/\[CALL_(SUCCESS|MISSED|REJECTED|CANCELLED)\]/, '').slice(0, 50)}
                                     </p>
                                 </div>
                             </div>
