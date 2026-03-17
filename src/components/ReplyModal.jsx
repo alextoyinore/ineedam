@@ -157,7 +157,45 @@ export const ReplyModal = ({ isOpen, onClose, need, parentId = null, replyingTo 
                                 (user?.user_metadata?.display_name || user?.email || 'A').charAt(0).toUpperCase()
                             )}
                         </div>
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', minWidth: 0 }}>
+                            {/* Quick Responses */}
+                            <div style={{ 
+                                display: 'flex', 
+                                gap: '0.5rem', 
+                                overflowX: 'auto', 
+                                paddingBottom: '0.5rem',
+                                marginBottom: '0.25rem',
+                                maxWidth: '100%',
+                                flexShrink: 0
+                            }} className="no-scrollbar">
+                                {[
+                                    { label: "I can help", text: "I can help with this!" },
+                                    { label: "More details", text: "Could you provide more details?" },
+                                    { label: "Interested", text: "Interested, tell me more." },
+                                    { label: "Referral", text: "I know someone who can help!" }
+                                ].map((resp, i) => (
+                                    <button
+                                        key={i}
+                                        type="button"
+                                        onClick={() => setReplyText(prev => prev ? prev + ' ' + resp.text : resp.text)}
+                                        style={{
+                                            padding: '0.4rem 0.8rem',
+                                            borderRadius: '9999px',
+                                            fontSize: '0.8rem',
+                                            background: 'var(--bg-base)',
+                                            border: '1px solid var(--border-glass)',
+                                            color: 'var(--text-secondary)',
+                                            whiteSpace: 'nowrap',
+                                            cursor: 'pointer',
+                                            fontWeight: 600,
+                                            transition: 'all 0.2s'
+                                        }}
+                                        className="glass-panel-hover"
+                                    >
+                                        {resp.label}
+                                    </button>
+                                ))}
+                            </div>
                             <textarea
                                 required
                                 autoFocus

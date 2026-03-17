@@ -65,7 +65,7 @@ export const SupportPage = () => {
             {/* Header */}
             <header style={{
                 position: 'sticky', top: 0, zIndex: 40,
-                padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem',
+                padding: '0.6rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem',
                 background: 'var(--bg-surface-glass)', backdropFilter: 'blur(16px)',
                 borderBottom: '1px solid var(--border-glass)'
             }}>

@@ -139,14 +139,14 @@ export const SearchPage = () => {
 
             {/* Header */}
             <header className="sticky-header" style={{
-                padding: '0.75rem var(--feed-item-padding)', display: 'flex', alignItems: 'center', gap: '0.5rem'
+                padding: '0.6rem var(--feed-item-padding)', display: 'flex', alignItems: 'center', gap: '0.5rem'
             }}>
                 <button onClick={() => window.history.back()} style={{ padding: '0.5rem', borderRadius: '50%', color: 'var(--text-primary)', marginLeft: '-0.5rem' }} className="glass-panel-hover">
                     <ArrowLeft size={20} />
                 </button>
-                <div style={{ flex: 1 }}>
-                    <h2 className="h2" style={{ fontSize: '1.25rem', margin: 0, lineHeight: 1.2 }}>{viewTitle}</h2>
-                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>"{viewSub}"</span>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <h2 className="h2" style={{ fontSize: '1.25rem', margin: 0, lineHeight: 1.1 }}>{viewTitle}</h2>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1 }}>"{viewSub}"</span>
                 </div>
                 <button
                     onClick={() => setShowFilters(!showFilters)}

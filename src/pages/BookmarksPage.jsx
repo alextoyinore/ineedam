@@ -93,12 +93,12 @@ export const BookmarksPage = () => {
 
             {/* Header */}
             <header className="sticky-header" style={{
-                padding: '1rem var(--feed-item-padding)'
+                padding: '0.6rem var(--feed-item-padding)'
             }}>
                 <h2 className="h2" style={{ fontSize: '1.25rem', margin: 0, cursor: 'pointer' }} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
                     Bookmarks
                 </h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: 0, marginTop: '0.25rem' }}>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: 0, marginTop: '0.1rem' }}>
                     @{profile?.username || user?.email?.split('@')[0] || 'user'}
                 </p>
             </header>

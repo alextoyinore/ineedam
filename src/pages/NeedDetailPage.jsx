@@ -371,7 +371,7 @@ export const NeedDetailPage = () => {
             {/* Sticky Header */}
             <header style={{
                 position: 'sticky', top: 0, zIndex: 40,
-                padding: '0.75rem var(--feed-item-padding)', display: 'flex', alignItems: 'center', gap: '0.5rem',
+                padding: '0.6rem var(--feed-item-padding)', display: 'flex', alignItems: 'center', gap: '0.5rem',
                 background: 'var(--bg-surface-glass)', backdropFilter: 'blur(16px)',
                 borderBottom: '1px solid var(--border-glass)'
             }}>
@@ -409,10 +409,50 @@ export const NeedDetailPage = () => {
                         {!profile?.avatar_url && (profile?.display_name?.charAt(0) || user?.email?.charAt(0).toUpperCase() || 'A')}
                     </div>
                 </div>
-                <form style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.75rem' }} onSubmit={handleSubmitReply}>
+                <form style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.75rem', minWidth: 0 }} onSubmit={handleSubmitReply}>
                     <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
                         Replying to <span style={{ color: 'var(--primary)', fontWeight: 600 }}>@{formatUsername(need.authorUsername || 'author', isMobile)}</span>
                     </div>
+
+                    {/* Quick Responses */}
+                    <div style={{ 
+                        display: 'flex', 
+                        gap: '0.5rem', 
+                        overflowX: 'auto', 
+                        paddingBottom: '0.25rem',
+                        marginTop: '0.25rem',
+                        maxWidth: '100%',
+                        flexShrink: 0
+                    }} className="no-scrollbar">
+                        {[
+                            { label: "I can help", text: "I can help with this!" },
+                            { label: "More details", text: "Could you provide more details?" },
+                            { label: "Interested", text: "Interested, tell me more." },
+                            { label: "Referral", text: "I know someone who can help!" }
+                        ].map((resp, i) => (
+                            <button
+                                key={i}
+                                type="button"
+                                onClick={() => setReplyText(prev => prev ? prev + ' ' + resp.text : resp.text)}
+                                style={{
+                                    padding: '0.4rem 0.8rem',
+                                    borderRadius: '9999px',
+                                    fontSize: '0.8rem',
+                                    background: 'var(--bg-surface)',
+                                    border: '1px solid var(--border-glass)',
+                                    color: 'var(--text-secondary)',
+                                    whiteSpace: 'nowrap',
+                                    cursor: 'pointer',
+                                    fontWeight: 600,
+                                    transition: 'all 0.2s'
+                                }}
+                                className="glass-panel-hover"
+                            >
+                                {resp.label}
+                            </button>
+                        ))}
+                    </div>
+
                     <textarea
                         disabled={!user || submittingReply}
                         value={replyText}

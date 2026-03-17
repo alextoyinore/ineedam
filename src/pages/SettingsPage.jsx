@@ -204,7 +204,7 @@ export const SettingsPage = () => {
             />
             {/* Sticky Header — matches UserProfilePage & NeedDetailPage */}
             <header className="sticky-header" style={{
-                padding: '0.75rem var(--feed-item-padding)',
+                padding: '0.6rem var(--feed-item-padding)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.5rem'

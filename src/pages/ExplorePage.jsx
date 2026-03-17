@@ -275,7 +275,7 @@ export const ExplorePage = () => {
                             key={tab}
                             onClick={() => setFeedTab(tab)}
                             style={{
-                                flex: 1, padding: '1.1rem .9rem', fontWeight: 600, fontSize: '0.95rem',
+                                flex: 1, padding: '0.85rem .9rem', fontWeight: 600, fontSize: '0.95rem',
                                 color: feedTab === tab ? 'var(--text-primary)' : 'var(--text-primary)',
                                 position: 'relative', background: 'transparent', border: 'none', cursor: 'pointer',
                                 transition: 'all 0.2s',

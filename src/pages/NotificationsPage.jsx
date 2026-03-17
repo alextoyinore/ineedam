@@ -98,7 +98,7 @@ export const NotificationsPage = () => {
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             {/* Header */}
             <header className="sticky-header" style={{
-                padding: '0 var(--feed-item-padding)',
+                padding: '0.6rem var(--feed-item-padding)',
                 height: 'var(--mobile-header-height)',
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center'
             }}>
