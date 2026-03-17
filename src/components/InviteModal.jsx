@@ -117,7 +117,6 @@ export const InviteModal = ({ isOpen, onClose }) => {
             name: 'Email',
             Icon: Mail,
             color: '#15803D',
-            bgColor: 'rgba(34, 197, 94, 0.15)', // Soft green background
             action: () => window.location.href = `mailto:?subject=${encodeURIComponent('Join me on Ineedam')}&body=${encodeURIComponent(inviteMessage)}`
         },
         {
