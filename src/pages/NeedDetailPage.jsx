@@ -1,13 +1,18 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Send, Loader, Lock, Globe, MessageSquare, Archive, Paperclip, FileText, Download, X, Image } from 'lucide-react';
+import { ArrowLeft, Send, Loader, Lock, Globe, MessageSquare, Archive, Paperclip, FileText, Download, X, Image, Heart, Share2, Bookmark, Repeat2, ShieldCheck, MoreVertical, Flag, Trash2 } from 'lucide-react';
 import { ImageLightbox } from '../components/ImageLightbox';
 import { OnlineBadge } from '../components/OnlineBadge';
 import { NeedCard } from '../components/NeedCard';
 import { getNeedById, shapeNeed, uploadFileToCloudinary, uploadImageToCloudinary, updateNeed, updateNeedStatus } from '../lib/needsService';
-import { fetchRepliesForNeed, createReply, formatTimeAgo, updateReplyStatus, getFirstReplyTime, formatResponseTime } from '../lib/replyService';
+import { fetchRepliesForNeed, createReply, formatTimeAgo, updateReplyStatus, getFirstReplyTime, formatResponseTime, getReplyCount } from '../lib/replyService';
+import { getLikeCount } from '../lib/likesService';
+import { getBroadcastCount } from '../lib/broadcastService';
 import { useAuth } from '../context/AuthContext';
+import { useLikes } from '../context/LikesContext';
+import { useBookmarks } from '../context/BookmarksContext';
+import { useBroadcasts } from '../context/BroadcastsContext';
 import { ProfileHoverCard } from '../components/ProfileHoverCard';
 import { ReplyModal } from '../components/ReplyModal';
 import { AttachmentModal } from '../components/AttachmentModal';
@@ -29,6 +34,8 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachmen
     const authorAvatar = reply.profiles?.avatar_url;
 
     const { preview } = useLinkPreview(reply.content);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isSendToChatOpen, setIsSendToChatOpen] = useState(false);
 
     return (
         <div style={{ marginLeft: depth > 0 ? '1.5rem' : 0, borderLeft: depth > 0 ? '2px solid var(--border-glass)' : 'none' }}>
@@ -90,12 +97,93 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachmen
                             <span style={{
                                 display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.75rem',
                                 background: 'rgba(16, 185, 129, 0.1)', color: 'var(--primary)',
-                                padding: '0.1rem 0.5rem', borderRadius: '12px', marginLeft: 'auto'
+                                padding: '0.1rem 0.5rem', borderRadius: '12px', marginLeft: isMobile ? '0' : '0.5rem'
                             }}>
                                 <Lock size={12} />
                                 Private
                             </span>
                         )}
+
+                        <div style={{ position: 'relative', marginLeft: 'auto' }}>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setIsMenuOpen(!isMenuOpen);
+                                }}
+                                style={{ display: 'flex', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '0.2rem', borderRadius: '50%' }}
+                                className="nav-link-hover"
+                            >
+                                <MoreVertical size={16} />
+                            </button>
+
+                            {isMenuOpen && (
+                                <>
+                                    <div
+                                        onClick={(e) => { e.stopPropagation(); setIsMenuOpen(false); }}
+                                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 900 }}
+                                    />
+                                    <div style={{
+                                        position: 'absolute', top: '100%', right: 0, width: '180px',
+                                        background: 'var(--bg-surface)', border: '1px solid var(--border-glass)',
+                                        borderRadius: '12px', padding: '0.4rem', zIndex: 1000,
+                                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)', marginTop: '0.25rem', display: 'flex',
+                                        flexDirection: 'column', gap: '2px'
+                                    }}>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setIsMenuOpen(false);
+                                                setIsSendToChatOpen(true);
+                                            }}
+                                            style={{
+                                                width: '100%', textAlign: 'left', padding: '0.7rem',
+                                                borderRadius: '8px', display: 'flex', alignItems: 'center',
+                                                gap: '0.75rem', color: 'var(--text-primary)',
+                                                fontSize: '0.9rem', fontWeight: 500
+                                            }}
+                                            className="nav-link-hover"
+                                        >
+                                            <Send size={18} />
+                                            Send to Chat
+                                        </button>
+
+                                        {(isMe || (user && need.authorId === user.id)) && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setIsMenuOpen(false);
+                                                    onArchive(reply.id);
+                                                }}
+                                                style={{
+                                                    width: '100%', textAlign: 'left', padding: '0.7rem',
+                                                    borderRadius: '8px', display: 'flex', alignItems: 'center',
+                                                    gap: '0.75rem', color: '#ef4444',
+                                                    fontSize: '0.9rem', fontWeight: 500
+                                                }}
+                                                className="nav-link-hover"
+                                            >
+                                                <Trash2 size={18} />
+                                                Archive Reply
+                                            </button>
+                                        )}
+
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setIsMenuOpen(false); }}
+                                            style={{
+                                                width: '100%', textAlign: 'left', padding: '0.7rem',
+                                                borderRadius: '8px', display: 'flex', alignItems: 'center',
+                                                gap: '0.75rem', color: 'var(--text-primary)',
+                                                fontSize: '0.9rem', fontWeight: 500
+                                            }}
+                                            className="nav-link-hover"
+                                        >
+                                            <Flag size={18} />
+                                            Report
+                                        </button>
+                                    </div>
+                                </>
+                            )}
+                        </div>
                     </div>
                     <MentionText text={reply.content} style={{ color: 'var(--text-primary)', lineHeight: 1.5, margin: 0 }} />
 
@@ -121,30 +209,16 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachmen
                         </div>
                     )}
 
-                    <div style={{ display: 'flex', gap: '1.5rem', marginTop: '0.75rem', color: 'var(--text-muted)' }}>
-                        <button
-                            onClick={() => onReply(reply)}
-                            style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.85rem', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}
-                            className="nav-link-hover"
-                        >
-                            <MessageSquare size={14} /> Reply
-                        </button>
-
-                        {(isMe || (user && need.authorId === user.id)) && (
-                            <button
-                                onClick={() => onArchive(reply.id)}
-                                style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.85rem', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}
-                                className="nav-link-hover"
-                                title="Archive Reply"
-                                onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'}
-                                onMouseLeave={(e) => e.currentTarget.style.color = 'inherit'}
-                            >
-                                <Archive size={14} /> Archive
-                            </button>
-                        )}
-                    </div>
+                    <ReplyInteractions reply={reply} need={need} onReply={onReply} onArchive={onArchive} isMobile={isMobile} />
                 </div>
             </div>
+
+            <SendNeedToChat
+                isOpen={isSendToChatOpen}
+                onClose={() => setIsSendToChatOpen(false)}
+                needId={reply.need_id}
+                needTitle={need.title}
+            />
             {reply.children && reply.children.map(child => (
                 <ReplyItem key={child.id} reply={child} need={need} depth={depth + 1} onReply={onReply} onArchive={onArchive} onViewAttachment={onViewAttachment} isMobile={isMobile} />
             ))}
@@ -708,6 +782,140 @@ export const NeedDetailPage = () => {
                 </script>
             </Helmet>
             {rightPanelContent}
+        </div>
+    );
+};
+
+const ReplyInteractions = ({ reply, need, onReply, onArchive, isMobile }) => {
+    const { user } = useAuth();
+    const { isLiked, toggleLike } = useLikes();
+    const { isBookmarked, toggleBookmark } = useBookmarks();
+    const { isBroadcasted, toggleBroadcast } = useBroadcasts();
+
+    const [likeCount, setLikeCount] = useState(0);
+    const [replyCount, setReplyCount] = useState(0);
+    const [broadcastCount, setBroadcastCount] = useState(0);
+    const [shareCopied, setShareCopied] = useState(false);
+
+    const liked = isLiked(reply.id, 'reply');
+    const bookmarked = isBookmarked(reply.id, 'reply');
+    const broadcasted = isBroadcasted(reply.id, 'reply');
+    const isMe = user && reply.user_id === user.id;
+
+    useEffect(() => {
+        const loadCounts = async () => {
+            try {
+                const [likes, replies, broadcasts] = await Promise.all([
+                    getLikeCount(null, reply.id),
+                    getReplyCount(null, reply.id),
+                    getBroadcastCount(reply.id, 'reply')
+                ]);
+                setLikeCount(likes);
+                setReplyCount(replies);
+                setBroadcastCount(broadcasts);
+            } catch (err) {
+                console.error("Error loading counts for reply interactions:", err);
+            }
+        };
+        loadCounts();
+    }, [reply.id]);
+
+    const handleActionClick = async (e, actionFn) => {
+        e.stopPropagation();
+        if (actionFn === toggleBookmark) {
+            await actionFn(reply.id, 'reply');
+            return;
+        }
+
+        if (actionFn === toggleBroadcast) {
+            await actionFn(reply.id, 'reply');
+            setBroadcastCount(prev => broadcasted ? prev - 1 : prev + 1);
+            return;
+        }
+
+        if (actionFn === toggleLike) {
+            await actionFn(reply.id, 'reply');
+            setLikeCount(prev => liked ? prev - 1 : prev + 1);
+        }
+    };
+
+    const handleShare = async (e) => {
+        e.stopPropagation();
+        const shareData = {
+            title: `Reply from ${reply.profiles?.display_name || 'User'}`,
+            text: reply.content,
+            url: window.location.origin + `/need/${reply.need_id}`
+        };
+
+        const fallbackCopy = async () => {
+            try {
+                await navigator.clipboard.writeText(shareData.url);
+                setShareCopied(true);
+                setTimeout(() => setShareCopied(false), 2500);
+            } catch (err) {
+                console.error('Clipboard fallback failed', err);
+            }
+        };
+
+        if (navigator.share) {
+            try {
+                await navigator.share(shareData);
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    await fallbackCopy();
+                }
+            }
+        } else {
+            await fallbackCopy();
+        }
+    };
+
+    return (
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.75rem', color: 'var(--text-muted)', alignItems: 'center', width: '100%' }}>
+            <button
+                onClick={() => onReply(reply)}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}
+                className="nav-link-hover"
+            >
+                <MessageSquare size={14} />
+                {replyCount > 0 && <span>{replyCount}</span>}
+            </button>
+
+            {!reply.is_private && (
+                <button
+                    onClick={(e) => handleActionClick(e, toggleBroadcast)}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', background: 'none', border: 'none', cursor: 'pointer', color: broadcasted ? 'var(--accent)' : 'inherit' }}
+                    className="nav-link-hover"
+                >
+                    <Repeat2 size={14} />
+                    {broadcastCount > 0 && <span>{broadcastCount}</span>}
+                </button>
+            )}
+
+            <button
+                onClick={(e) => handleActionClick(e, toggleLike)}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', background: 'none', border: 'none', cursor: 'pointer', color: liked ? '#ef4444' : 'inherit' }}
+                className="nav-link-hover"
+            >
+                <Heart size={14} fill={liked ? 'currentColor' : 'none'} />
+                {likeCount > 0 && <span>{likeCount}</span>}
+            </button>
+
+            <button
+                onClick={handleShare}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', background: 'none', border: 'none', cursor: 'pointer', color: shareCopied ? '#22c55e' : 'inherit' }}
+                className="nav-link-hover"
+            >
+                <Share2 size={14} />
+            </button>
+
+            <button
+                onClick={(e) => handleActionClick(e, toggleBookmark)}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', background: 'none', border: 'none', cursor: 'pointer', color: bookmarked ? 'var(--primary)' : 'inherit' }}
+                className="nav-link-hover"
+            >
+                <Bookmark size={14} fill={bookmarked ? 'currentColor' : 'none'} />
+            </button>
         </div>
     );
 };

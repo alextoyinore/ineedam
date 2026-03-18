@@ -13,6 +13,7 @@ import { CATEGORY_GROUPS, getCategoryIcon } from '../data/categories';
 // Components
 import { NeedCard } from '../components/NeedCard';
 import { EndorsementFeedCard } from '../components/EndorsementFeedCard';
+import { ReplyFeedCard } from '../components/ReplyFeedCard';
 import { HomeComposer } from '../components/HomeComposer';
 import { EditNeedModal } from '../components/EditNeedModal';
 import { SuggestedFollows } from '../components/SuggestedFollows';
@@ -270,6 +271,14 @@ export const ExplorePage = () => {
                 <EndorsementFeedCard
                     endorsement={item}
                     broadcastedBy={item.type === 'broadcast_endorsement' ? item.broadcasted_by : null}
+                />
+            );
+        }
+        if (item.type === 'reply' || item.type === 'broadcast_reply') {
+            return (
+                <ReplyFeedCard
+                    reply={item}
+                    broadcastedBy={item.type === 'broadcast_reply' ? item.broadcasted_by : null}
                 />
             );
         }

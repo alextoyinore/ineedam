@@ -607,8 +607,7 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                 </div>
 
                 {/* Footer Actions */}
-                <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                    <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginTop: '0.5rem', flexWrap: 'wrap' }}>
                         <button onClick={(e) => { e.stopPropagation(); setIsReplyOpen(true); }} className="nav-link-hover" style={{
                             display: 'flex', alignItems: 'center', gap: '0.4rem',
                             color: 'var(--text-muted)', fontSize: '0.9rem', background: 'transparent',
@@ -684,10 +683,7 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                                 )}
                             </>
                         )}
-                    </div>
 
-                    {/* Share & Bookmark Actions right-aligned */}
-                    <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
                         <button onClick={handleShare} className="nav-link-hover" style={{
                             display: 'flex', alignItems: 'center', gap: '0.5rem',
                             color: shareCopied ? '#22c55e' : 'var(--text-muted)', fontSize: '0.9rem', background: 'transparent',
@@ -708,7 +704,6 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                         }} title={bookmarked ? `Remove ${targetType === 'broadcast' ? 'Broadcast ' : ''}Bookmark` : `Bookmark ${targetType === 'broadcast' ? 'Broadcast' : 'Need'}`}>
                             <Bookmark size={18} fill={bookmarked ? 'currentColor' : 'none'} />
                         </button>
-                    </div>
                 </div>
             </div>
 

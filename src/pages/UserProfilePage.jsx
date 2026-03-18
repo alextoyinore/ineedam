@@ -13,6 +13,8 @@ import { EditNeedModal } from '../components/EditNeedModal';
 import { MarkMetModal } from '../components/MarkMetModal';
 import { EndorseModal } from '../components/EndorseModal';
 import { EndorsementFeedCard } from '../components/EndorsementFeedCard';
+import { ReplyFeedCard } from '../components/ReplyFeedCard';
+import { updateReplyStatus } from '../lib/replyService';
 import { ReportModal } from '../components/ReportModal';
 import { MentionText } from '../components/MentionText';
 import { OnlineBadge } from '../components/OnlineBadge';
@@ -123,6 +125,18 @@ export const UserProfilePage = () => {
     const [needToEndorse, setNeedToEndorse] = useState(null);
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
+    const handleArchiveReply = async (replyId) => {
+        if (!confirm("Are you sure you want to archive this reply?")) return;
+        try {
+            await updateReplyStatus(replyId, 'archived');
+            setUserReplies(prev => prev.filter(r => r.id !== replyId)); // Update userReplies state
+            setUserNeeds(prev => prev.filter(item => !(item.type === 'reply' && item.id === replyId))); // Also update mixed feed
+        } catch (err) {
+            console.error("Failed to archive reply:", err);
+            alert("Could not archive reply.");
+        }
+    };
+
     const isOwnProfile = currentUser?.id === profile?.id;
     const isFollowing = profile && following.includes(profile.id);
 
@@ -195,9 +209,9 @@ export const UserProfilePage = () => {
                 setUserStories(storiesData.data || []);
                 setFollowersList(followersData || []);
                 setFollowingList(followingData || []);
-                setStats({ 
-                    ...metStats, 
-                    ...followStats, 
+                setStats({
+                    ...metStats,
+                    ...followStats,
                     referralPoints: profileData.referral_points || 0,
                     earnedEndorsements: profileData.earned_endorsements || 0
                 });
@@ -316,17 +330,6 @@ export const UserProfilePage = () => {
         }
     };
 
-    const handleArchiveReply = async (replyId) => {
-        if (!window.confirm("Archive this reply? It will be hidden from your feed.")) return;
-        try {
-            await updateReplyStatus(replyId, 'archived');
-            setUserNeeds(prev => prev.filter(item => !(item.type === 'reply' && item.id === replyId)));
-        } catch (err) {
-            console.error("Failed to archive reply", err);
-            alert("Failed to archive reply");
-        }
-    };
-
     const handleEditUpdate = async (needId, updates) => {
         try {
             const updatedRow = await updateNeed(needId, updates);
@@ -336,7 +339,7 @@ export const UserProfilePage = () => {
             const shaped = { ...shapeNeed(fullData), type: 'need' };
 
             // Update state in-place to maintain mixed feed (replies, endorsements etc)
-            setUserNeeds(prev => prev.map(item => 
+            setUserNeeds(prev => prev.map(item =>
                 (item.id === needId && item.type === 'need') ? shaped : item
             ));
         } catch (err) {
@@ -503,7 +506,7 @@ export const UserProfilePage = () => {
                                 <button onClick={() => setIsEditModalOpen(true)} className="btn btn-secondary" style={{ padding: '0.5rem 1.5rem', borderRadius: '9999px', fontWeight: 600 }}>
                                     Edit Profile
                                 </button>
-                                
+
                                 <div style={{ position: 'relative' }}>
                                     <button
                                         onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -698,15 +701,15 @@ export const UserProfilePage = () => {
                                 <Calendar size={16} /> Joined {new Date(profile.created_at).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
                             </span>
                             {isOwnProfile && profile.kyc_status && (
-                                <span style={{ 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
+                                <span style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
                                     gap: '0.4rem',
-                                    color: profile.kyc_status === 'verified' ? 'var(--primary)' : 
-                                           profile.kyc_status === 'pending' ? '#f59e0b' : 'var(--text-muted)',
+                                    color: profile.kyc_status === 'verified' ? 'var(--primary)' :
+                                        profile.kyc_status === 'pending' ? '#f59e0b' : 'var(--text-muted)',
                                     fontWeight: 600
                                 }}>
-                                    <Shield size={16} /> 
+                                    <Shield size={16} />
                                     KYC: {profile.kyc_status.charAt(0).toUpperCase() + profile.kyc_status.slice(1)}
                                 </span>
                             )}
@@ -724,10 +727,10 @@ export const UserProfilePage = () => {
 
                         {/* Responsiveness Metrics */}
                         {responseRate && responseRate.total > 0 && responseRate.rate !== null && (
-                            <div style={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                gap: '1rem', 
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '1rem',
                                 marginTop: '0.25rem',
                                 padding: '0.5rem 0',
                                 borderTop: '1px solid var(--border-glass)',
@@ -816,9 +819,9 @@ export const UserProfilePage = () => {
                                         <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>{userEndorsements.length}</span>
                                     )}
                                     {activeTab === tab && (
-                                        <motion.div 
+                                        <motion.div
                                             layoutId="activeTab"
-                                            style={{ position: 'absolute', bottom: 0, left: '0', right: '0', height: '3px', background: 'var(--primary)', borderRadius: '3px 3px 0 0' }} 
+                                            style={{ position: 'absolute', bottom: 0, left: '0', right: '0', height: '1px', background: 'var(--primary)', borderRadius: '3px 3px 0 0' }}
                                         />
                                     )}
                                 </button>
@@ -856,47 +859,12 @@ export const UserProfilePage = () => {
                                                             endorsement={item}
                                                             broadcastedBy={item.type === 'broadcast_endorsement' ? item.broadcasted_by : null}
                                                         />
-                                                    ) : item.type === 'reply' ? (
-                                                        <div className="nav-link-hover" style={{ padding: 'var(--feed-item-padding)', borderBottom: '1px solid var(--border-glass)', display: 'flex', gap: '1rem' }}>
-                                                            <div className="avatar-md" style={{
-                                                                width: isMobile ? '32px' : '40px', height: isMobile ? '32px' : '40px', borderRadius: '50%', flexShrink: 0,
-                                                                background: profile.avatar_url ? `url(${profile.avatar_url}) center / cover` : 'var(--bg-surface)',
-                                                                display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'
-                                                            }}>
-                                                                {!profile.avatar_url && profile.display_name.charAt(0).toUpperCase()}
-                                                            </div>
-                                                            <div style={{ flex: 1 }}>
-                                                                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                                                                    <span style={{ fontWeight: 700, fontSize: '1rem' }}>{profile.display_name}</span>
-                                                                    <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>@{profile.username}</span>
-                                                                    <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>• {formatTimeAgo(item.created_at)}</span>
-                                                                </div>
-                                                                <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-                                                                    Replying to <span style={{ color: 'var(--primary)' }}>"{item.needs?.title}"</span>
-                                                                </p>
-                                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
-                                                                    <p style={{ fontSize: '0.95rem', whiteSpace: 'pre-wrap', flex: 1 }}>{item.content}</p>
-                                                                    {isOwnProfile && (
-                                                                        <button
-                                                                            onClick={(e) => {
-                                                                                e.stopPropagation();
-                                                                                handleArchiveReply(item.id);
-                                                                            }}
-                                                                            className="nav-link-hover"
-                                                                            style={{
-                                                                                padding: '0.4rem', borderRadius: '50%', color: 'var(--text-muted)',
-                                                                                background: 'transparent', border: 'none', cursor: 'pointer'
-                                                                            }}
-                                                                            title="Archive Reply"
-                                                                            onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'}
-                                                                            onMouseLeave={(e) => e.currentTarget.style.color = 'inherit'}
-                                                                        >
-                                                                            <Archive size={16} />
-                                                                        </button>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                                    ) : item.type === 'reply' || item.type === 'broadcast_reply' ? (
+                                                        <ReplyFeedCard
+                                                            reply={item}
+                                                            broadcastedBy={item.type === 'broadcast_reply' ? item.broadcasted_by : null}
+                                                            onArchive={handleArchiveReply}
+                                                        />
                                                     ) : null}
                                                 </motion.div>
                                             );
@@ -959,27 +927,12 @@ export const UserProfilePage = () => {
                                     <div style={{ padding: '3rem', display: 'flex', justifyContent: 'center', color: 'var(--primary)' }}><Loader size={24} className="animate-spin" /></div>
                                 ) : userReplies.length === 0 ? (
                                     <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>No replies yet.</div>
-                                ) : userReplies.map((reply, idx) => (
-                                    <div key={reply.id} className="nav-link-hover" style={{ padding: 'var(--feed-item-padding)', borderBottom: '1px solid var(--border-glass)', display: 'flex', gap: '1rem' }}>
-                                        <div className="avatar-md" style={{
-                                            width: isMobile ? '32px' : '40px', height: isMobile ? '32px' : '40px', borderRadius: '50%', flexShrink: 0,
-                                            background: profile.avatar_url ? `url(${profile.avatar_url}) center/cover` : 'var(--bg-surface)',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'
-                                        }}>
-                                            {!profile.avatar_url && profile.display_name.charAt(0).toUpperCase()}
-                                        </div>
-                                        <div style={{ flex: 1 }}>
-                                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                                                <span style={{ fontWeight: 700, fontSize: '1rem' }}>{profile.display_name}</span>
-                                                <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>@{profile.username}</span>
-                                                <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>• {formatTimeAgo(reply.created_at)}</span>
-                                            </div>
-                                            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-                                                Replying to need <span style={{ color: 'var(--primary)' }}>"{reply.needs?.title}"</span>
-                                            </p>
-                                            <p style={{ fontSize: '0.95rem', whiteSpace: 'pre-wrap' }}>{reply.content}</p>
-                                        </div>
-                                    </div>
+                                ) : userReplies.map((reply) => (
+                                    <ReplyFeedCard 
+                                        key={reply.id} 
+                                        reply={reply} 
+                                        onArchive={handleArchiveReply}
+                                    />
                                 ))
                             )}
 
@@ -1083,14 +1036,20 @@ export const UserProfilePage = () => {
                                     </div>
                                 ) : (
                                     <div style={{ padding: '1rem 0' }}>
-                                        {userBroadcasts.map((need, idx) => (
+                                        {userBroadcasts.map((item, idx) => (
                                             <motion.div
-                                                key={need.id}
+                                                key={`${item.type}-${item.id}`}
                                                 initial={{ opacity: 0 }}
                                                 animate={{ opacity: 1 }}
                                                 transition={{ delay: idx * 0.05 }}
                                             >
-                                                <NeedCard need={need} broadcastedBy={profile} />
+                                                {item.type === 'broadcast_endorsement' ? (
+                                                    <EndorsementFeedCard endorsement={item} broadcastedBy={profile} />
+                                                ) : item.type === 'broadcast_reply' ? (
+                                                    <ReplyFeedCard reply={item} broadcastedBy={profile} />
+                                                ) : (
+                                                    <NeedCard need={item} broadcastedBy={profile} />
+                                                )}
                                             </motion.div>
                                         ))}
                                     </div>

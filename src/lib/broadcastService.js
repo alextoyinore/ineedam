@@ -10,7 +10,7 @@ import { shapeNeed } from './needsService';
 export const toggleBroadcast = async (userId, targetId, currentlyBroadcasted, type = 'need') => {
     if (!userId || !targetId) return;
 
-    const column = type === 'need' ? 'need_id' : 'endorsement_id';
+    const column = type === 'need' ? 'need_id' : (type === 'reply' ? 'reply_id' : 'endorsement_id');
 
     if (currentlyBroadcasted) {
         const { error } = await supabase
@@ -36,7 +36,7 @@ export const fetchUserBroadcasts = async (userId) => {
 
     const { data, error } = await supabase
         .from('broadcasts')
-        .select('need_id, endorsement_id')
+        .select('need_id, endorsement_id, reply_id')
         .eq('user_id', userId);
 
     if (error) {
@@ -44,7 +44,7 @@ export const fetchUserBroadcasts = async (userId) => {
         return [];
     }
 
-    return data.map(item => item.need_id || item.endorsement_id).filter(Boolean);
+    return data.map(item => item.need_id || item.endorsement_id || item.reply_id).filter(Boolean);
 };
 
 /**
@@ -71,6 +71,11 @@ export const fetchBroadcastedNeeds = async (userId) => {
                 endorser:profiles!endorsements_endorser_id_fkey(id, display_name, username, avatar_url, bio, last_seen_at),
                 endorsed:profiles!endorsements_endorsed_id_fkey(id, display_name, username, avatar_url, bio, last_seen_at),
                 needs:needs(id, title, category, budget_min, status)
+            ),
+            replies (
+                id, content, created_at, need_id,
+                profiles:profiles(id, display_name, username, avatar_url, last_seen_at),
+                needs:needs(id, title)
             )
         `)
         .eq('user_id', userId)
@@ -95,6 +100,15 @@ export const fetchBroadcastedNeeds = async (userId) => {
             return {
                 ...b.endorsements,
                 type: 'broadcast_endorsement',
+                broadcast_id: b.id,
+                broadcast_created_at: b.created_at,
+                broadcasted_by: b.profiles,
+                created_at: b.created_at
+            };
+        } else if (b.replies) {
+            return {
+                ...b.replies,
+                type: 'broadcast_reply',
                 broadcast_id: b.id,
                 broadcast_created_at: b.created_at,
                 broadcasted_by: b.profiles,
@@ -128,6 +142,11 @@ export const fetchAllBroadcasts = async (from = 0, to = 9) => {
                 endorser:profiles!endorsements_endorser_id_fkey(id, display_name, username, avatar_url, bio, last_seen_at),
                 endorsed:profiles!endorsements_endorsed_id_fkey(id, display_name, username, avatar_url, bio, last_seen_at),
                 needs:needs(id, title, category, budget_min, status)
+            ),
+            replies (
+                id, content, created_at, need_id,
+                profiles:profiles(id, display_name, username, avatar_url, last_seen_at),
+                needs:needs(id, title)
             )
         `)
         .order('created_at', { ascending: false })
@@ -160,6 +179,15 @@ export const fetchAllBroadcasts = async (from = 0, to = 9) => {
                 broadcasted_by: b.profiles,
                 created_at: b.created_at
             };
+        } else if (b.replies) {
+            return {
+                ...b.replies,
+                type: 'broadcast_reply',
+                broadcast_id: b.id,
+                broadcast_created_at: b.created_at,
+                broadcasted_by: b.profiles,
+                created_at: b.created_at
+            };
         }
         return null;
     }).filter(b => b !== null);
@@ -173,7 +201,7 @@ export const fetchAllBroadcasts = async (from = 0, to = 9) => {
 export const fetchBroadcastCounts = async (ids, type = 'need') => {
     if (!ids?.length) return {};
 
-    const column = type === 'need' ? 'need_id' : 'endorsement_id';
+    const column = type === 'need' ? 'need_id' : (type === 'reply' ? 'reply_id' : 'endorsement_id');
 
     const { data, error } = await supabase
         .from('broadcasts')
@@ -198,7 +226,7 @@ export const fetchBroadcastCounts = async (ids, type = 'need') => {
  */
 export const getBroadcastCount = async (targetId, type = 'need') => {
     if (!targetId) return 0;
-    const column = type === 'need' ? 'need_id' : 'endorsement_id';
+    const column = type === 'need' ? 'need_id' : (type === 'reply' ? 'reply_id' : 'endorsement_id');
     const { count, error } = await supabase
         .from('broadcasts')
         .select('*', { count: 'exact', head: true })

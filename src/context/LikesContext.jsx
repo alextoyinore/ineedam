@@ -7,6 +7,7 @@ const LikesContext = createContext();
 export const LikesProvider = ({ children }) => {
     const { user } = useAuth();
     const [likedNeedIds, setLikedNeedIds] = useState([]);
+    const [likedReplyIds, setLikedReplyIds] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -17,8 +18,9 @@ export const LikesProvider = ({ children }) => {
                 return;
             }
             try {
-                const ids = await fetchUserLikes(user.id);
-                setLikedNeedIds(ids);
+                const { needIds, replyIds } = await fetchUserLikes(user.id);
+                setLikedNeedIds(needIds || []);
+                setLikedReplyIds(replyIds || []);
             } catch (err) {
                 console.error("Failed to load user likes:", err);
             } finally {
@@ -29,39 +31,47 @@ export const LikesProvider = ({ children }) => {
         loadLikes();
     }, [user]);
 
-    const isLiked = (needId) => likedNeedIds.includes(needId);
+    const isLiked = (id, type = 'need') => {
+        if (type === 'reply') return likedReplyIds.includes(id);
+        return likedNeedIds.includes(id);
+    };
 
-    const toggleLike = async (needId) => {
+    const toggleLike = async (id, type = 'need') => {
         if (!user) {
             alert("Please sign in to like posts.");
             return;
         }
 
-        const currentlyLiked = isLiked(needId);
+        const currentlyLiked = isLiked(id, type);
+        const setIds = type === 'reply' ? setLikedReplyIds : setLikedNeedIds;
 
         // Optimistic UI update
-        setLikedNeedIds(prev =>
+        setIds(prev =>
             currentlyLiked
-                ? prev.filter(id => id !== needId)
-                : [...prev, needId]
+                ? prev.filter(item => item !== id)
+                : [...prev, id]
         );
 
         try {
-            await toggleLikeApi(user.id, needId, currentlyLiked);
+            if (type === 'reply') {
+                await toggleLikeApi(user.id, null, currentlyLiked, id);
+            } else {
+                await toggleLikeApi(user.id, id, currentlyLiked);
+            }
         } catch (err) {
             console.error("Failed to toggle like:", err);
             // Revert on error
-            setLikedNeedIds(prev =>
+            setIds(prev =>
                 currentlyLiked
-                    ? [...prev, needId]
-                    : prev.filter(id => id !== needId)
+                    ? [...prev, id]
+                    : prev.filter(item => item !== id)
             );
             alert("Could not update like. Please try again.");
         }
     };
 
     return (
-        <LikesContext.Provider value={{ likedNeedIds, isLiked, toggleLike, loadingLikes: loading }}>
+        <LikesContext.Provider value={{ likedNeedIds, likedReplyIds, isLiked, toggleLike, loadingLikes: loading }}>
             {children}
         </LikesContext.Provider>
     );

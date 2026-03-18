@@ -404,9 +404,8 @@ export const EndorsementFeedCard = ({ endorsement, broadcastedBy = null }) => {
 
                 {/* Interaction Bar (Matches NeedCard layout exactly) */}
                 {hasNeed && (
-                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginTop: '0.75rem' }}>
-                        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                            <button onClick={handleReplyClick} className="nav-link-hover" style={{
+                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginTop: '0.75rem', alignItems: 'center' }}>
+                        <button onClick={handleReplyClick} className="nav-link-hover" style={{
                                 display: 'flex', alignItems: 'center', gap: '0.4rem',
                                 color: 'var(--text-muted)', fontSize: '0.9rem', background: 'transparent',
                                 transition: 'color 0.2s', padding: '0.25rem 0.5rem', borderRadius: '4px', marginLeft: '-0.5rem',
@@ -451,11 +450,8 @@ export const EndorsementFeedCard = ({ endorsement, broadcastedBy = null }) => {
                                     <span>{likeCount}</span>
                                 )}
                             </button>
-                        </div>
 
-                        {/* Share & Bookmark Actions right-aligned */}
-                        <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
-                            <button onClick={handleShare} className="nav-link-hover" style={{
+                        <button onClick={handleShare} className="nav-link-hover" style={{
                                 display: 'flex', alignItems: 'center', gap: '0.5rem',
                                 color: shareCopied ? '#22c55e' : 'var(--text-muted)', fontSize: '0.9rem', background: 'transparent',
                                 transition: 'color 0.2s', padding: '0.25rem', borderRadius: '50%',
@@ -472,7 +468,6 @@ export const EndorsementFeedCard = ({ endorsement, broadcastedBy = null }) => {
                             }} title={bookmarked ? "Remove Bookmark" : "Bookmark Need"}>
                                 <Bookmark size={18} fill={bookmarked ? 'currentColor' : 'none'} />
                             </button>
-                        </div>
                     </div>
                 )}
             </div>

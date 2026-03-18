@@ -2,14 +2,14 @@ import { supabase } from './supabase';
 
 /**
  * Fetch all bookmark records for the current user.
- * Returns objects with { id, type } to differentiate needs from endorsements.
+ * Returns objects with { id, type } to differentiate needs, endorsements, and replies.
  */
 export const fetchBookmarks = async (userId) => {
     if (!userId) return [];
 
     const { data, error } = await supabase
         .from('bookmarks')
-        .select('need_id, endorsement_id')
+        .select('need_id, endorsement_id, reply_id')
         .eq('user_id', userId);
 
     if (error) {
@@ -20,6 +20,7 @@ export const fetchBookmarks = async (userId) => {
     return data.map(b => {
         if (b.need_id) return { id: b.need_id, type: 'need' };
         if (b.endorsement_id) return { id: b.endorsement_id, type: 'endorsement' };
+        if (b.reply_id) return { id: b.reply_id, type: 'reply' };
         return null;
     }).filter(Boolean);
 };
@@ -36,6 +37,7 @@ export const fetchBookmarkedItems = async (userId) => {
         .select(`
             need_id,
             endorsement_id,
+            reply_id,
             created_at,
             needs (
                 *,
@@ -61,6 +63,11 @@ export const fetchBookmarkedItems = async (userId) => {
                 needs (
                     id, title, description, category, status
                 )
+            ),
+            replies (
+                *,
+                profiles(display_name, avatar_url, username),
+                needs(id, title)
             )
         `)
         .eq('user_id', userId);
@@ -101,6 +108,9 @@ export const fetchBookmarkedItems = async (userId) => {
         if (b.endorsement_id && b.endorsements) {
             return { ...b.endorsements, type: 'endorsement', bookmark_created_at: b.created_at };
         }
+        if (b.reply_id && b.replies) {
+            return { ...b.replies, type: 'reply', bookmark_created_at: b.created_at };
+        }
         return null;
     }).filter(Boolean);
 
@@ -131,6 +141,7 @@ export const toggleBookmarkInDb = async (userId, targetId, isCurrentlyBookmarked
     let column = 'need_id';
     if (type === 'endorsement') column = 'endorsement_id';
     if (type === 'broadcast') column = 'broadcast_id';
+    if (type === 'reply') column = 'reply_id';
 
     if (isCurrentlyBookmarked) {
         // Remove bookmark
