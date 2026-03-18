@@ -71,6 +71,7 @@ export const UserProfilePage = () => {
     const navigate = useNavigate();
     const { profile: loggedInProfile, user: currentUser } = useAuth();
     const { following, toggleFollow } = useSocial();
+    const isMobile = window.innerWidth <= 768;
 
     // Profile State
     const [profile, setProfile] = useState(null);
@@ -798,7 +799,7 @@ export const UserProfilePage = () => {
                                     key={tab}
                                     onClick={() => setActiveTab(tab)}
                                     style={{
-                                        padding: '1rem', fontWeight: 600, fontSize: '0.9rem',
+                                        padding: '1rem var(--feed-item-padding)', fontWeight: 600, fontSize: '0.9rem',
                                         color: activeTab === tab ? 'var(--text-primary)' : 'var(--text-muted)',
                                         position: 'relative', transition: 'color 0.2s',
                                         textTransform: 'capitalize', whiteSpace: 'nowrap',
@@ -856,9 +857,9 @@ export const UserProfilePage = () => {
                                                             broadcastedBy={item.type === 'broadcast_endorsement' ? item.broadcasted_by : null}
                                                         />
                                                     ) : item.type === 'reply' ? (
-                                                        <div className="nav-link-hover" style={{ padding: '1.5rem', borderBottom: '1px solid var(--border-glass)', display: 'flex', gap: '1rem' }}>
-                                                            <div style={{
-                                                                width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
+                                                        <div className="nav-link-hover" style={{ padding: 'var(--feed-item-padding)', borderBottom: '1px solid var(--border-glass)', display: 'flex', gap: '1rem' }}>
+                                                            <div className="avatar-md" style={{
+                                                                width: isMobile ? '32px' : '40px', height: isMobile ? '32px' : '40px', borderRadius: '50%', flexShrink: 0,
                                                                 background: profile.avatar_url ? `url(${profile.avatar_url}) center / cover` : 'var(--bg-surface)',
                                                                 display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'
                                                             }}>
@@ -866,7 +867,7 @@ export const UserProfilePage = () => {
                                                             </div>
                                                             <div style={{ flex: 1 }}>
                                                                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                                                                    <span style={{ fontWeight: 700 }}>{profile.display_name}</span>
+                                                                    <span style={{ fontWeight: 700, fontSize: '1rem' }}>{profile.display_name}</span>
                                                                     <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>@{profile.username}</span>
                                                                     <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>• {formatTimeAgo(item.created_at)}</span>
                                                                 </div>
@@ -924,12 +925,12 @@ export const UserProfilePage = () => {
                                                 animate={{ opacity: 1, y: 0 }}
                                                 transition={{ delay: idx * 0.1 }}
                                                 className="glass-card"
-                                                style={{ margin: '0 var(--feed-item-padding) 1rem var(--feed-item-padding)', padding: '1.25rem' }}
+                                                style={{ margin: '0 0 1rem 0', padding: 'var(--feed-item-padding)' }}
                                             >
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
                                                     <div style={{ display: 'flex', alignItems: 'center' }}>
-                                                        <img src={story.poster.avatar_url} style={{ width: 32, height: 32, borderRadius: '50%', border: '2px solid var(--bg-surface)' }} />
-                                                        <img src={story.helper.avatar_url} style={{ width: 32, height: 32, borderRadius: '50%', border: '2px solid var(--bg-surface)', marginLeft: -12 }} />
+                                                        <img src={story.poster.avatar_url} style={{ width: isMobile ? 32 : 40, height: isMobile ? 32 : 40, borderRadius: '50%', border: '2px solid var(--bg-surface)' }} />
+                                                        <img src={story.helper.avatar_url} style={{ width: isMobile ? 32 : 40, height: isMobile ? 32 : 40, borderRadius: '50%', border: '2px solid var(--bg-surface)', marginLeft: isMobile ? -12 : -15 }} />
                                                     </div>
                                                     <div>
                                                         <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600 }}>Solved Need Story</h4>
@@ -959,9 +960,9 @@ export const UserProfilePage = () => {
                                 ) : userReplies.length === 0 ? (
                                     <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>No replies yet.</div>
                                 ) : userReplies.map((reply, idx) => (
-                                    <div key={reply.id} className="nav-link-hover" style={{ padding: '1.5rem', borderBottom: '1px solid var(--border-glass)', display: 'flex', gap: '1rem' }}>
-                                        <div style={{
-                                            width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
+                                    <div key={reply.id} className="nav-link-hover" style={{ padding: 'var(--feed-item-padding)', borderBottom: '1px solid var(--border-glass)', display: 'flex', gap: '1rem' }}>
+                                        <div className="avatar-md" style={{
+                                            width: isMobile ? '32px' : '40px', height: isMobile ? '32px' : '40px', borderRadius: '50%', flexShrink: 0,
                                             background: profile.avatar_url ? `url(${profile.avatar_url}) center/cover` : 'var(--bg-surface)',
                                             display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'
                                         }}>
@@ -969,7 +970,7 @@ export const UserProfilePage = () => {
                                         </div>
                                         <div style={{ flex: 1 }}>
                                             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                                                <span style={{ fontWeight: 700 }}>{profile.display_name}</span>
+                                                <span style={{ fontWeight: 700, fontSize: '1rem' }}>{profile.display_name}</span>
                                                 <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>@{profile.username}</span>
                                                 <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>• {formatTimeAgo(reply.created_at)}</span>
                                             </div>
@@ -1048,7 +1049,7 @@ export const UserProfilePage = () => {
                                                 className="card-hover"
                                             >
                                                 <div style={{
-                                                    width: '48px', height: '48px', borderRadius: '50%', flexShrink: 0,
+                                                    width: isMobile ? '32px' : '40px', height: isMobile ? '32px' : '40px', borderRadius: '50%', flexShrink: 0,
                                                     background: user.avatar_url ? `url(${user.avatar_url}) center/cover` : 'var(--bg-surface)',
                                                     border: '1px solid var(--border-glass)',
                                                     display: 'flex', alignItems: 'center', justifyContent: 'center',

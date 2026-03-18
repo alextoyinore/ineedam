@@ -231,7 +231,7 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                     display: 'flex',
                     alignItems: 'center',
                     gap: '0.5rem',
-                    color: 'var(--primary)',
+                    color: 'var(--text-muted)',
                     fontSize: '0.85rem',
                     fontWeight: 600,
                     marginBottom: '0.1rem'

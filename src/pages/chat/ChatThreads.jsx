@@ -237,7 +237,7 @@ export const ChatThreads = ({ isSplitView = false }) => {
                                         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                                         fontWeight: thread.unread ? 600 : 400
                                     }}>
-                                        {thread.lastChat?.replace(/\[CALL_(SUCCESS|MISSED|REJECTED|CANCELLED)\]/, '').slice(0, 50)}
+                                        {thread.lastChat?.replace(/\[CALL_(SUCCESS|MISSED|REJECTED|CANCELLED)\]/, '').slice(0, 20)}
                                     </p>
                                 </div>
                             </div>
