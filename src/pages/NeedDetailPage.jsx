@@ -874,7 +874,7 @@ const ReplyInteractions = ({ reply, need, onReply, onArchive, isMobile }) => {
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.75rem', color: 'var(--text-muted)', alignItems: 'center', width: '100%' }}>
             <button
                 onClick={() => onReply(reply)}
-                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', padding: '0.2rem' }}
                 className="nav-link-hover"
             >
                 <MessageSquare size={14} />
@@ -884,7 +884,7 @@ const ReplyInteractions = ({ reply, need, onReply, onArchive, isMobile }) => {
             {!reply.is_private && (
                 <button
                     onClick={(e) => handleActionClick(e, toggleBroadcast)}
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', background: 'none', border: 'none', cursor: 'pointer', color: broadcasted ? 'var(--accent)' : 'inherit' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', background: 'none', border: 'none', cursor: 'pointer', color: broadcasted ? 'var(--accent)' : 'inherit', padding: '0.2rem' }}
                     className="nav-link-hover"
                 >
                     <Repeat2 size={14} />
@@ -894,7 +894,7 @@ const ReplyInteractions = ({ reply, need, onReply, onArchive, isMobile }) => {
 
             <button
                 onClick={(e) => handleActionClick(e, toggleLike)}
-                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', background: 'none', border: 'none', cursor: 'pointer', color: liked ? '#ef4444' : 'inherit' }}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', background: 'none', border: 'none', cursor: 'pointer', color: liked ? '#ef4444' : 'inherit', padding: '0.2rem' }}
                 className="nav-link-hover"
             >
                 <Heart size={14} fill={liked ? 'currentColor' : 'none'} />
@@ -903,7 +903,7 @@ const ReplyInteractions = ({ reply, need, onReply, onArchive, isMobile }) => {
 
             <button
                 onClick={handleShare}
-                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', background: 'none', border: 'none', cursor: 'pointer', color: shareCopied ? '#22c55e' : 'inherit' }}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', background: 'none', border: 'none', cursor: 'pointer', color: shareCopied ? '#22c55e' : 'inherit', padding: '0.2rem' }}
                 className="nav-link-hover"
             >
                 <Share2 size={14} />
@@ -911,7 +911,7 @@ const ReplyInteractions = ({ reply, need, onReply, onArchive, isMobile }) => {
 
             <button
                 onClick={(e) => handleActionClick(e, toggleBookmark)}
-                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', background: 'none', border: 'none', cursor: 'pointer', color: bookmarked ? 'var(--primary)' : 'inherit' }}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', background: 'none', border: 'none', cursor: 'pointer', color: bookmarked ? 'var(--primary)' : 'inherit', padding: '0.2rem' }}
                 className="nav-link-hover"
             >
                 <Bookmark size={14} fill={bookmarked ? 'currentColor' : 'none'} />

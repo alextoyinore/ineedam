@@ -489,7 +489,7 @@ export const EditNeedModal = ({ isOpen, onClose, need, onUpdate }) => {
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                                         <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} />
-                                        <button type="button" onClick={() => fileInputRef.current?.click()} style={{ color: 'var(--primary)', background: 'transparent', border: 'none', cursor: 'pointer', padding: '0.5rem' }} className="btn-icon" title="Change Image">
+                                        <button type="button" onClick={() => fileInputRef.current?.click()} style={{ color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer', padding: '0.5rem' }} className="btn-icon" title="Change Image">
                                             <UploadCloud size={20} />
                                         </button>
                                     </div>

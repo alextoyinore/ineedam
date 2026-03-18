@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Bookmark, Loader } from 'lucide-react';
 import { NeedCard } from '../components/NeedCard';
 import { EndorsementFeedCard } from '../components/EndorsementFeedCard';
+import { ReplyFeedCard } from '../components/ReplyFeedCard';
 import { ChatMessageBookmarkCard } from '../components/messages/ChatMessageBookmarkCard';
 import { useBookmarks } from '../context/BookmarksContext';
 import { useAuth } from '../context/AuthContext';
@@ -58,6 +59,12 @@ export const BookmarksPage = () => {
                             ...item,
                             type: 'endorsement',
                             postedAt: timeAgo(item.created_at)
+                        };
+                    }
+                    if (item.type === 'reply') {
+                        return {
+                            ...item,
+                            type: 'reply'
                         };
                     }
                     return item;
@@ -128,6 +135,8 @@ export const BookmarksPage = () => {
                                 />
                             ) : item.type === 'endorsement' ? (
                                 <EndorsementFeedCard endorsement={item} />
+                            ) : item.type === 'reply' ? (
+                                <ReplyFeedCard reply={item} />
                             ) : (
                                 <ChatMessageBookmarkCard message={item} />
                             )}

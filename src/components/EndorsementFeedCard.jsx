@@ -463,8 +463,9 @@ export const EndorsementFeedCard = ({ endorsement, broadcastedBy = null }) => {
                             <button onClick={(e) => handleActionClick(e, toggleBookmark)} className="nav-link-hover" style={{
                                 display: 'flex', alignItems: 'center', gap: '0.5rem',
                                 color: bookmarked ? 'var(--primary)' : 'var(--text-muted)', fontSize: '0.9rem', background: 'transparent',
-                                transition: 'color 0.2s, transform 0.1s', padding: '0.25rem', borderRadius: '50%', border: 'none',
-                                cursor: 'pointer', transform: bookmarked ? 'scale(1.1)' : 'scale(1)'
+                                transition: 'color 0.2s, transform 0.1s', padding: '0.4rem', borderRadius: '50%', border: 'none',
+                                cursor: 'pointer', transform: bookmarked ? 'scale(1.1)' : 'scale(1)',
+                                marginRight: '-0.5rem'
                             }} title={bookmarked ? "Remove Bookmark" : "Bookmark Need"}>
                                 <Bookmark size={18} fill={bookmarked ? 'currentColor' : 'none'} />
                             </button>

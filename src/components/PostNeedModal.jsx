@@ -497,10 +497,10 @@ export const PostNeedModal = ({ isOpen, onClose }) => {
                                 <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} />
                                 <input ref={attachmentInputRef} type="file" onChange={handleFileChange} style={{ display: 'none' }} />
 
-                                <button type="button" onClick={() => fileInputRef.current?.click()} className="btn-icon" style={{ color: 'var(--primary)', padding: '0.5rem', borderRadius: '50%', background: 'transparent', border: 'none', cursor: 'pointer' }} title="Add Photo">
+                                <button type="button" onClick={() => fileInputRef.current?.click()} className="btn-icon" style={{ color: 'var(--text-muted)', padding: '0.5rem', borderRadius: '50%', background: 'transparent', border: 'none', cursor: 'pointer' }} title="Add Photo">
                                     <Image size={20} />
                                 </button>
-                                <button type="button" onClick={() => attachmentInputRef.current?.click()} className="btn-icon" style={{ color: 'var(--primary)', padding: '0.5rem', borderRadius: '50%', background: 'transparent', border: 'none', cursor: 'pointer' }} title="Attach File">
+                                <button type="button" onClick={() => attachmentInputRef.current?.click()} className="btn-icon" style={{ color: 'var(--text-muted)', padding: '0.5rem', borderRadius: '50%', background: 'transparent', border: 'none', cursor: 'pointer' }} title="Attach File">
                                     <Paperclip size={20} />
                                 </button>
                             </div>

@@ -525,10 +525,10 @@ export const HomeComposer = () => {
                             <input ref={attachmentInputRef} type="file" onChange={handleFileChange} style={{ display: 'none' }} />
 
                             <button type="button" onClick={() => fileInputRef.current?.click()} className="btn-icon">
-                                <Image size={20} color="var(--primary)" />
+                                <Image size={20} color={isExpanded ? "var(--text-muted)" : "rgba(100, 116, 139, 0.4)"} />
                             </button>
                             <button type="button" onClick={() => attachmentInputRef.current?.click()} className="btn-icon">
-                                <Paperclip size={20} color="var(--primary)" />
+                                <Paperclip size={20} color={isExpanded ? "var(--text-muted)" : "rgba(100, 116, 139, 0.4)"} />
                             </button>
                         </div>
 

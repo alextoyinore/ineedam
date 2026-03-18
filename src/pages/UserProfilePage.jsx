@@ -14,7 +14,6 @@ import { MarkMetModal } from '../components/MarkMetModal';
 import { EndorseModal } from '../components/EndorseModal';
 import { EndorsementFeedCard } from '../components/EndorsementFeedCard';
 import { ReplyFeedCard } from '../components/ReplyFeedCard';
-import { updateReplyStatus } from '../lib/replyService';
 import { ReportModal } from '../components/ReportModal';
 import { MentionText } from '../components/MentionText';
 import { OnlineBadge } from '../components/OnlineBadge';
