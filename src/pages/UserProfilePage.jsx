@@ -667,13 +667,13 @@ export const UserProfilePage = () => {
 
                 <div style={{ marginTop: '0.5rem', minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', minWidth: 0 }}>
-                        <h1 className="h1" style={{ fontSize: '1.5rem', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{profile.display_name}</h1>
                         {profile.kyc_status === 'verified' && (
                             <div title="Identity Verified" style={{ display: 'flex', alignItems: 'center', color: 'var(--primary)', flexShrink: 0 }}>
                                 <ShieldCheck size={20} fill="currentColor" fillOpacity={0.15} />
                             </div>
                         )}
                         {profile.id === '31080433-1e29-4eee-9b6f-673b1e159802' && <ShieldCheck size={18} color="var(--primary)" style={{ flexShrink: 0 }} />}
+                        <h1 className="h1" style={{ fontSize: '1.5rem', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{profile.display_name}</h1>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', margin: '0 0 .25rem 0' }}>
                         <OnlineBadge lastSeenAt={profile.last_seen_at} showText={true} />
@@ -690,7 +690,7 @@ export const UserProfilePage = () => {
                             />
                         )}
 
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', columnGap: '1rem', rowGap: '0.25rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
                             {profile.location && (
                                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                     <MapPin size={16} /> {profile.location}
@@ -714,7 +714,7 @@ export const UserProfilePage = () => {
                             )}
                         </div>
 
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', fontSize: '0.95rem' }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', columnGap: '1rem', rowGap: '0.5rem', fontSize: '0.95rem' }}>
                             <span style={{ color: 'var(--text-muted)' }}><strong style={{ color: 'var(--text-primary)' }}>{stats.followingCount}</strong> Following</span>
                             <span style={{ color: 'var(--text-muted)' }}><strong style={{ color: 'var(--text-primary)' }}>{stats.followersCount}</strong> Followers</span>
                             <span style={{ color: 'var(--text-muted)' }}><strong style={{ color: 'var(--text-primary)' }}>{stats.needsMet}</strong> Given</span>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { Helmet } from 'react-helmet-async';
@@ -11,12 +11,15 @@ export const LandingPage = () => {
     const { session, loading } = useAuth();
     const { isDark } = useTheme();
     const navigate = useNavigate();
+    const location = useLocation();
+    const from = location.state?.from?.pathname || '/';
+    const safeFrom = (from === '/welcome' || from === '/welcome?') ? '/' : from;
     const [isMobileAuthOpen, setIsMobileAuthOpen] = React.useState(false);
     const [authTab, setAuthTab] = React.useState('signup');
 
     // If already signed in, go straight to the app
     if (!loading && session) {
-        navigate('/', { replace: true });
+        navigate(safeFrom, { replace: true });
         return null;
     }
 

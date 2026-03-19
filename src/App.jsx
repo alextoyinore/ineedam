@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Loader } from 'lucide-react';
 import { Layout } from './components/Layout';
 import { PublicPageWrapper } from './components/PublicPageWrapper';
@@ -53,8 +53,12 @@ const AuthLoader = () => (
 // Wraps any route that requires authentication
 const ProtectedRoute = ({ children }) => {
   const { session, loading } = useAuth();
+  const location = useLocation();
+  
   if (loading) return <AuthLoader />;
-  if (!session) return <Navigate to="/welcome" replace />;
+  if (!session) {
+    return <Navigate to="/welcome" state={{ from: location }} replace />;
+  }
   return children;
 };
 

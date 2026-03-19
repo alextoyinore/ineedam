@@ -82,12 +82,12 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachmen
                             kycStatus: reply.profiles?.kyc_status
                         }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                                <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', cursor: 'pointer' }}>
-                                    {formatDisplayName(authorName, isMobile)}
-                                </span>
                                 {reply.profiles?.kyc_status === 'verified' && (
                                     <ShieldCheck size={14} color="var(--primary)" fill="var(--primary)" fillOpacity={0.1} title="Identity Verified" />
                                 )}
+                                <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', cursor: 'pointer' }}>
+                                    {formatDisplayName(authorName, isMobile)}
+                                </span>
                             </div>
                         </ProfileHoverCard>
                         {authorUsername && <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>@{formatUsername(authorUsername, isMobile)}</span>}
@@ -756,12 +756,14 @@ export const NeedDetailPage = () => {
                 <title>{need.title} | Ineedam</title>
                 <meta property="og:title" content={`${need.title} | Ineedam`} />
                 <meta property="og:description" content={need.description} />
+                <meta property="og:url" content={window.location.href} />
                 <meta property="twitter:title" content={`${need.title} | Ineedam`} />
                 <meta property="twitter:description" content={need.description} />
+                <meta property="twitter:url" content={window.location.href} />
                 {need.imageUrl && (
                     <>
-                        <meta property="og:image" content={need.imageUrl} />
-                        <meta property="twitter:image" content={need.imageUrl} />
+                        <meta property="og:image" content={need.imageUrl.startsWith('http') ? need.imageUrl : `${window.location.origin}${need.imageUrl}`} />
+                        <meta property="twitter:image" content={need.imageUrl.startsWith('http') ? need.imageUrl : `${window.location.origin}${need.imageUrl}`} />
                         <meta property="twitter:card" content="summary_large_image" />
                     </>
                 )}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, Loader } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -16,6 +16,9 @@ export const AuthForm = ({ onAuthSuccess, initialTab = 'signin', variant = 'inli
     const { signIn, signUp, resendVerification, resetPassword } = useAuth();
     const { isDark } = useTheme();
     const navigate = useNavigate();
+    const location = useLocation();
+    const from = location.state?.from?.pathname || '/';
+    const safeFrom = (from === '/welcome' || from === '/welcome?') ? '/' : from;
 
     const reset = () => {
         setEmail('');
@@ -26,6 +29,7 @@ export const AuthForm = ({ onAuthSuccess, initialTab = 'signin', variant = 'inli
     };
 
     const handleSubmit = async (e) => {
+        if (e) e.preventDefault();
         setError('');
         setSuccessMsg('');
         
@@ -52,7 +56,7 @@ export const AuthForm = ({ onAuthSuccess, initialTab = 'signin', variant = 'inli
                 }
             } else {
                 if (onAuthSuccess) onAuthSuccess();
-                navigate('/');
+                navigate(safeFrom, { replace: true });
             }
         } else {
             const { data, error } = await signUp(email, password, {}, referredBy);
@@ -64,7 +68,7 @@ export const AuthForm = ({ onAuthSuccess, initialTab = 'signin', variant = 'inli
             } else {
                 if (data?.session) {
                     if (onAuthSuccess) onAuthSuccess();
-                    navigate('/');
+                    navigate(safeFrom, { replace: true });
                 } else {
                     setSuccessMsg('Account created! Check your email to confirm your account, then sign in.');
                     setTab('signin');

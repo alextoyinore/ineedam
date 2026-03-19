@@ -295,11 +295,11 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                             }}>
                                     <span
                                         onClick={(e) => { e.stopPropagation(); navigate(`/${need.authorUsername}`); }}
-                                        style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                                        {formatDisplayName(need.author, isMobile)}
+                                        style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                         {need.authorKycStatus === 'verified' && (
-                                            <ShieldCheck size={14} color="var(--primary)" fill="var(--primary)" fillOpacity={0.1} />
+                                            <ShieldCheck size={14} color="var(--primary)" fill="var(--primary)" fillOpacity={0.1} title="Identity Verified" style={{ flexShrink: 0 }} />
                                         )}
+                                        {formatDisplayName(need.author, isMobile)}
                                     </span>
                             </ProfileHoverCard>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)', fontSize: '0.9rem', flexWrap: 'wrap' }}>

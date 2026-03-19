@@ -193,14 +193,14 @@ export const ReplyFeedCard = ({ reply, onArchive = null }) => {
                         kycStatus: author.kyc_status
                     }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            {author.kyc_status === 'verified' && (
+                                <ShieldCheck size={14} color="var(--primary)" fill="var(--primary)" fillOpacity={0.1} title="Identity Verified" />
+                            )}
                             <span
                                 onClick={(e) => { e.stopPropagation(); navigate(`/${author.username}`); }}
                                 style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', cursor: 'pointer' }}>
                                 {formatDisplayName(author.display_name, isMobile)}
                             </span>
-                            {author.kyc_status === 'verified' && (
-                                <ShieldCheck size={14} color="var(--primary)" fill="var(--primary)" fillOpacity={0.1} title="Identity Verified" />
-                            )}
                         </div>
                     </ProfileHoverCard>
                     
