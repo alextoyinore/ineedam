@@ -260,6 +260,7 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                         authorBio: need.authorBio,
                         authorLastSeenAt: need.authorLastSeenAt,
                         kycStatus: need.authorKycStatus,
+                        location: need.authorLocation,
                         firstResponseTime: firstResponseTime
                     }}>
                         <div
@@ -291,6 +292,7 @@ export const NeedCard = ({ need, isFullDetail = false, broadcastedBy = null, onE
                                 authorAvatar: need.authorAvatar,
                                 authorBio: need.authorBio,
                                 kycStatus: need.authorKycStatus,
+                                location: need.authorLocation,
                                 firstResponseTime: firstResponseTime
                             }}>
                                     <span

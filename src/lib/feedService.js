@@ -15,8 +15,8 @@ export const fetchAllEndorsements = async (from = 0, to = 199) => {
             endorser_id,
             endorsed_id,
             need_id,
-            endorser:profiles!endorsements_endorser_id_fkey(id, display_name, username, avatar_url, bio, last_seen_at),
-            endorsed:profiles!endorsements_endorsed_id_fkey(id, display_name, username, avatar_url, bio, last_seen_at),
+            endorser:profiles!endorsements_endorser_id_fkey(id, display_name, username, avatar_url, bio, last_seen_at, location),
+            endorsed:profiles!endorsements_endorsed_id_fkey(id, display_name, username, avatar_url, bio, last_seen_at, location),
             needs(id, title, category, budget_min, status)
         `)
         .order('created_at', { ascending: false })
@@ -42,7 +42,7 @@ export const fetchMixedFeed = async (from = 0, to = 5) => {
     const [{ data: needsData, error: needsError }, endorsements, broadcasts] = await Promise.all([
         supabase
             .from('needs')
-            .select('*, profiles!needs_user_id_fkey(display_name, avatar_url, username, banner_url, bio, last_seen_at)')
+            .select('*, profiles!needs_user_id_fkey(display_name, avatar_url, username, banner_url, bio, last_seen_at, location)')
             .neq('status', 'archived')
             .order('created_at', { ascending: false })
             .range(from, to),
@@ -87,7 +87,7 @@ export const fetchPersonalizedFeed = async (userId, from = 0, to = 19) => {
     const [{ data: needsData, error: needsError }, endorsements, broadcasts] = await Promise.all([
         supabase
             .from('needs')
-            .select('*, profiles!needs_user_id_fkey(display_name, avatar_url, username, banner_url, bio, last_seen_at)')
+            .select('*, profiles!needs_user_id_fkey(display_name, avatar_url, username, banner_url, bio, last_seen_at, location)')
             .neq('status', 'archived')
             .order('created_at', { ascending: false })
             .limit(100),
@@ -154,7 +154,7 @@ export const fetchPersonalizedFeed = async (userId, from = 0, to = 19) => {
 export const searchMixedFeed = async ({ query, category, minBudget, maxBudget, status, sortBy, timeframe, types, location, flexibility, budgetMode }, from = 0, to = 9) => {
     let supabaseQuery = supabase
         .from('needs')
-        .select('*, profiles!needs_user_id_fkey(display_name, avatar_url, username, banner_url, bio, last_seen_at)');
+        .select('*, profiles!needs_user_id_fkey(display_name, avatar_url, username, banner_url, bio, last_seen_at, location)');
 
     if (query) {
         supabaseQuery = supabaseQuery.or(`title.ilike.%${query}%,description.ilike.%${query}%`);

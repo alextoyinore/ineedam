@@ -161,7 +161,8 @@ export const ReplyFeedCard = ({ reply, onArchive = null }) => {
                 authorAvatar: author.avatar_url,
                 authorBio: author.bio,
                 authorLastSeenAt: author.last_seen_at,
-                kycStatus: author.kyc_status
+                kycStatus: author.kyc_status,
+                location: author.location
             }}>
                 <div
                     onClick={(e) => { e.stopPropagation(); navigate(`/${author.username}`); }}
@@ -190,7 +191,8 @@ export const ReplyFeedCard = ({ reply, onArchive = null }) => {
                         authorAvatar: author.avatar_url,
                         authorBio: author.bio,
                         authorLastSeenAt: author.last_seen_at,
-                        kycStatus: author.kyc_status
+                        kycStatus: author.kyc_status,
+                        location: author.location
                     }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                             {author.kyc_status === 'verified' && (

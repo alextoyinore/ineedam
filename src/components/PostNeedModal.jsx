@@ -10,7 +10,7 @@ import { CATEGORIES, isKYCRequired } from '../data/categories';
 export const PostNeedModal = ({ isOpen, onClose }) => {
     const navigate = useNavigate();
     const { drafts, saveDraft, deleteDraft } = useDrafts();
-    const { profile } = useAuth();
+    const { profile, detectedCurrency } = useAuth();
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 435);
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState('');
@@ -46,7 +46,7 @@ export const PostNeedModal = ({ isOpen, onClose }) => {
         title: '',
         category: 'Product',
         description: '',
-        currency: '$',
+        currency: detectedCurrency || '₦',
         budgetMode: 'fixed',
         budgetMin: '',
         budgetMax: '',
@@ -67,6 +67,15 @@ export const PostNeedModal = ({ isOpen, onClose }) => {
             document.body.style.overflow = 'auto';
         };
     }, [isOpen]);
+
+    useEffect(() => {
+        if (isOpen && !formData.title && !formData.description) {
+            setFormData(prev => ({
+                ...prev,
+                currency: detectedCurrency || '₦'
+            }));
+        }
+    }, [isOpen, detectedCurrency]);
 
     const handleImageChange = (e) => {
         const file = e.target.files?.[0];
@@ -131,7 +140,7 @@ export const PostNeedModal = ({ isOpen, onClose }) => {
             await createNeed({ ...formData, imageUrl, fileUrl, fileType }, profile.id);
 
             // Reset
-            setFormData({ title: '', category: 'Product', description: '', currency: '$', budgetMode: 'fixed', budgetMin: '', budgetMax: '', location: '', flexibility: 'Flexible start', imageUrl: '' });
+            setFormData({ title: '', category: 'Product', description: '', currency: detectedCurrency || '₦', budgetMode: 'fixed', budgetMin: '', budgetMax: '', location: '', flexibility: 'Flexible start', imageUrl: '' });
             setImageFile(null);
             setImagePreview('');
             setAttachedFile(null);
@@ -150,7 +159,7 @@ export const PostNeedModal = ({ isOpen, onClose }) => {
         saveDraft(formData);
         alert('Draft saved successfully!');
         setFormData({
-            title: '', category: 'Product', description: '', currency: '$', budgetMode: 'fixed',
+            title: '', category: 'Product', description: '', currency: detectedCurrency || '₦', budgetMode: 'fixed',
             budgetMin: '', bgetMax: '', location: '', flexibility: 'Flexible start',
             imageUrl: ''
         });

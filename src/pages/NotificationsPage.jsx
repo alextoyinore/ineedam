@@ -5,6 +5,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useNotifications } from '../context/NotificationsContext';
 import { OnlineBadge } from '../components/OnlineBadge';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
+import { ProfileHoverCard } from '../components/ProfileHoverCard';
 
 const InViewMarker = ({ onInView }) => {
     const ref = React.useRef(null);
@@ -161,25 +162,35 @@ export const NotificationsPage = () => {
                                                 {/* Stacked Avatars Row */}
                                                 <div style={{ display: 'flex', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
                                                     {notif.actors.slice(0, 10).map((actor, i) => (
-                                                        <Link 
-                                                            key={i} 
-                                                            to={`/${actor?.username}`}
-                                                            onClick={(e) => e.stopPropagation()}
-                                                            style={{ 
-                                                                width: '32px', height: '32px', borderRadius: '50%',
-                                                                marginLeft: i > 0 ? '-8px' : '0',
-                                                                border: '2px solid var(--bg-surface)',
-                                                                background: actor?.avatar_url ? `url(${actor.avatar_url}) center/cover` : 'var(--bg-base)',
-                                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                                zIndex: 10 - i, position: 'relative', overflow: 'hidden', flexShrink: 0
-                                                            }}
-                                                        >
-                                                            {!actor?.avatar_url && actor?.display_name && (
-                                                                <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                                                                    {actor.display_name.charAt(0).toUpperCase()}
-                                                                </span>
-                                                            )}
-                                                        </Link>
+                                                        <ProfileHoverCard key={i} userData={{
+                                                            id: actor?.id,
+                                                            author: actor?.display_name,
+                                                            authorUsername: actor?.username,
+                                                            authorAvatar: actor?.avatar_url,
+                                                            authorBio: actor?.bio,
+                                                            authorLastSeenAt: actor?.last_seen_at,
+                                                            kycStatus: actor?.kyc_status,
+                                                            location: actor?.location
+                                                        }}>
+                                                            <Link 
+                                                                to={`/${actor?.username}`}
+                                                                onClick={(e) => e.stopPropagation()}
+                                                                style={{ 
+                                                                    width: '32px', height: '32px', borderRadius: '50%',
+                                                                    marginLeft: i > 0 ? '-8px' : '0',
+                                                                    border: '2px solid var(--bg-surface)',
+                                                                    background: actor?.avatar_url ? `url(${actor.avatar_url}) center/cover` : 'var(--bg-base)',
+                                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                    zIndex: 10 - i, position: 'relative', overflow: 'hidden', flexShrink: 0
+                                                                }}
+                                                            >
+                                                                {!actor?.avatar_url && actor?.display_name && (
+                                                                    <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                                                                        {actor.display_name.charAt(0).toUpperCase()}
+                                                                    </span>
+                                                                )}
+                                                            </Link>
+                                                        </ProfileHoverCard>
                                                     ))}
                                                 </div>
                                                 <div style={{ fontSize: '0.95rem', color: 'var(--text-primary)', lineHeight: 1.4 }}>
@@ -202,39 +213,65 @@ export const NotificationsPage = () => {
                                     ) : (
                                         <>
                                             <div style={{ position: 'relative', flexShrink: 0, zIndex: 2 }}>
-                                                <Link 
-                                                    to={`/${notif.actorProfile?.username}`}
-                                                    onClick={(e) => e.stopPropagation()}
-                                                    style={{
-                                                        width: '44px', height: '44px', borderRadius: '50%', flexShrink: 0,
-                                                        background: notif.actorProfile?.avatar_url ? `url(${notif.actorProfile.avatar_url}) center/cover` : 'var(--bg-surface)',
-                                                        border: '1px solid var(--border-glass)',
-                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                        position: 'relative', overflow: 'visible'
-                                                    }}
-                                                >
-                                                    {!notif.actorProfile?.avatar_url && !notif.actorProfile?.display_name && getIcon(notif.type)}
-                                                    {!notif.actorProfile?.avatar_url && notif.actorProfile?.display_name && notif.actorProfile.display_name.charAt(0).toUpperCase()}
-                                                    <div style={{ position: 'absolute', bottom: '-2px', right: '-2px' }}>
-                                                        <OnlineBadge lastSeenAt={notif.actorProfile?.last_seen_at} size="10px" />
-                                                    </div>
-                                                    {/* Small icon overlay for notification type */}
-                                                    {notif.actorProfile?.avatar_url && (
-                                                        <div style={{
-                                                            position: 'absolute', top: '-4px', right: '-4px',
-                                                            background: 'var(--bg-base)', borderRadius: '50%',
-                                                            padding: '2px', border: '1px solid var(--border-glass)',
-                                                            lineHeight: 0
-                                                        }}>
-                                                            {React.cloneElement(getIcon(notif.type), { size: 10 })}
+                                                <ProfileHoverCard userData={{
+                                                    id: notif.actorProfile?.id || notif.actor_id,
+                                                    author: notif.actorProfile?.display_name,
+                                                    authorUsername: notif.actorProfile?.username,
+                                                    authorAvatar: notif.actorProfile?.avatar_url,
+                                                    authorBio: notif.actorProfile?.bio,
+                                                    authorLastSeenAt: notif.actorProfile?.last_seen_at,
+                                                    kycStatus: notif.actorProfile?.kyc_status,
+                                                    location: notif.actorProfile?.location
+                                                }}>
+                                                    <Link 
+                                                        to={`/${notif.actorProfile?.username}`}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        style={{
+                                                            width: '44px', height: '44px', borderRadius: '50%', flexShrink: 0,
+                                                            background: notif.actorProfile?.avatar_url ? `url(${notif.actorProfile.avatar_url}) center/cover` : 'var(--bg-surface)',
+                                                            border: '1px solid var(--border-glass)',
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                            position: 'relative', overflow: 'visible'
+                                                        }}
+                                                    >
+                                                        {!notif.actorProfile?.avatar_url && !notif.actorProfile?.display_name && getIcon(notif.type)}
+                                                        {!notif.actorProfile?.avatar_url && notif.actorProfile?.display_name && notif.actorProfile.display_name.charAt(0).toUpperCase()}
+                                                        <div style={{ position: 'absolute', bottom: '-2px', right: '-2px' }}>
+                                                            <OnlineBadge lastSeenAt={notif.actorProfile?.last_seen_at} size="10px" />
                                                         </div>
-                                                    )}
-                                                </Link>
+                                                        {/* Small icon overlay for notification type */}
+                                                        {notif.actorProfile?.avatar_url && (
+                                                            <div style={{
+                                                                position: 'absolute', top: '-4px', right: '-4px',
+                                                                background: 'var(--bg-base)', borderRadius: '50%',
+                                                                padding: '2px', border: '1px solid var(--border-glass)',
+                                                                lineHeight: 0
+                                                            }}>
+                                                                {React.cloneElement(getIcon(notif.type), { size: 10 })}
+                                                            </div>
+                                                        )}
+                                                    </Link>
+                                                </ProfileHoverCard>
                                             </div>
                                             <div style={{ flex: 1, zIndex: 2 }}>
                                                 <div style={{ fontSize: '0.95rem', color: 'var(--text-primary)', lineHeight: 1.4 }}>
                                                     {/* Fallback to actor_id UUID */}
-                                                    <strong style={{ fontWeight: 700 }}>{notif.actorProfile?.display_name || notif.actor_id?.substring(0, 6) || 'System'}</strong> {formatNotificationMessage(notif)}
+                                                    <ProfileHoverCard userData={{
+                                                        id: notif.actorProfile?.id || notif.actor_id,
+                                                        author: notif.actorProfile?.display_name,
+                                                        authorUsername: notif.actorProfile?.username,
+                                                        authorAvatar: notif.actorProfile?.avatar_url,
+                                                        authorBio: notif.actorProfile?.bio,
+                                                        authorLastSeenAt: notif.actorProfile?.last_seen_at,
+                                                        kycStatus: notif.actorProfile?.kyc_status,
+                                                        location: notif.actorProfile?.location
+                                                    }}>
+                                                        <strong style={{ fontWeight: 700, cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); navigate(`/${notif.actorProfile?.username}`); }}>
+                                                            {notif.actorProfile?.display_name || notif.actor_id?.substring(0, 6) || 'System'}
+                                                        </strong>
+                                                    </ProfileHoverCard>
+                                                    {' '}
+                                                    {formatNotificationMessage(notif)}
                                                     {notif.group_count > 1 && (
                                                         <span style={{ marginLeft: '0.5rem', padding: '0.1rem 0.4rem', borderRadius: '10px', background: 'var(--primary)', color: 'white', fontSize: '0.75rem', fontWeight: 700 }}>
                                                             {notif.group_count}

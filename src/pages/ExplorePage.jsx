@@ -17,6 +17,7 @@ import { ReplyFeedCard } from '../components/ReplyFeedCard';
 import { HomeComposer } from '../components/HomeComposer';
 import { EditNeedModal } from '../components/EditNeedModal';
 import { SuggestedFollows } from '../components/SuggestedFollows';
+import { ProfileHoverCard } from '../components/ProfileHoverCard';
 
 // Icons
 import {
@@ -349,48 +350,59 @@ export const ExplorePage = () => {
                         ) : visibleCommunityUsers.length > 0 ? (
                             visibleCommunityUsers.map(profile => (
                                 <React.Fragment key={profile.id}>
-                                    <div
-                                        key={profile.id}
-                                        onClick={() => navigate(`/${profile.username}`)}
-                                        style={{
-                                            padding: '1.25rem 1rem', borderBottom: '1px solid var(--border-glass)',
-                                            display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer'
-                                        }}
-                                        className="nav-link-hover"
-                                    >
-                                        <div style={{
-                                            width: '48px', height: '48px', borderRadius: '50%', flexShrink: 0,
-                                            background: profile.avatar_url ? `url(${profile.avatar_url}) center/cover` : 'var(--primary)',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'white'
-                                        }}>
-                                            {!profile.avatar_url && profile.display_name?.charAt(0).toUpperCase()}
-                                        </div>
-                                        <div style={{ flex: 1, minWidth: 0 }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
-                                                    <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{profile.display_name}</div>
-                                                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>@{profile.username}</div>
-                                                </div>
-                                            </div>
-                                            {profile.bio && <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.9rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{profile.bio}</p>}
-                                        </div>
-                                        <button
-                                            onClick={async (e) => {
-                                                e.stopPropagation();
-                                                const wasFollowing = isFollowing(profile.id);
-                                                await toggleFollow(profile.id);
-                                                if (!wasFollowing) {
-                                                    setFollowedUserId(profile.id);
-                                                } else {
-                                                    if (followedUserId === profile.id) setFollowedUserId(null);
-                                                }
+                                    <ProfileHoverCard userData={{
+                                        id: profile.id,
+                                        author: profile.display_name,
+                                        authorUsername: profile.username,
+                                        authorAvatar: profile.avatar_url,
+                                        authorBio: profile.bio,
+                                        authorLastSeenAt: profile.last_seen_at,
+                                        kycStatus: profile.kyc_status,
+                                        location: profile.location
+                                    }} style={{ width: '100%' }}>
+                                        <div
+                                            key={profile.id}
+                                            onClick={() => navigate(`/${profile.username}`)}
+                                            style={{
+                                                padding: '1.25rem 1rem', borderBottom: '1px solid var(--border-glass)',
+                                                display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer'
                                             }}
-                                            className={isFollowing(profile.id) ? "btn btn-secondary" : "btn btn-primary"}
-                                            style={{ padding: '0.5rem 1rem', borderRadius: '9999px', fontSize: '0.85rem', fontWeight: 600, flexShrink: 0 }}
+                                            className="nav-link-hover"
                                         >
-                                            {isFollowing(profile.id) ? 'Following' : 'Follow'}
-                                        </button>
-                                    </div>
+                                            <div style={{
+                                                width: '48px', height: '48px', borderRadius: '50%', flexShrink: 0,
+                                                background: profile.avatar_url ? `url(${profile.avatar_url}) center/cover` : 'var(--primary)',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'white'
+                                            }}>
+                                                {!profile.avatar_url && profile.display_name?.charAt(0).toUpperCase()}
+                                            </div>
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                    <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                                                        <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{profile.display_name}</div>
+                                                        <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>@{profile.username}</div>
+                                                    </div>
+                                                </div>
+                                                {profile.bio && <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.9rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{profile.bio}</p>}
+                                            </div>
+                                            <button
+                                                onClick={async (e) => {
+                                                    e.stopPropagation();
+                                                    const wasFollowing = isFollowing(profile.id);
+                                                    await toggleFollow(profile.id);
+                                                    if (!wasFollowing) {
+                                                        setFollowedUserId(profile.id);
+                                                    } else {
+                                                        if (followedUserId === profile.id) setFollowedUserId(null);
+                                                    }
+                                                }}
+                                                className={isFollowing(profile.id) ? "btn btn-secondary" : "btn btn-primary"}
+                                                style={{ padding: '0.5rem 1rem', borderRadius: '9999px', fontSize: '0.85rem', fontWeight: 600, flexShrink: 0 }}
+                                            >
+                                                {isFollowing(profile.id) ? 'Following' : 'Follow'}
+                                            </button>
+                                        </div>
+                                    </ProfileHoverCard>
                                     <AnimatePresence>
                                         {followedUserId === profile.id && isFollowing(profile.id) && (
                                             <SuggestedFollows

@@ -32,7 +32,7 @@ export const fetchEndorsementsForUser = async (userId) => {
             endorser_id,
             need_id,
             profiles!endorsements_endorser_id_fkey (
-                id, display_name, username, avatar_url, last_seen_at
+                id, display_name, username, avatar_url, last_seen_at, bio, location
             ),
             needs (
                 id, title, description, category, status
@@ -77,10 +77,10 @@ export const getEndorsementById = async (id) => {
             endorsed_id,
             need_id,
             endorser:profiles!endorsements_endorser_id_fkey (
-                id, display_name, username, avatar_url, bio, last_seen_at
+                id, display_name, username, avatar_url, bio, last_seen_at, location
             ),
             endorsed:profiles!endorsements_endorsed_id_fkey (
-                id, display_name, username, avatar_url, bio, last_seen_at
+                id, display_name, username, avatar_url, bio, last_seen_at, location
             ),
             needs (
                 id, title, description, category, status

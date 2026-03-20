@@ -55,7 +55,8 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachmen
                     authorAvatar: authorAvatar,
                     authorBio: reply.profiles?.bio,
                     authorLastSeenAt: reply.profiles?.last_seen_at,
-                    kycStatus: reply.profiles?.kyc_status
+                    kycStatus: reply.profiles?.kyc_status,
+                    location: reply.profiles?.location
                 }}>
                     <div className="avatar-md" style={{
                         borderRadius: '50%', flexShrink: 0,
@@ -79,7 +80,8 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachmen
                             authorAvatar: authorAvatar,
                             authorBio: reply.profiles?.bio,
                             authorLastSeenAt: reply.profiles?.last_seen_at,
-                            kycStatus: reply.profiles?.kyc_status
+                            kycStatus: reply.profiles?.kyc_status,
+                            location: reply.profiles?.location
                         }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                 {reply.profiles?.kyc_status === 'verified' && (
@@ -520,7 +522,8 @@ export const NeedDetailPage = () => {
                             authorAvatar: profile?.avatar_url,
                             authorBio: profile?.bio,
                             authorLastSeenAt: new Date().toISOString(),
-                            kycStatus: profile?.kyc_status
+                            kycStatus: profile?.kyc_status,
+                            location: profile?.location
                         }}>
                             <div className="avatar-md" style={{
                                 borderRadius: '50%',

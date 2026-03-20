@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { getFCMToken } from '../lib/firebase';
+import { detectUserCurrency } from '../lib/locationService';
 
 const AuthContext = createContext(null);
 
@@ -8,6 +9,7 @@ export const AuthProvider = ({ children }) => {
     const [session, setSession] = useState(undefined); // undefined = loading, null = no session
     const [user, setUser] = useState(null);
     const [profile, setProfile] = useState(null);
+    const [detectedCurrency, setDetectedCurrency] = useState('₦');
 
     const urlBase64ToUint8Array = (base64String) => {
         const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -130,6 +132,15 @@ export const AuthProvider = ({ children }) => {
         return () => subscription.unsubscribe();
     }, []);
 
+    // Detect currency on mount
+    useEffect(() => {
+        const initCurrency = async () => {
+            const currency = await detectUserCurrency();
+            setDetectedCurrency(currency);
+        };
+        initCurrency();
+    }, []);
+
     // Handle auto-subscription for verified/logged-in users
     useEffect(() => {
         if (user && profile) {
@@ -242,7 +253,7 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider value={{
-            session, user, profile, loading,
+            session, user, profile, loading, detectedCurrency,
             signUp, signIn, signOut, fetchProfile,
             resendVerification, resetPassword, updatePassword,
             updateProfile

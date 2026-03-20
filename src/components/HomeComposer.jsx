@@ -37,7 +37,7 @@ const CategoryIcon = ({ iconName, ...props }) => {
 };
 
 export const HomeComposer = () => {
-    const { profile } = useAuth();
+    const { profile, detectedCurrency } = useAuth();
     const { drafts, saveDraft, deleteDraft } = useDrafts();
     const [isExpanded, setIsExpanded] = useState(false);
     const [showDrafts, setShowDrafts] = useState(false);
@@ -66,7 +66,7 @@ export const HomeComposer = () => {
         title: '',
         category: 'General Product',
         description: '',
-        currency: '$',
+        currency: detectedCurrency || '₦',
         budgetMode: 'fixed',
         budgetMin: '',
         budgetMax: '',
@@ -148,7 +148,7 @@ export const HomeComposer = () => {
             await createNeed({ ...formData, imageUrl, fileUrl, fileType }, profile.id);
 
             // Reset
-            setFormData({ title: '', category: 'General Product', description: '', currency: '$', budgetMode: 'fixed', budgetMin: '', budgetMax: '', location: '', flexibility: 'Flexible start', imageUrl: '' });
+            setFormData({ title: '', category: 'General Product', description: '', currency: detectedCurrency || '₦', budgetMode: 'fixed', budgetMin: '', budgetMax: '', location: '', flexibility: 'Flexible start', imageUrl: '' });
             setImageFile(null);
             setImagePreview('');
             setAttachedFile(null);
@@ -167,7 +167,7 @@ export const HomeComposer = () => {
         saveDraft(formData);
         alert('Draft saved successfully!');
         setFormData({
-            title: '', category: 'General Product', description: '', currency: '$',
+            title: '', category: 'General Product', description: '', currency: detectedCurrency || '₦',
             budgetMode: 'fixed', budgetMin: '', budgetMax: '', location: '',
             flexibility: 'Flexible start', imageUrl: ''
         });

@@ -37,12 +37,12 @@ const CategoryIcon = ({ iconName, ...props }) => {
 
 export const EditNeedModal = ({ isOpen, onClose, need, onUpdate }) => {
     const navigate = useNavigate();
-    const { profile } = useAuth();
+    const { profile, detectedCurrency } = useAuth();
     const [formData, setFormData] = useState({
         title: '',
         category: 'Products',
         description: '',
-        currency: '$',
+        currency: detectedCurrency || '₦',
         budgetMode: 'fixed',
         budgetMin: '',
         budgetMax: '',
@@ -84,7 +84,7 @@ export const EditNeedModal = ({ isOpen, onClose, need, onUpdate }) => {
                 title: need.title || '',
                 category: need.category || 'Products',
                 description: need.description || '',
-                currency: need.currency || '$',
+                currency: need.currency || detectedCurrency || '₦',
                 budgetMode: need.budgetMode || 'fixed',
                 budgetMin: need.budgetMin || '',
                 budgetMax: need.budgetMax || '',

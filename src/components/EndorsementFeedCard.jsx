@@ -212,7 +212,8 @@ export const EndorsementFeedCard = ({ endorsement, broadcastedBy = null }) => {
                                 author: endorsedUser.display_name,
                                 authorUsername: endorsedUser.username,
                                 authorAvatar: endorsedUser.avatar_url,
-                                authorBio: endorsedUser.bio
+                                authorBio: endorsedUser.bio,
+                                location: endorsedUser.location
                             }}>
                                 <div
                                     onClick={(e) => { e.stopPropagation(); navigate(`/${endorsedUser.username}`); }}
@@ -238,7 +239,8 @@ export const EndorsementFeedCard = ({ endorsement, broadcastedBy = null }) => {
                                         author: endorsedUser.display_name,
                                         authorUsername: endorsedUser.username,
                                         authorAvatar: endorsedUser.avatar_url,
-                                        authorBio: endorsedUser.bio
+                                        authorBio: endorsedUser.bio,
+                                        location: endorsedUser.location
                                     }}>
                                         <span
                                             onClick={(e) => { e.stopPropagation(); navigate(`/${endorsedUser.username}`); }}

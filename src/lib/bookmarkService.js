@@ -46,7 +46,9 @@ export const fetchBookmarkedItems = async (userId) => {
                     username,
                     avatar_url,
                     banner_url,
-                    bio
+                    bio,
+                    last_seen_at,
+                    location
                 )
             ),
             endorsements (
@@ -55,10 +57,10 @@ export const fetchBookmarkedItems = async (userId) => {
                 endorsed_id,
                 need_id,
                 endorser:profiles!endorsements_endorser_id_fkey (
-                    id, display_name, username, avatar_url, bio
+                    id, display_name, username, avatar_url, bio, last_seen_at, location
                 ),
                 endorsed:profiles!endorsements_endorsed_id_fkey (
-                    id, display_name, username, avatar_url, bio
+                    id, display_name, username, avatar_url, bio, last_seen_at, location
                 ),
                 needs (
                     id, title, description, category, status
@@ -66,7 +68,7 @@ export const fetchBookmarkedItems = async (userId) => {
             ),
             replies (
                 *,
-                profiles(display_name, avatar_url, username),
+                profiles(display_name, avatar_url, username, bio, last_seen_at, location),
                 needs(id, title)
             )
         `)
@@ -90,7 +92,7 @@ export const fetchBookmarkedItems = async (userId) => {
                 created_at,
                 thread_id,
                 sender:profiles!messages_sender_id_fkey (
-                    id, display_name, username, avatar_url
+                    id, display_name, username, avatar_url, last_seen_at, bio, location
                 )
             )
         `)

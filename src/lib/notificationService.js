@@ -14,7 +14,9 @@ export const fetchNotifications = async (userId) => {
                 display_name,
                 avatar_url,
                 username,
-                last_seen_at
+                last_seen_at,
+                bio,
+                location
             )
         `)
         .eq('user_id', userId)

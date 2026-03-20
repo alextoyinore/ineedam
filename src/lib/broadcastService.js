@@ -58,23 +58,23 @@ export const fetchBroadcastedNeeds = async (userId) => {
         .from('broadcasts')
         .select(`
             id, created_at,
-            profiles (id, display_name, username, avatar_url, last_seen_at),
+            profiles (id, display_name, username, avatar_url, last_seen_at, bio, location),
             needs (
                 id, title, description, category, budget_mode, budget_min, budget_max,
                 currency, location, flexibility, image_url, status, created_at,
                 profiles!needs_user_id_fkey (
-                    id, display_name, username, avatar_url, bio, last_seen_at
+                    id, display_name, username, avatar_url, bio, last_seen_at, location
                 )
             ),
             endorsements (
                 id, message, created_at,
-                endorser:profiles!endorsements_endorser_id_fkey(id, display_name, username, avatar_url, bio, last_seen_at),
-                endorsed:profiles!endorsements_endorsed_id_fkey(id, display_name, username, avatar_url, bio, last_seen_at),
+                endorser:profiles!endorsements_endorser_id_fkey(id, display_name, username, avatar_url, bio, last_seen_at, location),
+                endorsed:profiles!endorsements_endorsed_id_fkey(id, display_name, username, avatar_url, bio, last_seen_at, location),
                 needs:needs(id, title, category, budget_min, status)
             ),
             replies (
                 id, content, created_at, need_id,
-                profiles:profiles(id, display_name, username, avatar_url, last_seen_at),
+                profiles:profiles(id, display_name, username, avatar_url, last_seen_at, bio, location),
                 needs:needs(id, title)
             )
         `)
@@ -129,23 +129,23 @@ export const fetchAllBroadcasts = async (from = 0, to = 9) => {
         .from('broadcasts')
         .select(`
             id, created_at,
-            profiles (id, display_name, username, avatar_url, last_seen_at),
+            profiles (id, display_name, username, avatar_url, last_seen_at, bio, location),
             needs (
                 id, title, description, category, budget_mode, budget_min, budget_max,
                 currency, location, flexibility, image_url, status, created_at,
                 profiles!needs_user_id_fkey (
-                    id, display_name, username, avatar_url, bio, last_seen_at
+                    id, display_name, username, avatar_url, bio, last_seen_at, location
                 )
             ),
             endorsements (
                 id, message, created_at,
-                endorser:profiles!endorsements_endorser_id_fkey(id, display_name, username, avatar_url, bio, last_seen_at),
-                endorsed:profiles!endorsements_endorsed_id_fkey(id, display_name, username, avatar_url, bio, last_seen_at),
+                endorser:profiles!endorsements_endorser_id_fkey(id, display_name, username, avatar_url, bio, last_seen_at, location),
+                endorsed:profiles!endorsements_endorsed_id_fkey(id, display_name, username, avatar_url, bio, last_seen_at, location),
                 needs:needs(id, title, category, budget_min, status)
             ),
             replies (
                 id, content, created_at, need_id,
-                profiles:profiles(id, display_name, username, avatar_url, last_seen_at),
+                profiles:profiles(id, display_name, username, avatar_url, last_seen_at, bio, location),
                 needs:needs(id, title)
             )
         `)

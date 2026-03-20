@@ -41,7 +41,8 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachmen
                     authorUsername: authorUsername,
                     authorAvatar: authorAvatar,
                     authorBio: reply.profiles?.bio,
-                    authorLastSeenAt: reply.profiles?.last_seen_at
+                    authorLastSeenAt: reply.profiles?.last_seen_at,
+                    location: reply.profiles?.location
                 }}>
                     <div className="avatar-md" style={{
                         borderRadius: '50%', flexShrink: 0,
@@ -64,7 +65,8 @@ const ReplyItem = ({ reply, need, depth = 0, onReply, onArchive, onViewAttachmen
                             authorUsername: authorUsername,
                             authorAvatar: authorAvatar,
                             authorBio: reply.profiles?.bio,
-                            authorLastSeenAt: reply.profiles?.last_seen_at
+                            authorLastSeenAt: reply.profiles?.last_seen_at,
+                            location: reply.profiles?.location
                         }}>
                             <span style={{ fontWeight: 700, color: 'var(--text-primary)', cursor: 'pointer' }}>{formatDisplayName(authorName, isMobile)}</span>
                         </ProfileHoverCard>
