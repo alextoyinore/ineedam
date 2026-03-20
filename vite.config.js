@@ -37,6 +37,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg}'],
+        navigateFallbackDenylist: [/^\/sitemap\.xml$/, /^\/need\/.*$/],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/.*supabase\.co\/.*/i,

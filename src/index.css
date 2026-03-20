@@ -158,12 +158,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
-  /* Subtle Background gradient based on theme variables - DISABLED FOR PERFORMANCE TEST */
-  /* background-image:
-    radial-gradient(circle at 15% 50%, rgba(16, 185, 129, 0.05) 0%, transparent 40%),
-    radial-gradient(circle at 85% 30%, rgba(236, 72, 153, 0.05) 0%, transparent 40%);
-  background-attachment: fixed; */
-  /* transition: background-color 0.3s ease, color 0.3s ease; */
 }
 
 a {

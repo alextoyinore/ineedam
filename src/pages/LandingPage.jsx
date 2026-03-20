@@ -67,8 +67,8 @@ export const LandingPage = () => {
                 inset: 0,
                 zIndex: 0,
                 background: isDark
-                    ? 'radial-gradient(circle at 15% 50%, rgba(34, 197, 94, 0.1) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(34, 197, 94, 0.05) 0%, transparent 40%)'
-                    : 'radial-gradient(circle at 15% 50%, rgba(34, 197, 94, 0.05) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(34, 197, 94, 0.03) 0%, transparent 40%)'
+                    ? 'radial-gradient(circle at 15% 50%, rgba(148, 163, 184, 0.08) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(148, 163, 184, 0.04) 0%, transparent 40%)'
+                    : 'radial-gradient(circle at 15% 50%, rgba(148, 163, 184, 0.04) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(148, 163, 184, 0.02) 0%, transparent 40%)'
             }} />
 
             <Helmet>

@@ -2,17 +2,24 @@
   RewriteEngine On
   RewriteBase /
 
-  # Social Media Crawler Redirection
+  # 1. Force HTTPS
+  RewriteCond %{HTTPS} off
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # 2. Sitemap Redirection
+  # Ensure sitemap.xml is handled before any catch-all rules
+  RewriteRule ^/?sitemap\.xml$ https://owlkmvgpuzwnpaqigfuf.supabase.co/functions/v1/sitemap [L,NC,R=301]
+
+  # 3. Social Media Crawler Redirection
   # Detect common crawlers and redirect them to the Edge Function for dynamic previews
   RewriteCond %{HTTP_USER_AGENT} (facebookexternalhit|Twitterbot|Pinterest|Google.*snippet|WhatsApp|Telegram|Discordbot|Slackbot) [NC]
   RewriteRule ^need/([^/]+)/?$ https://owlkmvgpuzwnpaqigfuf.supabase.co/functions/v1/social-preview?id=$1 [L,R=302]
 
+  # 4. SPA Catch-all
   RewriteRule ^index\.html$ - [L]
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule . /index.html [L]
-
-  RewriteCond %{HTTPS} off
-  RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 </IfModule>
+
 

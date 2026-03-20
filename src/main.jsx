@@ -58,27 +58,14 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 // Register Service Worker for Push Notifications (existing Web Push / VAPID)
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    /* 1. Primary Service Worker (Workbox/PWA) — MUST control "/" scope (Commented out)
-    navigator.serviceWorker.register('/sw.js', { type: 'module' })
-      .then(registration => {
-        console.log('SW registered: ', registration);
-      })
-      .catch(registrationError => {
-        console.error('SW registration failed: ', registrationError);
-      });
-    */
-
-    // 2. Firebase Messaging Service Worker (FCM) — use a dedicated sub-scope
-    const fcmApiKey = import.meta.env.VITE_FIREBASE_API_KEY;
-    if (fcmApiKey && fcmApiKey !== 'YOUR_API_KEY') {
-      navigator.serviceWorker.register('/firebase-messaging-sw.js', {
-        scope: '/firebase-cloud-messaging-push-scope'
-      })
+    // 1. Primary Service Worker (Workbox/PWA) — handles both app caching and Firebase Messaging
+    if (import.meta.env.PROD) {
+      navigator.serviceWorker.register('/sw.js', { type: 'module' })
         .then(registration => {
-          console.log('[FCM] Service worker registered:', registration);
+          console.log('[SW] Registered successfully:', registration);
         })
         .catch(err => {
-          console.error('[FCM] Service worker registration failed:', err);
+          console.error('[SW] Registration failed:', err);
         });
     }
   });
