@@ -31,9 +31,18 @@ create policy "Users can update own profile" on profiles for update using (auth.
 -- Trigger to automatically create a profile when a new user signs up
 create or replace function public.handle_new_user()
 returns trigger as $$
+declare
+  temp_username text;
 begin
-  insert into public.profiles (id, display_name)
-  values (new.id, split_part(new.email, '@', 1));
+  -- Generate a temporary username: user_ + the first 8 characters of their UUID (stripped of hyphens)
+  temp_username := 'user_' || lower(substring(replace(new.id::text, '-', ''), 1, 8));
+  
+  insert into public.profiles (id, display_name, username)
+  values (
+    new.id, 
+    split_part(new.email, '@', 1), -- Default display name from email
+    temp_username                  -- Temporary username
+  );
   return new;
 end;
 $$ language plpgsql security definer;

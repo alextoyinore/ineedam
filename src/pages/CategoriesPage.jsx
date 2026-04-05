@@ -137,9 +137,8 @@ export const CategoriesPage = () => {
                                                 gap: '0.75rem',
                                                 padding: '0.5rem 1rem 1.5rem 1rem'
                                             }}>
-                                                {group.categories.map(category => {
-                                                    const count = categoryStats[category] || 0;
-                                                    const latestNeed = latestNeeds[category];
+                                                {groupCategories.map(catData => {
+                                                    const { category, count, latestNeed } = catData;
                                                     // Only render if the category has needs
                                                     if (count === 0) return null;
                                                     return (
